@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import os, sys
-from PIL import Image, ImageColor
+from PIL import Image, ImageColor, ImageDraw
 
 COMPONENT_DIR = 'Components'
 OUTPUT_DIR = 'images'
@@ -19,14 +19,13 @@ SEGMENT_SHAPES = ['circle', 'triangle', 'rectangle']
 BODY_SIZE = [100, 250] # height divided among segments
 BODY_COLOR = (0,0,0) # encoded in RGB (black)
 
-
 ANTENNAE_PREFIX = 'antennae'
 ANTENNAE_COUNTS = [1, 2, 4]
 ANTENNAE_COLORS = {'purple':(205, 0, 255),   # encoded in RGB
                    'orange':(255, 40, 15),
                    'brightgreen':(0, 255, 60),
                    'lightblue':(55, 175, 255)}
-ANTENNAE_OFFSET = (0, -160)
+ANTENNAE_OFFSET = (0, -150)
 
 WING_PREFIX = 'wings'
 WING_COUNTS = range(1,4)
@@ -35,6 +34,7 @@ WING_COLORS = {'blue':(60, 0, 180),     # encoded in RGB
                'pink':(190, 0, 125),
                'yellow':(185, 160, 75),
                'green':(0, 200, 75)}
+WING_OFFSET = (0, 25)
 
 def component(name, prefix='', folder_name=COMPONENT_DIR, file_type=FILE_TYPE):
     """Get the image for the component of a given name.
@@ -74,36 +74,37 @@ def set_alpha(img, alpha):
     return img
 
 
-def draw_bug(segment_count, segment_shape,
+def draw_insect(segment_count, segment_shape,
              wing_count, wing_color, wing_rgb,
              antennae_count, antennae_color, antennae_rgb):
-    print(segment_count, segment_shape, wing_count, wing_color, antennae_count, antennae_color)
-    bug = rgb_image((255,255,255))
+    insect = rgb_image((255,255,255))
+
+    # draw the antennae
+    draw_centered(insect, component(antennae_count, prefix=ANTENNAE_PREFIX),
+                  antennae_rgb,
+                  dx=ANTENNAE_OFFSET[0], dy=ANTENNAE_OFFSET[1])
     
-    #head = component(head_style, prefix=ANTENNAE_PREFIX)
-    #draw_centered(bug, head, head_rgb, dx=HEAD_OFFSET[0], dy=HEAD_OFFSET[1])
-    
-    legs = component('', prefix=LEG_PREFIX)
-    draw_centered(bug, legs, LEG_COLOR, dx=LEG_OFFSET[0], dy=LEG_OFFSET[1])
-    
+    # draw the legs
+    draw_centered(insect, component('', prefix=LEG_PREFIX),
+                  LEG_COLOR, dx=LEG_OFFSET[0], dy=LEG_OFFSET[1])
+
+    # draw the body segments
     segment = component(segment_shape, prefix=SEGMENT_PREFIX).resize((BODY_SIZE[0],
                                                                       int(BODY_SIZE[1] /
                                                                           segment_count)),
                                                                      Image.LANCZOS)
     for i in range(segment_count):
-        #print('dy: ', i*segment_spacing - BODY_SIZE[1]/2)
-        # TODO: adjust position
-        draw_centered(bug, segment, BODY_COLOR,
+        draw_centered(insect, segment, BODY_COLOR,
                       dy=(i*segment.height -
                           ((segment_count - 1) * BODY_SIZE[1]) / (segment_count*2)))
-        
-    wing = component('', prefix=WING_PREFIX) #, WING_ALPHA)
+    
+    # draw the wings
+    wing = set_alpha(component('', prefix=WING_PREFIX), WING_ALPHA)
+    step = BODY_SIZE[1] / (wing_count+1)
     for i in range(wing_count):
-        # TODO: adjust position
-        draw_centered(bug, wing, wing_rgb,
-                      dy =(i*wing.height -
-                           ((wing_count - 1) * BODY_SIZE[1]) / (wing_count*2)))
-    return bug
+        draw_centered(insect, wing, wing_rgb, dx=WING_OFFSET[0],
+                      dy=(WING_OFFSET[1] + (i+1)*step - BODY_SIZE[1]/2))
+    return insect
 
             
 for segment_count in SEGMENT_COUNTS:
@@ -112,14 +113,12 @@ for segment_count in SEGMENT_COUNTS:
             for wing_color, wing_rgb in WING_COLORS.items():
                 for antennae_count in ANTENNAE_COUNTS:
                     for antennae_color, antennae_rgb in ANTENNAE_COLORS.items():
-                        bug = draw_bug(segment_count, segment_shape,
-                                       wing_count, wing_color, wing_rgb,
-                                       antennae_count, antennae_color, antennae_rgb)
+                        insect = draw_insect(segment_count, segment_shape,
+                                             wing_count, wing_color, wing_rgb,
+                                             antennae_count, antennae_color, antennae_rgb)
                         
                         # save the image to a file
-                        bug.save(os.path.dirname(__file__) + '/' + OUTPUT_DIR
-                                 + '/bug_' + str(segment_count) + '_' + segment_shape + '_'
-                                 + str(antennae_count) + '_' + antennae_color + '_'
-                                 + str(wing_count) + '_' + wing_color + FILE_TYPE)
-                        #bug.show()
-                        #sys.exit(0)
+                        insect.save(os.path.dirname(__file__) + '/' + OUTPUT_DIR
+                                    + '/insect_' + str(segment_count) + '_' + segment_shape + '_'
+                                    + str(antennae_count) + '_' + antennae_color + '_'
+                                    + str(wing_count) + '_' + wing_color + FILE_TYPE)
