@@ -8,6 +8,8 @@ function CategoryLearning(varargin)
 %             set of the feature's possible values.
 % getFilename :- a function to generate a filename given a set of
 %                feature values.
+% escapeKey :- a key that can be pressed to abort the experiment. 
+%              Defaults to the escape key.
 %
 %Parameters for the learning phase
 % learningTrials :- the number of learning trials to complete
@@ -16,6 +18,8 @@ function CategoryLearning(varargin)
 % learningITI  :- the intertrial interval for the learning phase.
 %                 Defaults to 1 second.
 % learningMinViewing :- how long to wait before getting a keypress
+% learningYKey :- the key response for a stimulus in the learned category
+% learningNKey :- the key response for a stimulus in the unlearned category
 %
 %Parameters for the study phase
 % studyTrials :- the number of study trials to complete
@@ -35,6 +39,10 @@ function CategoryLearning(varargin)
 % lurePUnlearned :- the percentage of lures in the unlearned category
 % testITI :- the intertrial interval for the test phase. 
 %            Defaults to 1 second.
+% testMinViewing :- how long to wait before recording keypresses
+% testOldKey :- the key to press if a stimulus is old
+% testNewKey :- the key to press if a stimulus is new
+%
 %
     % setup PsychToolbox
     close all;
@@ -47,25 +55,32 @@ function CategoryLearning(varargin)
                    @(x) ~isempty(x) & ~all(structfun(@isempty, x)));
     p.addParameter('getFilename', @getFilenameDefault,...
                    @(x) isa(x, 'function_handle'));
-    p.addParameter('learningTrials', 5, @(x) x > 0);
+    p.addParameter('escapeKey', 'ESCAPE', @ischar);
+               
+    p.addParameter('learningTrials', 9, @(x) x > 0);
     p.addParameter('learningPLearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('learningPUnlearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('learningITI', 1.0, @(x) x > 0);
-    p.addParameter('learningMinViewing', 1.0, @(x) x >= 0);
+    p.addParameter('learningMinViewing', 0.5, @(x) x >= 0);
+    p.addParameter('learningYKey', 'y', @ischar);
+    p.addParameter('learningNKey', 'n', @ischar);
     
-    p.addParameter('studyTrials', 5, @(x) x > 0);
+    p.addParameter('studyTrials', 9, @(x) x > 0);
     p.addParameter('studyPLearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('studyPUnlearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('studyTime', 5.0, @(x) x > 0);
     p.addParameter('studyITI', 1.0, @(x) x > 0); 
     
-    p.addParameter('oldTrials', 5, @(x) x > 0);
+    p.addParameter('oldTrials', 9, @(x) x > 0);
     p.addParameter('oldPLearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('oldPUnlearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
-    p.addParameter('lureTrials', 5, @(x) x > 0);
+    p.addParameter('lureTrials', 9, @(x) x > 0);
     p.addParameter('lurePLearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('lurePUnlearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('testITI', 1.0, @(x) x > 0);
+    p.addParameter('testMinViewing', 0.5, @(x) x >= 0);
+    p.addParameter('testOldKey', 'y', @ischar);
+    p.addParameter('testNewKey', 'n', @ischar);
     p.parse(varargin{:});
     parameters = p.Results;  
     
@@ -99,16 +114,18 @@ function CategoryLearning(varargin)
                                 parameters.learningPLearned,...
                                 parameters.learningPUnlearned);
     [learning_data, exit] = learn(window, learning_stim, parameters);
+    writetable(struct2table(learning_data), 'learning_data.csv');
     if exit
         sca;
         return
     end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Study phase
     study_stim = get_stimuli(parameters, parameters.studyTrials,...
                              parameters.studyPLearned,...
                              parameters.studyPUnlearned, learning_stim);
     [study_data, exit] = study(window, study_stim, parameters);
+    writetable(struct2table(study_data), 'study_data.csv');
     if exit
         sca;
         return
@@ -121,15 +138,14 @@ function CategoryLearning(varargin)
                         parameters.lurePLearned, parameters.lurePUnlearned,...
                         [learning_stim, study_stim]);
     [test_data, exit] = test(window, old, lures, parameters);
+    writetable(struct2table(test_data), 'test_data.csv');
     if exit
         sca;
         return
     end
-    
-    % save the data
-    writetable(struct2table(learning_data), 'learning_data.csv');
-    writetable(struct2table(study_data), 'study_data.csv');
-    writetable(struct2table(test_data), 'test_data.csv');
+ 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Thank the participants (TODO)
     sca;
 end
 

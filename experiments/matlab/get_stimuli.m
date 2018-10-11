@@ -5,7 +5,10 @@ function objs = get_stimuli(parameters, count, p_learned, p_unlearned, exclude)
     if nargin < 5
         exclude = [];
     end
-        
+    
+    learnedVals = parameters.features.(parameters.learned_feature);
+    unlearnedVals = parameters.features.(parameters.unlearned_feature);
+    
     % percentage of stimuli with each other value of the learned feature
     p_not_learned = (1 - p_learned) /...
         (length(parameters.features.(parameters.learned_feature)) - 1);
@@ -35,13 +38,13 @@ function objs = get_stimuli(parameters, count, p_learned, p_unlearned, exclude)
             else
                 % In neither category
                 N = p_not_learned * p_not_unlearned * count;
-            end               
+            end
             
             % Make N stimuli with these values, the rest being random
             for n = 1:N
                 objs(index) = get_stim(parameters,...
-                                       parameters.features.(parameters.learned_feature){i},...
-                                       parameters.features.(parameters.unlearned_feature){j},...
+                                       learnedVals{i},...
+                                       unlearnedVals{j},...
                                        [objs, exclude]);
                 index = index + 1;
             end
