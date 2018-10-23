@@ -170,7 +170,6 @@ features['wing_color'] = new Array('blue', 'yellow', 'green');
 features['antennae_count'] = new Array('1', '2', '4');
 features['antennae_color'] = new Array('purple', 'orange', 'lightblue');
 
-
 /* List of feature names */
 var tKeys = Object.keys(features);
 
@@ -189,7 +188,6 @@ console.log('learned feature: ' + tKeys[featureLearned]);
 console.log('learned value: ' + features[tKeys[featureLearned]][valueLearned]);
 console.log('unlearned feature: ' + tKeys[featureFoil]);
 console.log('unlearned value: ' + features[tKeys[featureFoil]][valueFoil]);
-
 
 /* Get an object that is either a member of the
    learned category or not; and a member of the foil
@@ -227,6 +225,69 @@ function GetObject(learned, foil, avoidObjectsList) {
   return (overlaps)? GetObject(learned, foil, avoidObjectsList) : nObject;
 }
 
+/*
+ * Get an array of objects for this stage of the paradigm.
+ * count- the number of objects to generate
+ * stage- a string identifying the stage of the paradigm
+ *        (categorization, encoding, retrieval)
+ * htmlTag- where to store the image html src
+ *
+ * returns [objects, imageHTML]
+ */
+function GetObjects(count, stage, pLearned, pFoil) {
+  var imageHTML = '';
+  var index = 0;
+  var items = [];
+  var remainderItems = [];
+  var pNotLearned = (1 - pLearned) / (features[tKeys[featureLearned]].length - 1);
+  var pNotFoil = (1 - pFoil) / (features[tKeys[featureFoil]].length - 1);
+
+  for (var i=0; i<features[tKeys[featureLearned]].length; i++) {
+    for (var j=0; j<features[tKeys[featureFoil]].length; j++) {
+      var isTarget = i == valueLearned;
+      var isFoil = j == valueFoil;
+      if (isTarget && isFoil)
+        n = pLearned * pFoil * count;
+      else if (isTarget)
+        n = pLearned * pNotFoil * count;
+      else if (isFoil)
+        n = pNotLearned * pFoil * count;
+      else
+        n = pNotLearned * pNotFoil * count;
+
+      for (var k=0; k<n; k++) {
+        var obj = GetObject(features[tKeys[featureLearned]][i],
+                            features[tKeys[featureFoil]][j],
+                            [items]);
+        var curItem = {'object': obj,
+                       'filename': GetFilename(obj),
+                       'isTarget': isTarget,
+                       'isFoil': isFoil,
+                       'id': stage + index
+                     };
+        if (k < Math.floor(n)) {
+          index++;
+          items.push(curItem);
+          imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
+        } else {
+          remainderItems.push(curItem);
+        }
+      }
+    }
+  }
+
+  // add in the appropriate amount of remainder items
+  while (items.length < count) {
+    var curItem = remainderItems.splice(Math.floor(Math.random()*remainderItems.length), 1)[0];
+    curItem.id = stage + index;
+    index++;
+    items.push(curItem);
+    imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
+  }
+
+  return [items, imageHTML];
+}
+
 /* Get filename for an object */
 function GetFilename(obj) {
   return ('http://web-mir.ccn.duke.edu/flower/images/insects/insect_'
@@ -236,18 +297,25 @@ function GetFilename(obj) {
 }
 
 /* Parameters for stimuli */
-pLearned = 1/3.0;
-pFoil = 1/3.0;
 nCategorization = 54;
-nEncoding = 16;
-nRetrieval = 48;
-pNotLearned = (1 - pLearned) / (features[tKeys[featureLearned]].length - 1);
-pNotFoil = (1 - pFoil) / (features[tKeys[featureFoil]].length - 1);
+pLearnedCategorization = 1/3.0;
+pFoilCategorization = 1/3.0;
 
-console.log('pLearned: ' + pLearned);
-console.log('pNotLearned: ' + pNotLearned);
-console.log('pFoil: ' + pFoil);
-console.log('pNotFoil: ' + pNotFoil);
+nEncoding = 16;
+pLearnedEncoding = 1/3.0;
+pFoilEncoding = 1/3.0;
+
+nRetrieval = 48;
+pLearnedRetrieval = 1/3.0;  // p for lures, not old items
+pFoilRetrieval = 1/3.0;
+
+console.log('pLearnedCategorization: ' + pLearnedCategorization);
+console.log('pFoilCategorization: ' + pFoilCategorization);
+console.log('pLearnedEncoding: ' + pLearnedEncoding);
+console.log('pFoilEncoding: ' + pFoilEncoding);
+console.log('pLearnedRetrieval: ' + pLearnedRetrieval);
+console.log('pFoilRetrieval: ' + pFoilRetrieval);
+
 
 /* Build the listsof items to use for categorization,
     for encoding, and for memory tests */
@@ -261,88 +329,40 @@ var orderRetrieval = RandomOrder(nRetrieval);
 
 /* Global trackers for which trial we're on; always
     used, no matter what part of the experiment we're in */
-var curTrial = 50;
+var curTrial = 0;
 var curTrialItem = {};
 var startTrialTime = 0;
 
 /* Create the set of objects to show in the categorization
     phase */
 function CreateCategorizationList() {
-  var imageHTML = '';
-  var index = 0;
-  for (var i=0; i<features[tKeys[featureLearned]].length; i++) {
-    for (var j=0; j<features[tKeys[featureFoil]].length; j++) {
-      var isTarget = i == valueLearned;
-      var isFoil = j == valueFoil;
-      if (isTarget && isFoil) {
-        n = Math.floor(pLearned * pFoil * nCategorization);
-      } else if (isTarget) {
-        n = Math.floor(pLearned * pNotFoil * nCategorization);
-      } else if (isFoil) {
-        n = Math.floor(pNotLearned * pFoil * nCategorization);
-      } else {
-        n = Math.floor(pNotLearned * pNotFoil * nCategorization);
-      }
-
-      for (var k=0; k<n; k++) {
-        var obj = GetObject(features[tKeys[featureLearned]][i], features[tKeys[featureFoil]][j],
-                            [itemsForCategorization]);
-        var curItem = {'object': obj,
-                       'filename': GetFilename(obj),
-                       'isTarget': isTarget,
-                       'isFoil': isFoil,
-                       'id': 'categorize' + index};
-        index++;
-        itemsForCategorization.push(curItem);
-        imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
-      }
-    }
-  }
-
+  var [objects, imageHTML] = GetObjects(nCategorization, 'categorize',
+                                        pLearnedCategorization, pFoilCategorization);
+  itemsForCategorization = objects;
   $('#imagesForCategorizing').html(imageHTML);
 }
 
 /* Create the set of objects to show in the encoding
     phase */
 function CreateEncodingList() {
-  var imageHTML = '';
-  var index = 0;
-  for (var i=0; i<features[tKeys[featureLearned]].length; i++) {
-    for (var j=0; j<features[tKeys[featureFoil]].length; j++) {
-      var isTarget = i == valueLearned;
-      var isFoil = j == valueFoil;
-      if (isTarget && isFoil) {
-        n = Math.floor(pLearned * pFoil * nEncoding);
-      } else if (isTarget) {
-        n = Math.floor(pLearned * pNotFoil * nEncoding);
-      } else if (isFoil) {
-        n = Math.floor(pNotLearned * pFoil * nEncoding;
-      } else {
-        n = Math.floor(pNotLearned * pNotFoil * nEncoding);
-      }
-
-      for (var k=0; k<n; k++) {
-        var obj = GetObject(features[tKeys[featureLearned]][i], features[tKeys[featureFoil]][j],
-                            [itemsForCategorization, itemsForEncoding]);
-        var curItem = {'object': obj,
-                       'filename': GetFilename(obj),
-                       'isTarget': isTarget,
-                       'isFoil': isFoil,
-                       'id': 'encode' + index};
-        index++;
-        itemsForEncoding.push(curItem);
-        imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
-      }
-    }
-  }
+  var [objects, imageHTML] = GetObjects(nEncoding, 'encode',
+                                        pLearnedEncoding, pFoilEncoding);
+  itemsForEncoding = objects;
   $('#imagesForEncoding').html(imageHTML);
 }
 
 /* Create the set of objects to show in the retrieval/test
     phase */
 function CreateRetrievalList() {
-  var imageHTML = '';
-  var index = 0;
+  var nLures = nRetrieval - nEncoding;
+  var [objects, imageHTML] = GetObjects(nLures, 'retrieval',
+                                        pLearnedRetrieval, pFoilRetrieval);
+  itemsForRetrieval = objects;
+  // set isOld to false
+  for (var i=0; i<nLures; i++) {
+    itemsForRetrieval[i].isOld = false;
+  }
+
   for (var i=0; i<nEncoding; i++) {
     var curItemObj = itemsForEncoding[i];
     var curItem = {'object': curItemObj.object,
@@ -350,42 +370,12 @@ function CreateRetrievalList() {
                    'isTarget': curItemObj.isTarget,
                    'isFoil': curItemObj.isFoil,
                    'isOld': true,
-                   'id': 'retrieval' + index};
-    index++;
+                   'id': 'retrieval' + (i + nLures)
+                  };
     itemsForRetrieval.push(curItem);
     imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
   }
 
-  var nLures = nRetrieval - nEncoding;
-  for (var i=0; i<features[tKeys[featureLearned]].length; i++) {
-    for (var j=0; j<features[tKeys[featureFoil]].length; j++) {
-      var isTarget = i == valueLearned;
-      var isFoil = j == valueFoil;
-      if (isTarget && isFoil) {
-        n = Math.floor(pLearned * pFoil * nLures);
-      } else if (isTarget) {
-        n = Math.floor(pLearned * pNotFoil * nLures);
-      } else if (isFoil) {
-        n = Math.floor(pNotLearned * pFoil * nLures);
-      } else {
-        n = Math.floor(pNotLearned * pNotFoil * nLures);
-      }
-
-      for (var k=0; k<n; k++) {
-        var obj = GetObject(features[tKeys[featureLearned]][i], features[tKeys[featureFoil]][j],
-                            [itemsForCategorization, itemsForEncoding, itemsForRetrieval]);
-        var curItem = {'object': obj,
-                       'filename': GetFilename(obj),
-                       'isTarget': isTarget,
-                       'isFoil': isFoil,
-                       'isOld': false,
-                       'id': 'retrieval' + index};
-        index++;
-        itemsForRetrieval.push(curItem);
-        imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
-      }
-    }
-  }
   $('#imagesForRetrieval').html(imageHTML);
 }
 
@@ -469,7 +459,7 @@ function ShowEncodingStart() {
 
 function StartEncoding(i) {
   if (i==0) {
-    $('#instrucTextCur').text("Remember these 20 flowers as best you can!");
+    $('#instrucTextCur').text("Remember these " + nEncoding + " insects as best you can!");
     $('#instrucBox').show();
     $('#experimentBox').show();
     $('.categorizeImage').hide();
