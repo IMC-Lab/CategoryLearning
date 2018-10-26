@@ -32,8 +32,6 @@ function CategoryLearning(varargin)
 %
 %Parameters for the test phase
 % oldTrials :- the number of old items in the test list
-% oldPLearned :- the percentage of old stimuli in the learned category
-% oldPUnlearned :- the percentage of old stimuli in the unlearned category
 % lureTrials :- the number of new items in the test list
 % lurePLearned :- the percentage of lures in the learned category
 % lurePUnlearned :- the percentage of lures in the unlearned category
@@ -48,20 +46,23 @@ function CategoryLearning(varargin)
     close all;
     sca;
     PsychDefaultSetup(2);
+    ListenChar(2);
 
     % parse the input
     p = inputParser;
     p.addParameter('features', struct(), ...
-                   @(x) ~isempty(x) & ~all(structfun(@isempty, x)));
+                   @(x) ~isempty(x) & ~any(structfun(@isempty, x)));
     p.addParameter('getFilename', @getFilenameDefault,...
                    @(x) isa(x, 'function_handle'));
     p.addParameter('escapeKey', 'ESCAPE', @ischar);
-               
+    p.addParameter('conditionFilename', 'conditions.mat', @ischar);
+    p.addParameter('conditionNumberFilename', 'conditionNumber.mat', @ischar);
+    
     p.addParameter('learningTrials', 9, @(x) x > 0);
     p.addParameter('learningPLearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('learningPUnlearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('learningITI', 1.0, @(x) x > 0);
-    p.addParameter('learningMinViewing', 0.5, @(x) x >= 0);
+    p.addParameter('learningMinViewing', 0.25, @(x) x >= 0);
     p.addParameter('learningYKey', 'y', @ischar);
     p.addParameter('learningNKey', 'n', @ischar);
     
@@ -72,24 +73,34 @@ function CategoryLearning(varargin)
     p.addParameter('studyITI', 1.0, @(x) x > 0); 
     
     p.addParameter('oldTrials', 9, @(x) x > 0);
-    p.addParameter('oldPLearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
-    p.addParameter('oldPUnlearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('lureTrials', 9, @(x) x > 0);
     p.addParameter('lurePLearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('lurePUnlearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('testITI', 1.0, @(x) x > 0);
-    p.addParameter('testMinViewing', 0.5, @(x) x >= 0);
+    p.addParameter('testMinViewing', 0.25, @(x) x >= 0);
     p.addParameter('testOldKey', 'y', @ischar);
     p.addParameter('testNewKey', 'n', @ischar);
     p.parse(varargin{:});
     parameters = p.Results;  
     
-    % Select the feature values that define
-    % the learned and unlearned categories
-    [parameters.learned_feature, parameters.learned_feature_idx] =...
-        randelement(fieldnames(parameters.features));
-    [parameters.learned_value, parameters.learned_value_idx] =...
-        randelement(parameters.features.(parameters.learned_feature));
+    % Define the learned category
+    conds = get_conditions(parameters.features,...
+                           'filename', parameters.conditionFilename);
+    parameters.participantNumber =...
+        get_participant_number(parameters.conditionNumberFilename);
+    parameters.conditionNum = mod(parameters.participantNumber, length(conds));
+    
+    [parameters.learned_feature, parameters.learned_value] =...
+        conds{parameters.conditionNum,:};
+    % save their indices
+    parameters.learned_feature_idx =...
+        find(cellfun(@(x) isequal(x,parameters.learned_feature),...
+                     fieldnames(parameters.features)));
+    parameters.learned_value_idx =...
+        find(cellfun(@(x) isequal(x,parameters.learned_value),...
+                     parameters.features.(parameters.learned_feature)));
+    
+    % draw unlearned category randomly
     [parameters.unlearned_feature, parameters.unlearned_feature_idx] =...
         randelement(fieldnames(parameters.features));
     while parameters.unlearned_feature_idx == parameters.learned_feature_idx
@@ -98,6 +109,7 @@ function CategoryLearning(varargin)
     end
     [parameters.unlearned_value, parameters.unlearned_value_idx] =...
         randelement(parameters.features.(parameters.unlearned_feature));
+    
     sprintf('Learned: %s = %s', parameters.learned_feature, string(parameters.learned_value))
     sprintf('Unlearned: %s = %s', parameters.unlearned_feature, string(parameters.unlearned_value))
         
@@ -108,44 +120,62 @@ function CategoryLearning(varargin)
     KbQueueCreate();
     KbQueueStart();
     
+    disp(strcat('Participant Number:', string(parameters.participantNumber)))
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Learning phase
+    disp('Learning Phase')
     learning_stim = get_stimuli(parameters, parameters.learningTrials,...
                                 parameters.learningPLearned,...
                                 parameters.learningPUnlearned);
     [learning_data, exit] = learn(window, learning_stim, parameters);
-    writetable(struct2table(learning_data), 'learning_data.csv');
+    writetable(struct2table(learning_data),...
+               strcat(string(parameters.participantNumber), '_learn.csv'));
     if exit
+        ListenChar(0);
         sca;
         return
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Study phase
+    disp('Study Phase')
     study_stim = get_stimuli(parameters, parameters.studyTrials,...
                              parameters.studyPLearned,...
                              parameters.studyPUnlearned, learning_stim);
     [study_data, exit] = study(window, study_stim, parameters);
-    writetable(struct2table(study_data), 'study_data.csv');
+    writetable(struct2table(study_data),... 
+               strcat(string(parameters.participantNum), '_study.csv'));
     if exit
+        ListenChar(0);
         sca;
         return
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Test phase
+    disp('Test Phase')
     old = Shuffle(study_stim);
     old = old(1:parameters.oldTrials);
     lures = get_stimuli(parameters, parameters.lureTrials,...
                         parameters.lurePLearned, parameters.lurePUnlearned,...
                         [learning_stim, study_stim]);
     [test_data, exit] = test(window, old, lures, parameters);
-    writetable(struct2table(test_data), 'test_data.csv');
+    writetable(struct2table(test_data),...
+               strcat(string(parameters.participantNum), '_test.csv'));
     if exit
+        ListenChar(0);
         sca;
         return
     end
  
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Thank the participants (TODO)
+    % Thank the participants
+    [~, height] = Screen('WindowSize', window);
+    Screen('TextSize', window, 96);
+    DrawFormattedText(window, 'Thank you for your participation!', 'center', height/3.0, 0);
+    Screen('TextSize', window, 48);
+    DrawFormattedText(window, 'Press any key to exit.', 'center', height*2/3.0, 0);
+    Screen('Flip', window);
+    KbStrokeWait();
+    ListenChar(0);
     sca;
 end
 
