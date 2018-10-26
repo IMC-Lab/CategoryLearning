@@ -109,17 +109,18 @@ def draw_insect(segment_count, segment_shape,
             
 for segment_count in SEGMENT_COUNTS:
     for segment_shape in SEGMENT_SHAPES:
-        for wing_count in WING_COUNTS:
-            for wing_color, wing_rgb in WING_COLORS.items():
-                for antennae_count in ANTENNAE_COUNTS:
-                    for antennae_color, antennae_rgb in ANTENNAE_COLORS.items():
-                        insect = draw_insect(segment_count, segment_shape,
-                                             wing_count,
-                                             wing_color, wing_rgb,
-                                             antennae_count, antennae_color, antennae_rgb)
+#        for wing_count in WING_COUNTS:
+        wing_count = 1
+        for wing_color, wing_rgb in WING_COLORS.items():
+            for antennae_count in ANTENNAE_COUNTS:
+                for antennae_color, antennae_rgb in ANTENNAE_COLORS.items():
+                    insect = draw_insect(segment_count, segment_shape,
+                                         wing_count,
+                                         wing_color, wing_rgb,
+                                         antennae_count, antennae_color, antennae_rgb)
                         
-                        # save the image to a file
-                        insect.save(os.path.dirname(__file__) + '/' + OUTPUT_DIR
-                                    + '/insect_' + str(segment_count) + '_' + segment_shape + '_'
-                                    + str(antennae_count) + '_' + antennae_color + '_'
-                                    + str(wing_count) + '_' + wing_color + FILE_TYPE)
+                    # save the image to a file
+                    insect.save(os.path.dirname(__file__) + '/' + OUTPUT_DIR
+                                + '/insect_' + str(segment_count) + '_' + segment_shape + '_'
+                                + str(antennae_count) + '_' + antennae_color + '_'
+                                + wing_color + FILE_TYPE)
