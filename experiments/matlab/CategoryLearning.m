@@ -18,6 +18,7 @@ function CategoryLearning(varargin)
 % learningITI  :- the intertrial interval for the learning phase.
 %                 Defaults to 1 second.
 % learningMinViewing :- how long to wait before getting a keypress
+% learningTimeout :- the maximum viewing time for a stimulus
 % learningYKey :- the key response for a stimulus in the learned category
 % learningNKey :- the key response for a stimulus in the unlearned category
 %
@@ -38,16 +39,25 @@ function CategoryLearning(varargin)
 % testITI :- the intertrial interval for the test phase. 
 %            Defaults to 1 second.
 % testMinViewing :- how long to wait before recording keypresses
+% testTimeout :- the maximum viewing time for a stimulus
 % testOldKey :- the key to press if a stimulus is old
 % testNewKey :- the key to press if a stimulus is new
 %
 %
     % setup PsychToolbox
+    HideCursor;
     close all;
     sca;
     PsychDefaultSetup(2);
     ListenChar(2);
+    
+    % dummy calls to make sure PTB is loaded
+    KbCheck;
+    WaitSecs(0.01);
+    GetSecs();
+    
 
+    try
     % parse the input
     p = inputParser;
     p.addParameter('features', struct(), ...
@@ -56,13 +66,15 @@ function CategoryLearning(varargin)
                    @(x) isa(x, 'function_handle'));
     p.addParameter('escapeKey', 'ESCAPE', @ischar);
     p.addParameter('conditionFilename', 'conditions.mat', @ischar);
-    p.addParameter('conditionNumberFilename', 'conditionNumber.mat', @ischar);
+    p.addParameter('conditionNumberFilename', 'participantNumber.mat', @ischar);
     
     p.addParameter('learningTrials', 9, @(x) x > 0);
     p.addParameter('learningPLearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('learningPUnlearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('learningITI', 1.0, @(x) x > 0);
     p.addParameter('learningMinViewing', 0.25, @(x) x >= 0);
+    p.addParameter('learningTimeout', 5.0, @(x) x > 0);
+    p.addParameter('learningFeedbackTime', 1.0, @(x) x >= 0);
     p.addParameter('learningYKey', 'y', @ischar);
     p.addParameter('learningNKey', 'n', @ischar);
     
@@ -78,6 +90,7 @@ function CategoryLearning(varargin)
     p.addParameter('lurePUnlearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('testITI', 1.0, @(x) x > 0);
     p.addParameter('testMinViewing', 0.25, @(x) x >= 0);
+    p.addParameter('testTimeout', 5.0, @(x) x > 0);
     p.addParameter('testOldKey', 'y', @ischar);
     p.addParameter('testNewKey', 'n', @ischar);
     p.parse(varargin{:});
@@ -88,10 +101,10 @@ function CategoryLearning(varargin)
                            'filename', parameters.conditionFilename);
     parameters.participantNumber =...
         get_participant_number(parameters.conditionNumberFilename);
-    parameters.conditionNum = mod(parameters.participantNumber, length(conds));
-    
+    parameters.conditionNum = mod(parameters.participantNumber-1, length(conds)) + 1;
     [parameters.learned_feature, parameters.learned_value] =...
         conds{parameters.conditionNum,:};
+    
     % save their indices
     parameters.learned_feature_idx =...
         find(cellfun(@(x) isequal(x,parameters.learned_feature),...
@@ -131,10 +144,9 @@ function CategoryLearning(varargin)
     writetable(struct2table(learning_data),...
                strcat(string(parameters.participantNumber), '_learn.csv'));
     if exit
-        ListenChar(0);
-        sca;
-        return
+        error('Aborting experiment');
     end
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Study phase
     disp('Study Phase')
@@ -145,9 +157,7 @@ function CategoryLearning(varargin)
     writetable(struct2table(study_data),... 
                strcat(string(parameters.participantNum), '_study.csv'));
     if exit
-        ListenChar(0);
-        sca;
-        return
+        error('Aborting experiment');
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Test phase
@@ -161,9 +171,7 @@ function CategoryLearning(varargin)
     writetable(struct2table(test_data),...
                strcat(string(parameters.participantNum), '_test.csv'));
     if exit
-        ListenChar(0);
-        sca;
-        return
+        error('Aborting experiment');
     end
  
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -175,6 +183,8 @@ function CategoryLearning(varargin)
     DrawFormattedText(window, 'Press any key to exit.', 'center', height*2/3.0, 0);
     Screen('Flip', window);
     KbStrokeWait();
+    
+    end
     ListenChar(0);
     sca;
 end

@@ -16,7 +16,7 @@ function [data, exit] = learn(window, stim, parameters)
     
     for i = 1:parameters.learningTrials
        Screen('Flip', window);
-       WaitSecs(parameters.learningITI);
+       WaitSecs(exprnd(parameters.learningITI));
     
        % Display the stimulus
        Screen('DrawTexture', window,...
@@ -39,6 +39,9 @@ function [data, exit] = learn(window, stim, parameters)
            elseif keyCode(KbName(parameters.learningNKey))
                keyPressed = true;
                data(i).response = parameters.learningNKey;
+           elseif GetSecs() > start + parameters.learningTimeout
+               data(i).response = NaN;
+               break
            end
        end
        
@@ -59,8 +62,10 @@ function [data, exit] = learn(window, stim, parameters)
        else
            DrawFormattedText(window, 'Inorrect', 'center', 'center', [1, 0, 0]);
        end
+       Screen('Flip', window);
+       WaitSecs(parameters.learningFeedbackTime);
     end
-    
+        
     Screen('Flip', window);
-    WaitSecs(parameters.learningITI);
+    WaitSecs(exprnd(parameters.learningITI));
 end

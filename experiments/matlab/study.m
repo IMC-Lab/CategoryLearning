@@ -16,7 +16,7 @@ function [data, exit] = study(window, stim, parameters)
     
     for i=1:parameters.studyTrials
        Screen('Flip', window);
-       WaitSecs(parameters.learningITI);
+       WaitSecs(exprnd(parameters.studyITI));
     
        % Check for ESC
        [~, pressedVec] = KbQueueCheck();
@@ -43,5 +43,5 @@ function [data, exit] = study(window, stim, parameters)
     
     % Blank screen
     Screen('Flip', window);
-    WaitSecs(parameters.studyITI);
+    WaitSecs(exprnd(parameters.studyITI));
 end

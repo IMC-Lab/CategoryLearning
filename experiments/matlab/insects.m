@@ -8,6 +8,12 @@ DIR = strcat(pwd, '/../../stimuli/insects/images');
 learningTrials = 54;
 studyTrials = 24; % 8 stimuli for each value of the learned feature
 
+% ITI 4, 5.5, 8s
+
+% UNCOMMENT to enable psychtoolbox for BIAC computers
+% addpath('\\Munin\Data\Programs\MATLAB\PsychToolbox\3.0.11');
+% BIACSetupPsychtoolbox;
+% WaitForScanner;
 
 CategoryLearning('features', features,...
                  'learningTrials', learningTrials,...

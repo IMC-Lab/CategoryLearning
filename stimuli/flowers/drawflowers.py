@@ -18,21 +18,20 @@ CENTER_PREFIX = 'middle'
 SEPAL_PREFIX = 'sepal'
 
 # Features of the flowers
-PETAL_STYLES = ['pointed', 'concave', 'round']
-PETAL_COUNTS = [2, 4, 6, 8]
+PETAL_STYLES = ['concave'] # ['pointed', 'concave', 'round']
+PETAL_COUNTS = [4, 6, 8]
 PETAL_COLORS = {'blue':(60, 0, 180),     # encoded in RGB
-                'pink':(190, 0, 125),
                 'yellow':(185, 160, 75),
                 'green':(0, 200, 75)}
-CENTER_SHAPES = ['circle', 'triangle', 'square', 'star']
+CENTER_SHAPES = ['circle', 'triangle', 'square']
 CENTER_COLORS = {'purple':(205, 0, 255),   # encoded in RGB
                  'orange':(255, 40, 15),
-                 'brightgreen':(0, 255, 60),
                  'lightblue':(55, 175, 255)}
-SEPAL_COUNTS = [0, 1, 2, 3]
+SEPAL_COUNTS = [1, 2, 3]
 
 SEPAL_RGB = (0, 0, 0)
 PETAL_RADIUS = 150
+SEPAL_RADIUS = 15
 
 def remove_white(img):
     """Turns all white pixels into transparent pixels"""
@@ -79,7 +78,7 @@ def draw_rotated(background, img, color, angle, radius=PETAL_RADIUS, dx=0, dy=0)
     """Draw img on background rotated about (dx, dy)"""
     draw_centered(background, img.rotate(angle, expand=True), color,
                   dx=dx+radius*math.cos(math.radians(angle)),
-                  dy=dy+radius*math.sin(math.radians(angle)))
+                  dy=dy-radius*math.sin(math.radians(angle)))
 
 def draw_flower(petal_style, petal_color, petal_rgb, petal_num,
                 center_color, center_rgb, center_shape, sepal_num):
@@ -98,7 +97,7 @@ def draw_flower(petal_style, petal_color, petal_rgb, petal_num,
     sepal = component(sepal_num, prefix=SEPAL_PREFIX)
     for angle in range(0, 360, int(360/petal_num)):
         draw_rotated(flower, sepal, SEPAL_RGB, int(angle + 180/petal_num),
-                     radius=-PETAL_RADIUS)
+                     radius=-SEPAL_RADIUS)
     return flower
 
 for petal_style in PETAL_STYLES:

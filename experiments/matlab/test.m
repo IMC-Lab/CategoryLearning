@@ -19,7 +19,7 @@ function [data, exit] = test(window, old_stim, lure_stim, parameters)
     
     for i = 1:length(stim)
        Screen('Flip', window);
-       WaitSecs(parameters.testITI);
+       WaitSecs(exprnd(parameters.testITI));
     
        % Display the stimulus
        Screen('DrawTexture', window,...
@@ -42,6 +42,9 @@ function [data, exit] = test(window, old_stim, lure_stim, parameters)
            elseif keyCode(KbName(parameters.testNewKey))
                keyPressed = true;
                data(i).response = parameters.testNewKey;
+           elseif GetSecs() > start + parameters.testTimeout
+               data(i).response = '';
+               break
            end
        end
        
@@ -57,5 +60,5 @@ function [data, exit] = test(window, old_stim, lure_stim, parameters)
     end
     
     Screen('Flip', window);
-    WaitSecs(parameters.testITI);
+    WaitSecs(exprnd(parameters.testITI));
 end
