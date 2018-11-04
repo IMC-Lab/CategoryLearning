@@ -1,0 +1,60 @@
+<meta charset="utf-8"/>
+<!-- This file is a driver to run the flower and insect portions of experiment5
+     in a random order. Each portion opens a new tab. When that portion is
+     completed, the link for the next portion becomes available.
+ -->
+<style>
+.buttonStart {
+  font-size: 16pt;
+  font-family: Arial, sans-serif;
+}
+</style>
+
+
+<div id="experiment1">
+  <p>This experiment will consist of <span id="numExperiments">0</span> sections. Make sure to leave this tab open, or else you will not be able to reach the later sections of the experiment.</p>
+  <a class="buttonStart" href="#" id="experiment1Link">Click here to start the first section.</a>
+</div>
+<div id="experiment2">
+  <p>You've completed the first experiment!</p>
+  <a class="buttonStart" href="#" id="experiment2Link">Click here to start the second section.</a>
+</div>
+<div id="done">You've completed the entire experiment. Thank you for participating!</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script src="category_learning.mjs", type="module"></script>
+<script type="module">
+import {HandleExperimentEnd} from "./category_learning.mjs"
+
+$('#experiment2').hide();
+$('#done').hide();
+
+var flowerFile = 'experiment5_flower.html';
+var insectFile = 'experiment5_insect.html';
+var numExperiments = 2;
+$('#numExperiments').text(numExperiments);
+window.localStorage.setItem('numExperiments', numExperiments);
+window.localStorage.setItem('curExperiment', 1);
+
+// functions to open the experiments in a new tab
+function loadFlowerExperiment() {
+  var newTab = window.open(flowerFile, '_blank');
+}
+
+function loadInsectExperiment() {
+  window.open(insectFile, '_blank');
+}
+
+var flowersFirst = Math.random() < 0.5;
+if (flowersFirst) {
+  document.getElementById('experiment1Link').onclick = loadFlowerExperiment;
+  document.getElementById('experiment2Link').onclick = loadInsectExperiment;
+} else {
+  document.getElementById('experiment1Link').onclick = loadInsectExperiment;
+  document.getElementById('experiment2Link').onclick = loadFlowerExperiment;
+}
+
+// Show the link for exp2 when exp1 completes
+$(window).on('storage', HandleExperimentEnd);
+</script>
