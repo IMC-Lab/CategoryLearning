@@ -348,34 +348,34 @@ function ShowDone(itemsForTest) {
 function GetCachedNumber(key, defaultValue) {
   var numStr = window.localStorage.getItem(key);
   var num = defaultValue;
-  if (numStr != null && typeof numStr !== 'undefined')
+  if (numStr)
     num = parseInt(numStr, 10);
   return num;
 }
 
-function HandleExperimentEnd(event) {
-   if (event.originalEvent.key == 'curExperiment') {
-     // hide the links for all experiments
-     let totalExps = GetCachedNumber('numExperiments', 1);
-     for (var i = 1; i <= totalExps; ++i) {
-       $('#experiment' + i).hide();
-     }
+function ShowNextExperiment() {
+  let totalExps = GetCachedNumber('numExperiments', 1);
+  let curExp = GetCachedNumber('curExperiment', 1);
+  // hide the links for all experiments
+  for (var i = 1; i <= totalExps; ++i) {
+    $('#experiment' + i).hide();
+  }
 
-     // show the link for the current experiment
-     if (event.originalEvent.newValue <= totalExps) {
-       $('#experiment' + event.originalEvent.newValue).show();
-     } else {
-       $('#done').show();
-     }
-   }
- }
+  // show the link for the current experiment
+  if (curExp <= totalExps) {
+    $('#experiment' + curExp).show();
+  } else {
+    $('#done').show();
+  }
+
+}
 
 function PromptID(event) {
   let curID = window.localStorage.getItem('curID');
-  if (curID == null) {
+  while (!curID) {
     curID = (IsOnTurk())? GetAssignmentId() : prompt('Please enter your mTurk ID:','id');
-    window.localStorage.setItem('curID', curID);  // cache the ID in localStorage
   }
+  window.localStorage.setItem('curID', curID);  // cache the ID in localStorage
 }
 
 function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
@@ -385,6 +385,7 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
   $('#saving').show();
 
   let experimentNumber = GetCachedNumber('curExperiment', 1);
+  console.log('expNum: ' + experimentNumber);
   Save("experimentNumber", experimentNumber);
   Save("featuredLearned", featureLearned);
   Save("featureFoil", featureFoil);
@@ -411,8 +412,8 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
   Save("screenHeight", screen.height);
 
   var newDate = new Date();
-  var curID = GetCachedNumber('curID', null);
-  if (curID == null)
+  var curID = window.localStorage.getItem('curID');
+  if (!curID)
     curID = PromptID();
 
   var d = {
