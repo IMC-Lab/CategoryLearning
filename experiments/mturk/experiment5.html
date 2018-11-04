@@ -2,6 +2,9 @@
 <!-- This file is a driver to run the flower and insect portions of experiment5
      in a random order. Each portion opens a new tab. When that portion is
      completed, the link for the next portion becomes available.
+
+     login- imagination-study@duke.edu
+     pass- Imagination2017
  -->
 <style>
 .buttonStart {
@@ -19,13 +22,23 @@
   <p>You've completed the first experiment!</p>
   <a class="buttonStart" href="#" id="experiment2Link">Click here to start the second section.</a>
 </div>
-<div id="done">You've completed the entire experiment. Thank you for participating!</div>
+<div id="done">
+  <p>You've completed the entire experiment.</p>
+  <p>Here is your completion code: eranait9t_me0e3u9t0qdd9.</p>
+  <p>Thank you for participating!</p>
+</div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script src="http://web-mir.ccn.duke.edu/flower/TimTurkTools.js"></script>
 <script src="category_learning.js"></script>
 <script>
 $('#experiment2').hide();
 $('#done').hide();
+
+// Get the user's mTurk ID
+window.localStorage.removeItem('curID');
+PromptID();
+window.addEventListener('focus', PromptID);
 
 var flowerFile = './experiment5_flower.html';
 var insectFile = './experiment5_insect.html';

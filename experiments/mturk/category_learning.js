@@ -344,10 +344,19 @@ function ShowDone(itemsForTest) {
   $('#done').show();
 }
 
+// A helper functino to parse numbers in localStorage
+function GetCachedNumber(key, defaultValue) {
+  var numStr = window.localStorage.getItem(key);
+  var num = defaultValue;
+  if (numStr != null && typeof numStr !== 'undefined')
+    num = parseInt(numStr, 10);
+  return num;
+}
+
 function HandleExperimentEnd(event) {
    if (event.originalEvent.key == 'curExperiment') {
      // hide the links for all experiments
-     let totalExps = parseInt(window.localStorage.getItem('numExperiments'), 10);
+     let totalExps = GetCachedNumber('numExperiments', 1);
      for (var i = 1; i <= totalExps; ++i) {
        $('#experiment' + i).hide();
      }
@@ -361,19 +370,22 @@ function HandleExperimentEnd(event) {
    }
  }
 
+function PromptID(event) {
+  let curID = window.localStorage.getItem('curID');
+  if (curID == null) {
+    curID = (IsOnTurk())? GetAssignmentId() : prompt('Please enter your mTurk ID:','id');
+    window.localStorage.setItem('curID', curID);  // cache the ID in localStorage
+  }
+}
+
 function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
                   valueFoil, itemsForLearning, orderLearning,
                   itemsForStudy, orderStudy, itemsForTest, orderTest) {
   $('#done').hide();
   $('#saving').show();
 
-  var experimentNumber = window.localStorage.getItem('curExperiment');
-  if (typeof experimentNumber !== 'undefined')
-    var expNum = parseInt(experimentNumber, 10);
-  else
-    var expNum = 1;
-
-  Save("experimentNumber", expNum);
+  let experimentNumber = GetCachedNumber('curExperiment', 1);
+  Save("experimentNumber", experimentNumber);
   Save("featuredLearned", featureLearned);
   Save("featureFoil", featureFoil);
   Save("valueLearned", valueLearned);
@@ -399,7 +411,10 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
   Save("screenHeight", screen.height);
 
   var newDate = new Date();
-  var curID = (IsOnTurk())? GetAssignmentId() : prompt("Well done! You have completed this section of the experiment. Enter your mTurk ID:", "id");
+  var curID = GetCachedNumber('curID', null);
+  if (curID == null)
+    curID = PromptID();
+
   var d = {
     "curID": curID,
     "curTime": newDate.today() + " @ " + newDate.timeNow(),
@@ -409,7 +424,7 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
     "screenWidth": screen.width,
     "screenHeight": screen.height,
     "comments": $('#comments').val(),
-    "experimentNumber": expNum,
+    "experimentNumber": experimentNumber,
     "featuredLearned": featureLearned,
     "featureFoil": featureFoil,
     "valueLearned": valueLearned,
@@ -423,7 +438,7 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
   };
 
   SendToServer(curID, d, experimentName);
-  window.localStorage.setItem('curExperiment', expNum+1);
+  window.localStorage.setItem('curExperiment', experimentNumber+1);
   close();
 }
 
