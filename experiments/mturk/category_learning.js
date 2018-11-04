@@ -1,10 +1,10 @@
 /*
  * Setup the html fields and links to run the experiment
  */
-export function StartExperiment(experimentName, featureLearned, valueLearned,
-                                featureFoil, valueFoil, itemsForLearning,
-                                orderLearning, itemsForStudy, orderStudy,
-                                itemsForTest, orderTest) {
+function StartExperiment(experimentName, featureLearned, valueLearned,
+                        featureFoil, valueFoil, itemsForLearning,
+                        orderLearning, itemsForStudy, orderStudy,
+                        itemsForTest, orderTest) {
   $('#numLearning').text(itemsForLearning.length);
   $('#numStudy').text(itemsForStudy.length);
   $('#numTest').text(itemsForTest.length);
@@ -60,8 +60,8 @@ function GetObject(values, featureLearned, valueLearned,
   }
 
   /* If it does match an object we want to avoid, recurse to generate a new object: */
-  return (overlaps)? GetObject(values, featureLearned, featureFoil,
-                              valueLearned, valueFoil, avoidObjectsList) : obj;
+  return (overlaps)? GetObject(values, featureLearned, valueLearned,
+                               featureFoil, valueFoil, avoidObjectsList) : obj;
 }
 
 /*
@@ -96,8 +96,7 @@ function GetObjects(count, values, featureLearned, valueLearned,
 
       for (var k=0; k<n; k++) {
         var obj = GetObject(values, featureLearned, values[featureLearned][i],
-                            featureFoil, values[featureFoil][j],
-                            [items]);
+                            featureFoil, values[featureFoil][j], [items]);
         var curItem = {'object': obj,
                        'filename': GetFilename(obj),
                        'isTarget': isTarget,
@@ -128,8 +127,8 @@ function GetObjects(count, values, featureLearned, valueLearned,
 
 
 /* Create the set of objects to show in the learning phase */
-export function CreateLearningList(n, pLearned, pFoil, values, featureLearned,
-                                   valueLearned, featureFoil, valueFoil, GetFilename) {
+function CreateLearningList(n, pLearned, pFoil, values, featureLearned,
+                            valueLearned, featureFoil, valueFoil, GetFilename) {
   var [objects, imageHTML] = GetObjects(n, values, featureLearned, valueLearned,
                                         featureFoil, valueFoil, GetFilename, 'learn',
                                         pLearned, pFoil);
@@ -138,8 +137,8 @@ export function CreateLearningList(n, pLearned, pFoil, values, featureLearned,
 }
 
 /* Create the set of objects to show in the study phase */
-export function CreateStudyList(n, pLearned, pFoil, values, featureLearned,
-                                valueLearned, featureFoil, valueFoil, GetFilename) {
+function CreateStudyList(n, pLearned, pFoil, values, featureLearned,
+                         valueLearned, featureFoil, valueFoil, GetFilename) {
   var [objects, imageHTML] = GetObjects(n, values, featureLearned, valueLearned,
                                         featureFoil, valueFoil, GetFilename, 'study',
                                         pLearned, pFoil);
@@ -148,8 +147,8 @@ export function CreateStudyList(n, pLearned, pFoil, values, featureLearned,
 }
 
 /* Create the set of objects to show in the test phase */
-export function CreateTestList(nTest, itemsForStudy, pLearned, pFoil, values, featureLearned,
-                               valueLearned, featureFoil, valueFoil, GetFilename) {
+function CreateTestList(nTest, itemsForStudy, pLearned, pFoil, values, featureLearned,
+                        valueLearned, featureFoil, valueFoil, GetFilename) {
   var nLures = nTest - itemsForStudy.length;
   var [objects, imageHTML] = GetObjects(nLures, values, featureLearned, valueLearned,
                                         featureFoil, valueFoil, GetFilename, 'test',
@@ -345,7 +344,7 @@ function ShowDone(itemsForTest) {
   $('#done').show();
 }
 
-export function HandleExperimentEnd(event) {
+function HandleExperimentEnd(event) {
    if (event.originalEvent.key == 'curExperiment') {
      // hide the links for all experiments
      let totalExps = parseInt(window.localStorage.getItem('numExperiments'), 10);

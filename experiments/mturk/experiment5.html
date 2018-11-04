@@ -21,17 +21,14 @@
 </div>
 <div id="done">You've completed the entire experiment. Thank you for participating!</div>
 
-
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-<script src="category_learning.mjs", type="module"></script>
-<script type="module">
-import {HandleExperimentEnd} from "./category_learning.mjs"
-
+<script src="category_learning.js"></script>
+<script>
 $('#experiment2').hide();
 $('#done').hide();
 
-var flowerFile = 'experiment5_flower.html';
-var insectFile = 'experiment5_insect.html';
+var flowerFile = './experiment5_flower.html';
+var insectFile = './experiment5_insect.html';
 var numExperiments = 2;
 $('#numExperiments').text(numExperiments);
 window.localStorage.setItem('numExperiments', numExperiments);
