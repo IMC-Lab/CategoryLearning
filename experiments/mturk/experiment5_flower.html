@@ -217,11 +217,12 @@ console.log('pFoilTest: ' + pFoilTest);
 var itemsForLearning = CreateLearningList(nLearning, pLearnedLearning, pFoilLearning,
                                           values, featureLearned, valueLearned,
                                           featureFoil, valueFoil, GetFilename);
-var itemsForStudy = CreateStudyList(nStudy, pLearnedStudy, pFoilStudy,
+var itemsForStudy = CreateStudyList(nStudy, itemsForLearning, pLearnedStudy, pFoilStudy,
                                     values, featureLearned, valueLearned,
                                     featureFoil, valueFoil, GetFilename);
-var itemsForTest = CreateTestList(nTest, itemsForStudy, pLearnedTest, pFoilTest,
-                                  values, featureLearned, valueLearned,
+var itemsForTest = CreateTestList(nTest, itemsForLearning, itemsForStudy,
+                                  pLearnedTest, pFoilTest, values,
+                                  featureLearned, valueLearned,
                                   featureFoil, valueFoil, GetFilename);
 
 var orderLearning = RandomOrder(nLearning);
