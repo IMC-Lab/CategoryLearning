@@ -455,20 +455,20 @@ function SendToServer(id, curData, experimentName) {
     'curData': JSON.stringify(curData)
   };
 
-  $.post("http://web-mir.ccn.duke.edu/flower/save.php",
-    dataToServer,
-    function(data) {
-      if (IsOnTurk()) {
-        document.forms[0].submit();
-      } else {
-        $('#saving').hide();
-      }
-    }
-  ).fail(function(data) {
-    if (IsOnTurk()) {
-      document.forms[0].submit();
-    } else {
-      $('#saving').hide();
-    }
-  });
+  $.when($.post("http://web-mir.ccn.duke.edu/flower/save.php",
+                dataToServer,
+                function(data) {
+                  if (IsOnTurk()) {
+                    document.forms[0].submit();
+                  } else {
+                    $('#saving').hide();
+                  }
+                }
+              ).fail(function(data) {
+                if (IsOnTurk()) {
+                  document.forms[0].submit();
+                } else {
+                  $('#saving').hide();
+                }
+              })).then(function () {close();});
 }
