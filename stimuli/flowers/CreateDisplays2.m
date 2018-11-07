@@ -15,12 +15,12 @@ rct = CenterRect([0 0 200 100], screenRct);
 
 sepalNums = 1:3;
 petalNums = [4 6 8];
-petalColorsF = {'blue', 'yellow', 'green'};
-centerShapesF = {'square', 'tri', 'circle'};
-centerColorsF = {'purple', 'orange','lightblue'};
+petalColorsF = {'blue', 'pink', 'yellow', 'green'};
+centerShapesF = {'square', 'tri', 'circle', 'star'};
+centerColorsF = {'purple', 'orange','lightblue','brightgreen'};
 
-petalColorList = [0 180 270];
-centerColorList = [45 135 315];
+petalColorList = [0 90 180 270];
+centerColorList = [45 135 225 315];
 
 
 for petalShape = 1:length(petals)

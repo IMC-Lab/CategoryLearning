@@ -122,7 +122,7 @@ bevlonias, 30 of neither.
 <p>As you can see from these examples, the flowers in this experiment will differ in a number of ways: (1) the number of petals, (2) the color of the petals, (3) the shape of the petals, (4) the shape of their center, (5) the color of their center, (6) the shape of the hole inside their center, and (7) the number of sepals (the black ovals between the petals). One of these features will determine what is and is not an avlonia.</p>
 <p>In the first task, you'll be shown a single flower, and then be asked if it is or not an avlonia (press 'y' if yes, 'n' if no). At first, you'll have to guess. Eventually, though, you'll figure out what makes something an avlonia. You will have <span id="numLearning">0</span> flowers to judge. Do your best to determine what makes something an avlonia.</p><br>
 <p><a href="#" class="buttonStart" id="startLearning">I'm Ready to Start Part 1</a><span class="buttonStart" id="loading">Loading images... Please wait.</span></p><br>
-<p><small>By answering the following questions, you are participating in a study being performed by psychologists in the Harvard Department of Psychology. If you have questions about this research, please contact Timothy Brady at tbrady@wjh.harvard.edu. Your participation in this research is voluntary. You may decline to answer any or all of the following questions. You may decline further participation, at any time, without adverse consequences. Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.</small></p>
+<p><small>By answering the following questions, you are participating in a study being performed by psychologists in the Duke Department of Psychology and Neuroscience. If you have questions about this research, please contact Felipe De Brigard at felipe.debrigard@duke.edu. Your participation in this research is voluntary. You may decline to answer any or all of the following questions. You may decline further participation, at any time, without adverse consequences. Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.</small></p>
 </div>
 
 <div class="instrucBox" id="studyInstruc" style="padding:5px; text-align:left">
@@ -160,33 +160,16 @@ bevlonias, 30 of neither.
 <script src="category_learning.js"></script>
 <script>
 /* Define the values for each feature */
-var values = {'numPetal':['4', '6', '8'],
+let values = {'numPetal':['4', '6', '8'],
               'petalColor':['blue', 'green', 'yellow'],
-              'centerShape':['square', 'tri', 'circle'],
+              'centerShape':['circle', 'tri', 'square'],
               'centerColor':['brightgreen', 'orange', 'purple'],
               'numSepal':['1', '2', '3']};
 
-/* List of feature names */
-var features = Object.keys(values);
-
-/* Define the learned and foil categories
-   - these should be fetched from a server */
-var featureLearned = features[Math.floor(Math.random()*features.length)];
-var featureFoil = features[Math.floor(Math.random()*features.length)];
-while (featureLearned == featureFoil) {
-  featureFoil = features[Math.floor(Math.random()*features.length)];
-}
-var valueLearned = values[featureLearned][Math.floor(Math.random()*values[featureLearned].length)];
-var valueFoil = values[featureFoil][Math.floor(Math.random()*values[featureFoil].length)];
-
-/* For now, output the learned features */
-console.log('learned feature: ' + featureLearned);
-console.log('learned value: ' + valueLearned);
-console.log('unlearned feature: ' + featureFoil);
-console.log('unlearned value: ' + valueFoil);
+let assignmentFilename = 'experiment5_flower_assignment.json'
 
 /* Get filename for an object */
-function GetFilename(obj) {
+function GetFlowerFilename(obj) {
   return ("http://web-mir.ccn.duke.edu/flower/images/flowers/stim_"
     + obj.numPetal + "_" + obj.petalColor + "_"
     + obj.centerShape + "_" + obj.centerColor
@@ -194,43 +177,21 @@ function GetFilename(obj) {
 }
 
 /* Parameters for stimuli */
-var nLearning = 54;
-var pLearnedLearning = 1/3.0;
-var pFoilLearning = 1/3.0;
+let nLearning = 54;
+let pLearnedLearning = 1/3.0;
+let pFoilLearning = 1/3.0;
 
-var nStudy = 18;
-var pLearnedStudy = 1/3.0;
-var pFoilStudy = 1/3.0;
+let nStudy = 18;
+let pLearnedStudy = 1/3.0;
+let pFoilStudy = 1/3.0;
 
-var nTest = 54;
-var pLearnedTest = 1/3.0;  // p for lures, not old items
-var pFoilTest = 1/3.0;
-
-console.log('pLearnedLearning: ' + pLearnedLearning);
-console.log('pFoilLearning: ' + pFoilLearning);
-console.log('pLearnedStudy: ' + pLearnedStudy);
-console.log('pFoilStudy: ' + pFoilStudy);
-console.log('pLearnedTest: ' + pLearnedTest);
-console.log('pFoilTest: ' + pFoilTest);
-
-/* Build the lists of items to use for learning, study, and test */
-var itemsForLearning = CreateLearningList(nLearning, pLearnedLearning, pFoilLearning,
-                                          values, featureLearned, valueLearned,
-                                          featureFoil, valueFoil, GetFilename);
-var itemsForStudy = CreateStudyList(nStudy, itemsForLearning, pLearnedStudy, pFoilStudy,
-                                    values, featureLearned, valueLearned,
-                                    featureFoil, valueFoil, GetFilename);
-var itemsForTest = CreateTestList(nTest, itemsForLearning, itemsForStudy,
-                                  pLearnedTest, pFoilTest, values,
-                                  featureLearned, valueLearned,
-                                  featureFoil, valueFoil, GetFilename);
-
-var orderLearning = RandomOrder(nLearning);
-var orderStudy = RandomOrder(nStudy);
-var orderTest = RandomOrder(nTest);
+let nTest = 54;
+let pLearnedTest = 1/3.0;  // p for lures, not old items
+let pFoilTest = 1/3.0;
 
 /* On page load */
-$(StartExperiment('flower_E5', featureLearned, valueLearned, featureFoil, valueFoil,
-                  itemsForLearning, orderLearning, itemsForStudy,
-                  orderStudy, itemsForTest, orderTest));
+$(StartExperiment('flower_E5', assignmentFilename, GetFlowerFilename, values,
+                  nLearning, pLearnedLearning, pFoilLearning,
+                  nStudy, pLearnedStudy, pFoilStudy,
+                  nTest, pLearnedTest, pFoilTest));
 </script>

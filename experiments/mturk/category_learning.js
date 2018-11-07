@@ -1,28 +1,107 @@
+// Given this participant's feature assignment, get the next one.
+function nextAssignment(oldAssignment, values) {
+  let newAssignment = Object.assign({}, oldAssignment);
+  let features = Object.keys(values);
+
+  // try incrementing the value
+  newAssignment.valueLearned = newAssignment.valueLearned + 1;
+
+  // if we reached the last value for the feature than increment the feature
+  if (newAssignment.valueLearned >= values[features[newAssignment.featureLearned]].length) {
+    newAssignment.valueLearned = 0;
+    newAssignment.featureLearned = newAssignment.featureLearned + 1;
+  }
+
+  // if we reached the last feature than reset to 0
+  if (newAssignment.featureLearned >= features.length) {
+    newAssignment.featureLearned = 0;
+  }
+  return newAssignment;
+}
+
 /*
  * Setup the html fields and links to run the experiment
  */
-function StartExperiment(experimentName, featureLearned, valueLearned,
-                        featureFoil, valueFoil, itemsForLearning,
-                        orderLearning, itemsForStudy, orderStudy,
-                        itemsForTest, orderTest) {
-  $('#numLearning').text(itemsForLearning.length);
-  $('#numStudy').text(itemsForStudy.length);
-  $('#numTest').text(itemsForTest.length);
+function StartExperiment(experimentName, assignmentFilename, GetFilename, values,
+                         nLearning, pLearnedLearning, pFoilLearning,
+                         nStudy, pLearnedStudy, pFoilStudy,
+                         nTest, pLearnedTest, pFoilTest) {
+  $('#numLearning').text(nLearning);
+  $('#numStudy').text(nStudy);
+  $('#numTest').text(nTest);
   $('#submitButton').hide();
   $('#loading').hide();
 
-  var stimuliType = experimentName.split("_")[0];
-  document.getElementById('startLearning').onclick
-    = function(){StartLearning(itemsForLearning, orderLearning);};
-  document.getElementById('startStudy').onclick
-    = function(){StartStudy(stimuliType, itemsForStudy, orderStudy);};
-  document.getElementById('startTest').onclick
-    = function(){StartTest(stimuliType, itemsForTest, orderTest);};
-  document.getElementById('timSubmit').onclick
-    = function(){SaveData(experimentName, featureLearned, valueLearned,
-                    featureFoil, valueFoil, itemsForLearning, orderLearning,
-                    itemsForStudy, orderStudy, itemsForTest, orderTest);};
-  $('#startLearning').show();
+  // Fetch the learned category assignment from the server
+  $.getJSON('http://web-mir.ccn.duke.edu/flower/' + assignmentFilename)
+    .fail(function (assignment, textStatus, error) {
+      console.error("getJSON failed, status: " + textStatus + ", error: " + error);
+    }).done(function (assignment) {
+      // Update the
+      $.post('http://web-mir.ccn.duke.edu/flower/save_json.php',
+             {'filename':assignmentFilename,
+              'data':JSON.stringify(nextAssignment(assignment, values))})
+        .fail(function (d, textStatus, error) {
+          console.error("POST json failed, status: " + textStatus + ", error: " + error);
+        });
+
+      /* List of feature names */
+      let features = Object.keys(values);
+      // Set the learned category to the fetched feature and value
+      let featureLearned = features[assignment.featureLearned];
+      let valueLearned = values[featureLearned][assignment.valueLearned];
+
+      // Set the foil category randomly
+      let featureFoil = features[Math.floor(Math.random()*features.length)];
+      while (featureLearned == featureFoil) {
+        featureFoil = features[Math.floor(Math.random()*features.length)];
+      }
+      let valueFoil = values[featureFoil][Math.floor(Math.random()*values[featureFoil].length)];
+
+      /* For now, output the learned features */
+      console.log('learned feature: ' + featureLearned);
+      console.log('learned value: ' + valueLearned);
+      console.log('unlearned feature: ' + featureFoil);
+      console.log('unlearned value: ' + valueFoil);
+
+
+      /* Build the lists of items to use for learning, study, and test */
+      let itemsForLearning = CreateLearningList(nLearning, pLearnedLearning, pFoilLearning,
+                                                values, featureLearned, valueLearned,
+                                                featureFoil, valueFoil, GetFilename);
+      let orderLearning = RandomOrder(nLearning);
+      let itemsForStudy = CreateStudyList(nStudy, itemsForLearning, pLearnedStudy, pFoilStudy,
+                                          values, featureLearned, valueLearned,
+                                          featureFoil, valueFoil, GetFilename);
+      let orderStudy = RandomOrder(nStudy);
+      let itemsForTest = CreateTestList(nTest, itemsForLearning, itemsForStudy,
+                                        pLearnedTest, pFoilTest, values,
+                                        featureLearned, valueLearned,
+                                        featureFoil, valueFoil, GetFilename);
+      let orderTest = RandomOrder(nTest);
+
+      /* Set up button presses to their linked function */
+      let stimuliType = experimentName.split("_")[0];
+      document.getElementById('startLearning').onclick
+        = function(){StartLearning(itemsForLearning, orderLearning);};
+      document.getElementById('startStudy').onclick
+        = function(){StartStudy(stimuliType, itemsForStudy, orderStudy);};
+      document.getElementById('startTest').onclick
+        = function(){StartTest(stimuliType, itemsForTest, orderTest);};
+      document.getElementById('timSubmit').onclick
+        = async function() {
+            await SaveData(experimentName, featureLearned, valueLearned,
+                           featureFoil, valueFoil, itemsForLearning, orderLearning,
+                           itemsForStudy, orderStudy, itemsForTest, orderTest);
+            // try to close the window after the data is saved.
+            try { close(); } catch(error) {}
+          };
+
+      $('#startLearning').show();
+
+  });
+
+
 }
 
 /* Get an object that is either a member of the
@@ -37,13 +116,13 @@ function StartExperiment(experimentName, featureLearned, valueLearned,
    */
 function GetObject(values, featureLearned, valueLearned,
                    featureFoil, valueFoil, avoidObjectsList) {
-  var avoidObjects = new Array();
-  for (var i=0; i<avoidObjectsList.length; i++) {
+  let avoidObjects = new Array();
+  for (let i=0; i<avoidObjectsList.length; i++) {
     avoidObjects.push.apply(avoidObjects, avoidObjectsList[i]);
   }
 
-  var obj = {};
-  for (var feature in values) {
+  let obj = {};
+  for (let feature in values) {
     obj[feature] = values[feature][Math.floor(Math.random()*3)];
   }
 
@@ -51,8 +130,8 @@ function GetObject(values, featureLearned, valueLearned,
   obj[featureFoil] = valueFoil;
 
   /* Check to see if it matches anything we are supposed to avoid */
-  var overlaps = false;
-  for (var i=0; i<avoidObjects.length; i++) {
+  let overlaps = false;
+  for (let i=0; i<avoidObjects.length; i++) {
     if (JSON.stringify(avoidObjects[i].object)===JSON.stringify(obj)) {
       overlaps = true;
       break;
@@ -74,30 +153,31 @@ function GetObject(values, featureLearned, valueLearned,
  */
 function GetObjects(count, values, featureLearned, valueLearned, featureFoil,
                     valueFoil, GetFilename, stage, pLearned, pFoil, avoidObjectsList) {
-  var imageHTML = '';
-  var index = 0;
-  var items = [];
-  var remainderItems = [];
-  var pNotLearned = (1 - pLearned) / (values[featureLearned].length - 1);
-  var pNotFoil = (1 - pFoil) / (values[featureFoil].length - 1);
+  let imageHTML = '';
+  let index = 0;
+  let items = [];
+  let remainderItems = [];
+  let pNotLearned = (1 - pLearned) / (values[featureLearned].length - 1);
+  let pNotFoil = (1 - pFoil) / (values[featureFoil].length - 1);
 
-  for (var i=0; i < values[featureLearned].length; i++) {
-    for (var j=0; j < values[featureFoil].length; j++) {
-      var isTarget = values[featureLearned][i] == valueLearned;
-      var isFoil = values[featureFoil][j] == valueFoil;
+  for (let i=0; i < values[featureLearned].length; i++) {
+    for (let j=0; j < values[featureFoil].length; j++) {
+      let isTarget = values[featureLearned][i] == valueLearned;
+      let isFoil = values[featureFoil][j] == valueFoil;
+      let n;
       if (isTarget && isFoil)
-        var n = pLearned * pFoil * count;
+        n = pLearned * pFoil * count;
       else if (isTarget)
-        var n = pLearned * pNotFoil * count;
+        n = pLearned * pNotFoil * count;
       else if (isFoil)
-        var n = pNotLearned * pFoil * count;
+        n = pNotLearned * pFoil * count;
       else
-        var n = pNotLearned * pNotFoil * count;
+        n = pNotLearned * pNotFoil * count;
 
-      for (var k=0; k<n; k++) {
-        var obj = GetObject(values, featureLearned, values[featureLearned][i],
+      for (let k=0; k<n; k++) {
+        let obj = GetObject(values, featureLearned, values[featureLearned][i],
                             featureFoil, values[featureFoil][j], [...avoidObjectsList, ...items]);
-        var curItem = {'object': obj,
+        let curItem = {'object': obj,
                        'filename': GetFilename(obj),
                        'isTarget': isTarget,
                        'isFoil': isFoil,
@@ -115,7 +195,7 @@ function GetObjects(count, values, featureLearned, valueLearned, featureFoil,
 
   // add in the appropriate amount of remainder items
   while (items.length < count) {
-    var curItem = remainderItems.splice(Math.floor(Math.random()*remainderItems.length), 1)[0];
+    let curItem = remainderItems.splice(Math.floor(Math.random()*remainderItems.length), 1)[0];
     curItem.id = stage + index;
     index++;
     items.push(curItem);
@@ -129,7 +209,7 @@ function GetObjects(count, values, featureLearned, valueLearned, featureFoil,
 /* Create the set of objects to show in the learning phase */
 function CreateLearningList(n, pLearned, pFoil, values, featureLearned,
                             valueLearned, featureFoil, valueFoil, GetFilename) {
-  var [objects, imageHTML] = GetObjects(n, values, featureLearned, valueLearned,
+  let [objects, imageHTML] = GetObjects(n, values, featureLearned, valueLearned,
                                         featureFoil, valueFoil, GetFilename, 'learn',
                                         pLearned, pFoil, []);
   $('#imagesForLearning').html(imageHTML);
@@ -139,7 +219,7 @@ function CreateLearningList(n, pLearned, pFoil, values, featureLearned,
 /* Create the set of objects to show in the study phase */
 function CreateStudyList(n, itemsForLearning, pLearned, pFoil, values, featureLearned,
                          valueLearned, featureFoil, valueFoil, GetFilename) {
-  var [objects, imageHTML] = GetObjects(n, values, featureLearned, valueLearned,
+  let [objects, imageHTML] = GetObjects(n, values, featureLearned, valueLearned,
                                         featureFoil, valueFoil, GetFilename, 'study',
                                         pLearned, pFoil, [...itemsForLearning]);
   $('#imagesForStudy').html(imageHTML);
@@ -150,18 +230,18 @@ function CreateStudyList(n, itemsForLearning, pLearned, pFoil, values, featureLe
 function CreateTestList(nTest, itemsForLearning, itemsForStudy, pLearned, pFoil,
                         values, featureLearned, valueLearned, featureFoil,
                         valueFoil, GetFilename) {
-  var nLures = nTest - itemsForStudy.length;
-  var [objects, imageHTML] = GetObjects(nLures, values, featureLearned, valueLearned,
+  let nLures = nTest - itemsForStudy.length;
+  let [objects, imageHTML] = GetObjects(nLures, values, featureLearned, valueLearned,
                                         featureFoil, valueFoil, GetFilename, 'test',
                                         pLearned, pFoil, [...itemsForLearning, ...itemsForStudy]);
   // set isOld to false
-  for (var i=0; i<nLures; i++) {
+  for (let i=0; i<nLures; i++) {
     objects[i].isOld = false;
   }
 
-  for (var i=0; i<itemsForStudy.length; i++) {
-    var curItemObj = itemsForStudy[i];
-    var curItem = {'object': curItemObj.object,
+  for (let i=0; i<itemsForStudy.length; i++) {
+    let curItemObj = itemsForStudy[i];
+    let curItem = {'object': curItemObj.object,
                    'filename': curItemObj.filename,
                    'isTarget': curItemObj.isTarget,
                    'isFoil': curItemObj.isFoil,
@@ -191,7 +271,7 @@ function StartLearning(itemsForLearning, orderLearning) {
 function NextTrialLearning(curTrial, itemsForLearning, orderLearning) {
   $('#trialCnt').text("Trial " + (curTrial+1) + " of " + itemsForLearning.length);
   $('#' + itemsForLearning[orderLearning[curTrial]].id).show();
-  var startTrialTime = (new Date()).getTime();
+  let startTrialTime = (new Date()).getTime();
   setTimeout(function() {
     $(document).bind('keyup', 'y', function(){PressedYesLearning(curTrial, itemsForLearning, orderLearning, startTrialTime);});
     $(document).bind('keyup', 'n', function(){PressedNoLearning(curTrial, itemsForLearning, orderLearning, startTrialTime);});
@@ -199,17 +279,17 @@ function NextTrialLearning(curTrial, itemsForLearning, orderLearning) {
 }
 
 function PressedYesLearning(curTrial, itemsForLearning, orderLearning, startTrialTime) {
-  var wasCorrect =  itemsForLearning[orderLearning[curTrial]].isTarget;
+  let wasCorrect =  itemsForLearning[orderLearning[curTrial]].isTarget;
   ResponseLearning(wasCorrect, curTrial, itemsForLearning, orderLearning, startTrialTime);
 }
 
 function PressedNoLearning(curTrial, itemsForLearning, orderLearning, startTrialTime) {
-  var wasCorrect =  !itemsForLearning[orderLearning[curTrial]].isTarget;
+  let wasCorrect =  !itemsForLearning[orderLearning[curTrial]].isTarget;
   ResponseLearning(wasCorrect, curTrial, itemsForLearning, orderLearning, startTrialTime);
 }
 
 function ResponseLearning(correct, curTrial, itemsForLearning, orderLearning, startTrialTime) {
-  var curTrialItem = itemsForLearning[orderLearning[curTrial]];
+  let curTrialItem = itemsForLearning[orderLearning[curTrial]];
   $('#' + curTrialItem.id).hide();
   curTrialItem['wasCorrect'] = correct;
   curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
@@ -256,7 +336,7 @@ function StartStudy(stimuliType, itemsForStudy, orderStudy) {
 }
 
 function NextTrialStudy(curTrial, stimuliType, itemsForStudy, orderStudy) {
-  var curID = '#' + itemsForStudy[orderStudy[curTrial]].id;
+  let curID = '#' + itemsForStudy[orderStudy[curTrial]].id;
   $('#trialCnt').text(stimuliType + " " + (curTrial+1) + " of " + itemsForStudy.length);
   $(curID).show();
   setTimeout(function() {
@@ -294,7 +374,7 @@ function NextTrialTest(curTrial, itemsForTest, orderTest) {
   $('.categorizeImage').hide();
   $('#trialCnt').text("Trial " + (curTrial+1) + " of " + itemsForTest.length);
   $('#' + itemsForTest[orderTest[curTrial]].id).show();
-  var startTrialTime = (new Date()).getTime();
+  let startTrialTime = (new Date()).getTime();
   setTimeout(function() {
     $(document).bind('keyup', 'y', function(){PressedYesTest(curTrial, itemsForTest, orderTest, startTrialTime);});
     $(document).bind('keyup', 'n', function(){PressedNoTest(curTrial, itemsForTest, orderTest, startTrialTime);});
@@ -302,17 +382,17 @@ function NextTrialTest(curTrial, itemsForTest, orderTest) {
 }
 
 function PressedYesTest(curTrial, itemsForTest, orderTest, startTrialTime) {
-  var wasCorrect = itemsForTest[orderTest[curTrial]].isOld;
+  let wasCorrect = itemsForTest[orderTest[curTrial]].isOld;
   ResponseTest(wasCorrect, curTrial, itemsForTest, orderTest, startTrialTime);
 }
 
 function PressedNoTest(curTrial, itemsForTest, orderTest, startTrialTime) {
-  var wasCorrect = !itemsForTest[orderTest[curTrial]].isOld;
+  let wasCorrect = !itemsForTest[orderTest[curTrial]].isOld;
   ResponseTest(wasCorrect, curTrial, itemsForTest, orderTest, startTrialTime);
 }
 
 function ResponseTest(correct, curTrial, itemsForTest, orderTest, startTrialTime) {
-  var curTrialItem = itemsForTest[orderTest[curTrial]];
+  let curTrialItem = itemsForTest[orderTest[curTrial]];
   curTrialItem['wasCorrect'] = correct;
   curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
 	$(document).unbind('keyup');
@@ -333,8 +413,8 @@ function ResponseTest(correct, curTrial, itemsForTest, orderTest, startTrialTime
 
 /* DONE ------------------------------------------------- */
 function ShowDone(itemsForTest) {
-  var correctCount = 0;
-  for (var i=0; i<itemsForTest.length; ++i) {
+  let correctCount = 0;
+  for (let i=0; i<itemsForTest.length; ++i) {
     if (itemsForTest[i]['wasCorrect'])
       correctCount++;
   }
@@ -347,8 +427,8 @@ function ShowDone(itemsForTest) {
 
 // A helper functino to parse numbers in localStorage
 function GetCachedNumber(key, defaultValue) {
-  var numStr = window.localStorage.getItem(key);
-  var num = defaultValue;
+  let numStr = window.localStorage.getItem(key);
+  let num = defaultValue;
   if (numStr)
     num = parseInt(numStr, 10);
   return num;
@@ -358,7 +438,7 @@ function ShowNextExperiment() {
   let totalExps = GetCachedNumber('numExperiments', 1);
   let curExp = GetCachedNumber('curExperiment', 1);
   // hide the links for all experiments
-  for (var i = 1; i <= totalExps; ++i) {
+  for (let i = 1; i <= totalExps; ++i) {
     $('#experiment' + i).hide();
   }
 
@@ -396,13 +476,13 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
   Save("orderStudy", orderStudy);
   Save("orderTest", orderTest);
 
-  for (var i=0; i<itemsForLearning.length; i++) {
+  for (let i=0; i<itemsForLearning.length; i++) {
     Save(itemsForLearning[i].id, itemsForLearning[i]);
   }
-  for (var i=0; i<itemsForStudy.length; i++) {
+  for (let i=0; i<itemsForStudy.length; i++) {
     Save(itemsForStudy[i].id, itemsForStudy[i]);
   }
-  for (var i=0; i<itemsForTest.length; i++) {
+  for (let i=0; i<itemsForTest.length; i++) {
     Save(itemsForTest[i].id, itemsForTest[i]);
   }
   Save("userAgent", navigator.userAgent);
@@ -411,12 +491,12 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
   Save("screenWidth", screen.width);
   Save("screenHeight", screen.height);
 
-  var newDate = new Date();
-  var curID = window.localStorage.getItem('curID');
+  let newDate = new Date();
+  let curID = window.localStorage.getItem('curID');
   if (!curID)
     curID = PromptID();
 
-  var d = {
+  let d = {
     "curID": curID,
     "curTime": newDate.today() + " @ " + newDate.timeNow(),
     "userAgent": navigator.userAgent,
@@ -438,9 +518,8 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
     "itemsForTest": itemsForTest
   };
 
-  SendToServer(curID, d, experimentName);
   window.localStorage.setItem('curExperiment', experimentNumber+1);
-  //close();
+  return SendToServer(curID, d, experimentName);
 }
 
 function Save(name, content) {
@@ -449,13 +528,13 @@ function Save(name, content) {
 }
 
 function SendToServer(id, curData, experimentName) {
-  var dataToServer = {
+  let dataToServer = {
     'id': id,
     'experimentName': experimentName,
     'curData': JSON.stringify(curData)
   };
 
-  $.when($.post("http://web-mir.ccn.duke.edu/flower/save.php",
+  return $.post("http://web-mir.ccn.duke.edu/flower/save.php",
                 dataToServer,
                 function(data) {
                   if (IsOnTurk()) {
@@ -463,12 +542,12 @@ function SendToServer(id, curData, experimentName) {
                   } else {
                     $('#saving').hide();
                   }
-                }
-              ).fail(function(data) {
-                if (IsOnTurk()) {
-                  document.forms[0].submit();
-                } else {
-                  $('#saving').hide();
-                }
-              })).then(function () {close();});
+                }).fail(function(data) {
+                    console.log("POST FAILED");
+                          if (IsOnTurk()) {
+                            document.forms[0].submit();
+                          } else {
+                            $('#saving').hide();
+                          }
+                      }).promise();
 }

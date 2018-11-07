@@ -23,7 +23,7 @@ ANTENNAE_PREFIX = 'antennae'
 ANTENNAE_COUNTS = [1, 2, 4]
 ANTENNAE_COLORS = {'purple':(205, 0, 255),   # encoded in RGB
                    'orange':(255, 40, 15),
-                  # 'brightgreen':(0, 255, 60),
+                   'brightgreen':(0, 255, 60),
                    'lightblue':(55, 175, 255)}
 ANTENNAE_OFFSET = (0, -150)
 
@@ -31,7 +31,7 @@ WING_PREFIX = 'wings'
 WING_COUNTS = range(1,4)
 WING_ALPHA = 2.0/3.0 # transparency
 WING_COLORS = {'blue':(60, 0, 180),     # encoded in RGB
-               #'pink':(190, 0, 125),
+               'pink':(190, 0, 125),
                'yellow':(185, 160, 75),
                'green':(0, 200, 75)}
 WING_OFFSET = (0, 25)
