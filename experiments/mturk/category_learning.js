@@ -30,7 +30,7 @@ function StartExperiment(experimentName, assignmentFilename, GetFilename, values
   $('#numStudy').text(nStudy);
   $('#numTest').text(nTest);
   $('#submitButton').hide();
-  $('#loading').hide();
+  $('#startLearning').hide()
 
   // Fetch the learned category assignment from the server
   $.getJSON('http://web-mir.ccn.duke.edu/flower/' + assignmentFilename)
@@ -95,7 +95,12 @@ function StartExperiment(experimentName, assignmentFilename, GetFilename, values
             try { close(); } catch(error) {}
           };
 
-      $('#startLearning').show();
+      // After 90s show the link to continue
+      setTimeout(function () {
+          $('#loadingLearning').hide();
+          $('#startLearning').show();
+      }, 90000);
+
   });
 }
 
@@ -289,7 +294,7 @@ function ResponseLearning(correct, curTrial, itemsForLearning, startTrialTime) {
   curTrialItem['wasCorrect'] = correct;
   curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
 	$(document).unbind('keyup');
-  
+
   if (correct) {
     $('#correct').show();
   } else {
@@ -313,7 +318,12 @@ function ResponseLearning(correct, curTrial, itemsForLearning, startTrialTime) {
 function ShowStudyStart() {
   $('#instrucBox').hide();
   $('#experimentBox').hide();
+  $('#startStudy').hide();
   $('#studyInstruc').show();
+  setTimeout(function () {
+    $('#loadingStudy').hide();
+    $('#startStudy').show();
+  }, 90000);
   $('#instrucTextCur').html("&nbsp; &nbsp;");
 }
 
@@ -350,6 +360,11 @@ function StartMemoryTestTask() {
   $('#experimentBox').hide();
   $('#testInstruc').show();
   $('#instrucTextCur').html("&nbsp; &nbsp;");
+  $('#startTest').hide();
+  setTimeout(function () {
+    $('#loadingTest').hide();
+    $('#startTest').show();
+  }, 90000);
 }
 
 function StartTest(stimuliType, itemsForTest) {
@@ -453,8 +468,13 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
   $('#done').hide();
   $('#saving').show();
 
+  let hitRate = parseFloat($('#numRight').text(), 10) / itemsForStudy.length;
+  let earnedBonus = hitRate >= 0.85;
   let experimentNumber = GetCachedNumber('curExperiment', 1);
+
   Save("experimentNumber", experimentNumber);
+  Save("hitRate", hitRate);
+  Save("earnedBonus", earnedBonus);
   Save("featuredLearned", featureLearned);
   Save("featureFoil", featureFoil);
   Save("valueLearned", valueLearned);
@@ -487,6 +507,8 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
     "screenHeight": screen.height,
     "comments": $('#comments').val(),
     "experimentNumber": experimentNumber,
+    "hitRate": hitRate,
+    "earnedBonus": earnedBonus,
     "featuredLearned": featureLearned,
     "featureFoil": featureFoil,
     "valueLearned": valueLearned,

@@ -121,7 +121,8 @@ bevlonias, 30 of neither.
 <p><img src="http://web-mir.ccn.duke.edu/flower/images/insects/insect_1_triangle_2_purple_green.png" width=245><img src="http://web-mir.ccn.duke.edu/flower/images/insects/insect_1_circle_1_orange_blue.png" width=245></p>
 <p>As you can see from these examples, the insects in this experiment will differ in a number of ways: (1) the number of antennae, (2) the color of the antennae, (3) the shape of the body segments, (4) the number of their body segments, and (5) the color of their wings. One of these features will determine what is and is not an acoptera.</p>
 <p>In the first task, you'll be shown a single insect, and then be asked if it is or not an acoptera (press 'y' if yes, 'n' if no). At first, you'll have to guess. Eventually, though, you'll figure out what makes something an acoptera. You will have <span id="numLearning">0</span> insects to judge. Do your best to determine what makes something an acoptera.</p><br>
-<p><a href="#" class="buttonStart" id="startLearning">I'm Ready to Start Part 1</a><span class="buttonStart" id="loading">Loading images... Please wait.</span></p><br>
+<p><a href="#" class="buttonStart" id="startLearning">I'm Ready to Start Part 1</a>
+   <span class="buttonStart" id="loadingLearning">Loading images... Please wait.</span></p><br>
 <p><small>By answering the following questions, you are participating in a study being performed by psychologists in the Duke Department of Psychology and Neuroscience. If you have questions about this research, please contact Felipe De Brigard at felipe.debrigard@duke.edu. Your participation in this research is voluntary. You may decline to answer any or all of the following questions. You may decline further participation, at any time, without adverse consequences. Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.</small></p>
 </div>
 
@@ -129,13 +130,15 @@ bevlonias, 30 of neither.
 <p>Great job!</p>
 <p>During the second task, you will have to remember insects. You'll be shown <span id="numStudy">0</span> insects, one at a time, for just a few seconds each. Do your best to remember these insects as well as you can. If you remember a large number of them successfully, you'll likely get bonus pay.
 <p>Some of the insects you have to remember might be acoptera and some might not.</p>
-<p><a class="buttonStart" href="#" id="startStudy">Start memory task</a></p>
+<p><a class="buttonStart" href="#" id="startStudy">Start memory task</a>
+   <span class="buttonStart" id="loadingStudy">Loading images... Please wait.</span></p>
 </div>
 
 <div class="instrucBox" id="testInstruc" style="padding:5px; text-align:left">
 <p>Great job!</p>
 <p>During the third and final task, you will have to say which insects you saw in the previous part and which you didn't. You'll be shown <span id="numTest">0</span> insects, one at a time. Some you will have seen before, and some you won't have seen. For each insect, you have to say whether you saw it before. If you did see it, press the 'y' key. If you didn't, press the 'n' key. Please do your best!</p>
-<p><a class="buttonStart" href="#" id="startTest">Start memory test</a></p>
+<p><a class="buttonStart" href="#" id="startTest">Start memory test</a>
+   <span class="buttonStart" id="loadingTest">Loading images... Please wait.</span></p>
 </div>
 
 
@@ -177,7 +180,7 @@ function GetInsectFilename(obj) {
 }
 
 /* Parameters for stimuli */
-let nLearning = 54;
+let nLearning = 72;
 let pLearnedLearning = 1/3.0;
 let pFoilLearning = 1/3.0;
 
@@ -185,7 +188,7 @@ let nStudy = 18;
 let pLearnedStudy = 1/3.0;
 let pFoilStudy = 1/3.0;
 
-let nTest = 54;
+let nTest = 45;
 let pLearnedTest = 1/3.0;  // p for lures, not old items
 let pFoilTest = 1/3.0;
 
