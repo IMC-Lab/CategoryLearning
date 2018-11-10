@@ -455,12 +455,13 @@ function ShowNextExperiment() {
 
 }
 
-function PromptID(event) {
+function GetID(event) {
   let curID = window.localStorage.getItem('curID');
   while (!curID || curID === "") {
     curID = (IsOnTurk())? GetAssignmentId() : prompt('Please enter your mTurk ID:','id');
   }
   window.localStorage.setItem('curID', curID);  // cache the ID in localStorage
+  return curID;
 }
 
 function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
@@ -496,7 +497,7 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
   Save("screenHeight", screen.height);
 
   let newDate = new Date();
-  let curID = window.localStorage.getItem('curID') || PromptID();
+  let curID = GetID();
   let d = {
     "curID": curID,
     "curTime": newDate.today() + " @ " + newDate.timeNow(),
@@ -509,7 +510,7 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
     "experimentNumber": experimentNumber,
     "hitRate": hitRate,
     "earnedBonus": earnedBonus,
-    "featuredLearned": featureLearned,
+    "featureLearned": featureLearned,
     "featureFoil": featureFoil,
     "valueLearned": valueLearned,
     "valueFoil": valueFoil,
