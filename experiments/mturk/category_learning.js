@@ -1,3 +1,34 @@
+var waitTime = 90000;
+
+function retry(promise, n, wait) {
+    return promise.fail(function(error) {
+        if (n === 1) throw error;
+        return setTimeout(function () {
+                            return retry(promise, n - 1, wait);
+                          }, wait);
+    });
+}
+
+
+function fetchJSON(filename) {
+  return $.getJSON(filename)
+          .done(function (jsonData) {
+            return jsonData;
+          }).fail(function (jsonData, textStatus, error) {
+            throw "getJSON failed, filename: " + filename
+                          + ", status: " + textStatus + ", error: " + error;
+          });
+}
+
+function writeJSON(filename, data) {
+  return $.post('http://web-mir.ccn.duke.edu/flower/save_json.php',
+                {'filename': filename,
+                 'data':JSON.stringify(data)})
+            .fail(function (d, textStatus, error) {
+              throw "POST json failed, status: " + textStatus + ", error: " + error;
+            });
+}
+
 // Given this participant's feature assignment, get the next one.
 function nextAssignment(oldAssignment, values) {
   let newAssignment = Object.assign({}, oldAssignment);
@@ -22,7 +53,7 @@ function nextAssignment(oldAssignment, values) {
 /*
  * Setup the html fields and links to run the experiment
  */
-function StartExperiment(experimentName, assignmentFilename, GetFilename, values,
+async function StartExperiment(experimentName, assignmentFilename, GetFilename, values,
                          nLearning, pLearnedLearning, pFoilLearning,
                          nStudy, pLearnedStudy, pFoilStudy,
                          nTest, pLearnedTest, pFoilTest) {
@@ -32,76 +63,67 @@ function StartExperiment(experimentName, assignmentFilename, GetFilename, values
   $('#submitButton').hide();
   $('#startLearning').hide()
 
-  // Fetch the learned category assignment from the server
-  $.getJSON('http://web-mir.ccn.duke.edu/flower/' + assignmentFilename)
-    .fail(function (assignment, textStatus, error) {
-      console.error("getJSON failed, status: " + textStatus + ", error: " + error);
-    }).done(function (assignment) {
-      // Update the
-      $.post('http://web-mir.ccn.duke.edu/flower/save_json.php',
-             {'filename':assignmentFilename,
-              'data':JSON.stringify(nextAssignment(assignment, values))})
-        .fail(function (d, textStatus, error) {
-          console.error("POST json failed, status: " + textStatus + ", error: " + error);
-        });
+  let assignment = await fetchJSON('http://web-mir.ccn.duke.edu/flower/' + assignmentFilename);
+  await writeJSON(assignmentFilename, nextAssignment(assignment, values));
 
-      /* List of feature names */
-      let features = Object.keys(values);
-      // Set the learned category to the fetched feature and value
-      let featureLearned = features[assignment.featureLearned];
-      let valueLearned = values[featureLearned][assignment.valueLearned];
+  /* List of feature names */
+  let features = Object.keys(values);
+  // Set the learned category to the fetched feature and value
+  let featureLearned = features[assignment.featureLearned];
+  let valueLearned = values[featureLearned][assignment.valueLearned];
 
-      // Set the foil category randomly
-      let featureFoil = features[Math.floor(Math.random()*features.length)];
-      while (featureLearned == featureFoil) {
-        featureFoil = features[Math.floor(Math.random()*features.length)];
-      }
-      let valueFoil = values[featureFoil][Math.floor(Math.random()*values[featureFoil].length)];
+  // Set the foil category randomly
+  let featureFoil = features[Math.floor(Math.random()*features.length)];
+  while (featureLearned == featureFoil) {
+    featureFoil = features[Math.floor(Math.random()*features.length)];
+  }
+  let valueFoil = values[featureFoil][Math.floor(Math.random()*values[featureFoil].length)];
 
-      /* For now, output the learned features */
-      /*
-      console.log('learned feature: ' + featureLearned);
-      console.log('learned value: ' + valueLearned);
-      console.log('unlearned feature: ' + featureFoil);
-      console.log('unlearned value: ' + valueFoil);
-      */
+  /* For now, output the learned features */
+  /*
+  console.log('learned feature: ' + featureLearned);
+  console.log('learned value: ' + valueLearned);
+  console.log('unlearned feature: ' + featureFoil);
+  console.log('unlearned value: ' + valueFoil);
+  */
 
-      /* Build the lists of items to use for learning, study, and test */
-      let itemsForLearning = CreateLearningList(nLearning, pLearnedLearning, pFoilLearning,
-                                                values, featureLearned, valueLearned,
-                                                featureFoil, valueFoil, GetFilename);
-      let itemsForStudy = CreateStudyList(nStudy, itemsForLearning, pLearnedStudy, pFoilStudy,
-                                          values, featureLearned, valueLearned,
-                                          featureFoil, valueFoil, GetFilename);
-      let itemsForTest = CreateTestList(nTest, itemsForLearning, itemsForStudy,
-                                        pLearnedTest, pFoilTest, values,
-                                        featureLearned, valueLearned,
-                                        featureFoil, valueFoil, GetFilename);
+  /* Build the lists of items to use for learning, study, and test */
+  let itemsForLearning = CreateLearningList(nLearning, pLearnedLearning, pFoilLearning,
+                                            values, featureLearned, valueLearned,
+                                            featureFoil, valueFoil, GetFilename);
+  let itemsForStudy = CreateStudyList(nStudy, itemsForLearning, pLearnedStudy, pFoilStudy,
+                                      values, featureLearned, valueLearned,
+                                      featureFoil, valueFoil, GetFilename);
+  let itemsForTest = CreateTestList(nTest, itemsForLearning, itemsForStudy,
+                                    pLearnedTest, pFoilTest, values,
+                                    featureLearned, valueLearned,
+                                    featureFoil, valueFoil, GetFilename);
 
-      /* Set up button presses to their linked function */
-      let stimuliType = experimentName.split("_")[0];
-      document.getElementById('startLearning').onclick
-        = function(){ StartLearning(itemsForLearning); };
-      document.getElementById('startStudy').onclick
-        = function(){ StartStudy(stimuliType, itemsForStudy); };
-      document.getElementById('startTest').onclick
-        = function(){ StartTest(stimuliType, itemsForTest); };
-      document.getElementById('timSubmit').onclick
-        = async function() {
-            await SaveData(experimentName, featureLearned, valueLearned,
-                           featureFoil, valueFoil, itemsForLearning,
-                           itemsForStudy, itemsForTest);
-            // try to close the window after the data is saved.
-            try { close(); } catch(error) {}
-          };
+  /* Set up button presses to their linked function */
+  let stimuliType = experimentName.split("_")[0];
+  document.getElementById('startLearning').onclick
+    = function(){ StartLearning(itemsForLearning); };
+  document.getElementById('startStudy').onclick
+    = function(){ StartStudy(stimuliType, itemsForStudy); };
+  document.getElementById('startTest').onclick
+    = function(){ StartTest(stimuliType, itemsForTest); };
+  document.getElementById('timSubmit').onclick
+    = async function() {
+        await SaveData(experimentName, featureLearned, valueLearned,
+                       featureFoil, valueFoil, itemsForLearning,
+                       itemsForStudy, itemsForTest);
 
-      // After 90s show the link to continue
-      setTimeout(function () {
-          $('#loadingLearning').hide();
-          $('#startLearning').show();
-      }, 90000);
+        // try to close the window after the data is saved.
+        if (window.opener) {
+           close();
+        }
+      };
 
-  });
+  // After 90s show the link to continue
+  setTimeout(function () {
+      $('#loadingLearning').hide();
+      $('#startLearning').show();
+  }, waitTime);
 }
 
 /* Get an object that is either a member of the
@@ -323,7 +345,7 @@ function ShowStudyStart() {
   setTimeout(function () {
     $('#loadingStudy').hide();
     $('#startStudy').show();
-  }, 90000);
+  }, waitTime);
   $('#instrucTextCur').html("&nbsp; &nbsp;");
 }
 
@@ -364,7 +386,7 @@ function StartMemoryTestTask() {
   setTimeout(function () {
     $('#loadingTest').hide();
     $('#startTest').show();
-  }, 90000);
+  }, waitTime);
 }
 
 function StartTest(stimuliType, itemsForTest) {
@@ -429,18 +451,17 @@ function ShowDone(itemsForTest) {
   $('#done').show();
 }
 
-// A helper functino to parse numbers in localStorage
-function GetCachedNumber(key, defaultValue) {
-  let numStr = window.localStorage.getItem(key);
-  let num = defaultValue;
-  if (numStr)
-    num = parseInt(numStr, 10);
-  return num;
-}
+async function ShowNextExperiment() {
+  let progress;
+  try {
+    // wait for a second just to make sure the progress has been updated
+    progress = await retry(fetchJSON('http://web-mir.ccn.duke.edu/flower/data/progress/' + curID + '.json'), 10, 75);
+  } catch (error) {
+    return false;
+  }
 
-function ShowNextExperiment() {
-  let totalExps = GetCachedNumber('numExperiments', 1);
-  let curExp = GetCachedNumber('curExperiment', 1);
+  let totalExps = progress['numExperiments'];
+  let curExp = progress['curExperiment'];
   // hide the links for all experiments
   for (let i = 1; i <= totalExps; ++i) {
     $('#experiment' + i).hide();
@@ -453,27 +474,37 @@ function ShowNextExperiment() {
     $('#done').show();
   }
 
+  // return true if done
+  return curExp > totalExps;
 }
 
+/*
+ * Look for the var curID in the parent window (if this tab was opened by another tab).
+ * If that isn't set, look for curID in this window.
+ * Else, prompt the user for an ID until they give a non-empty response.
+ */
 function GetID(event) {
-  let curID = window.localStorage.getItem('curID');
-  while (!curID || curID === "") {
-    curID = (IsOnTurk())? GetAssignmentId() : prompt('Please enter your mTurk ID:','id');
+  let id = (window.opener)? window.opener.curID : curID;
+  while (!id || id === "") {
+    id = (IsOnTurk())? GetAssignmentId() : prompt('Please enter your mTurk ID:','');
   }
-  window.localStorage.setItem('curID', curID);  // cache the ID in localStorage
-  return curID;
+  return id;
 }
 
-function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
-                  valueFoil, itemsForLearning, itemsForStudy, itemsForTest) {
+async function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
+                        valueFoil, itemsForLearning, itemsForStudy, itemsForTest) {
   $('#done').hide();
   $('#saving').show();
 
   let hitRate = parseFloat($('#numRight').text(), 10) / itemsForStudy.length;
   let earnedBonus = hitRate >= 0.85;
-  let experimentNumber = GetCachedNumber('curExperiment', 1);
+  let curID = GetID();
+  console.log('curID' + curID);
+  let progress = await fetchJSON('http://web-mir.ccn.duke.edu/flower/data/progress/' + curID + '.json');
+  progress['curExperiment'] = progress['curExperiment'] + 1;
+  await writeJSON('data/progress/' + curID + '.json', progress);
 
-  Save("experimentNumber", experimentNumber);
+  Save("experimentNumber", progress['curExperiment']);
   Save("hitRate", hitRate);
   Save("earnedBonus", earnedBonus);
   Save("featuredLearned", featureLearned);
@@ -497,7 +528,6 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
   Save("screenHeight", screen.height);
 
   let newDate = new Date();
-  let curID = GetID();
   let d = {
     "curID": curID,
     "curTime": newDate.today() + " @ " + newDate.timeNow(),
@@ -507,7 +537,7 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
     "screenWidth": screen.width,
     "screenHeight": screen.height,
     "comments": $('#comments').val(),
-    "experimentNumber": experimentNumber,
+    "experimentNumber": progress['curExperiment'],
     "hitRate": hitRate,
     "earnedBonus": earnedBonus,
     "featureLearned": featureLearned,
@@ -519,7 +549,6 @@ function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
     "itemsForTest": itemsForTest
   };
 
-  window.localStorage.setItem('curExperiment', experimentNumber+1);
   return SendToServer(curID, d, experimentName);
 }
 

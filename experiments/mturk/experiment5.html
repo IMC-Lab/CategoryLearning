@@ -55,18 +55,34 @@ if (flowersFirst) {
   document.getElementById('experiment2Link').onclick = loadFlowerExperiment;
 }
 
+var curID = null;
+
+// keep refreshing the experiment until it's completed
+function refresh() {
+  ShowNextExperiment().then(function (done) {
+    if (!done) {
+      setTimeout(refresh, 10);
+    }
+  });
+}
+
+
 // Get the user's mTurk ID
 $(function() {
+    $('#experiment1').hide();
     $('#experiment2').hide();
     $('#done').hide();
 
-    window.localStorage.clear();
-    window.localStorage.setItem('numExperiments', numExperiments);
-    window.localStorage.setItem('curExperiment', 1);
-    GetID();
-  });
+    curID = GetID();
+    writeJSON('data/progress/' + curID + '.json',
+              {'curID': curID,
+               'curExperiment': 1,
+               'numExperiments': numExperiments})
+      .done(function () {
+        $('#experiment1').show();
+        refresh();
+      });
 
-// Show the link for exp2 when exp1 completes
-$(window).on('focus', function (event) { ShowNextExperiment(); });
+  });
 
 </script>
