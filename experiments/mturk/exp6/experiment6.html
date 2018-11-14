@@ -1,0 +1,88 @@
+<meta charset="utf-8"/>
+<!-- This file is a driver to run the flower and insect portions of experiment6
+     in a random order. Each portion opens a new tab. When that portion is
+     completed, the link for the next portion becomes available.
+
+     login- imagination-study@duke.edu
+     pass- Imagination2017
+ -->
+<style>
+.buttonStart {
+  font-size: 16pt;
+  font-family: Arial, sans-serif;
+}
+</style>
+
+
+<div id="experiment1">
+  <p>This experiment will consist of <span id="numExperiments">0</span> sections. Make sure to leave this tab open, or else you will not be able to reach the later sections of the experiment.</p>
+  <a class="buttonStart" href="#" id="experiment1Link">Click here to start the first section.</a>
+</div>
+<div id="experiment2" style="display:none">
+  <p>You've completed the first experiment!</p>
+  <a class="buttonStart" href="#" id="experiment2Link">Click here to start the second section.</a>
+</div>
+<div id="done" style="display:none">
+  <p>You've completed the entire experiment.</p>
+  <p>Here is your completion code: eranait9t_me0e3u9t0qdd9.</p>
+  <p>Thank you for participating!</p>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script src="http://web-mir.ccn.duke.edu/flower/TimTurkTools.js"></script>
+<script src="http://web-mir.ccn.duke.edu/flower/category_learning.js"></script>
+<script>
+var flowerFile = './experiment6_flower.html';
+var insectFile = './experiment6_insect.html';
+var numExperiments = 2;
+$('#numExperiments').text(numExperiments);
+
+// functions to open the experiments in a new tab
+function loadFlowerExperiment() {
+  var newTab = window.open(flowerFile, '_blank');
+}
+
+function loadInsectExperiment() {
+  window.open(insectFile, '_blank');
+}
+
+var flowersFirst = Math.random() < 0.5;
+if (flowersFirst) {
+  document.getElementById('experiment1Link').onclick = loadFlowerExperiment;
+  document.getElementById('experiment2Link').onclick = loadInsectExperiment;
+} else {
+  document.getElementById('experiment1Link').onclick = loadInsectExperiment;
+  document.getElementById('experiment2Link').onclick = loadFlowerExperiment;
+}
+
+var curID = null;
+
+// keep refreshing the experiment until it's completed
+function refresh() {
+  ShowNextExperiment().then(function (done) {
+    if (!done) {
+      setTimeout(refresh, 10);
+    }
+  });
+}
+
+
+// Get the user's mTurk ID
+$(function() {
+    $('#experiment1').hide();
+    $('#experiment2').hide();
+    $('#done').hide();
+
+    curID = GetID();
+    writeJSON('data/progress/' + curID + '.json',
+              {'curID': curID,
+               'curExperiment': 1,
+               'numExperiments': numExperiments})
+      .done(function () {
+        $('#experiment1').show();
+        refresh();
+      });
+
+  });
+
+</script>

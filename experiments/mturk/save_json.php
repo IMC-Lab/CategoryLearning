@@ -1,7 +1,8 @@
 <?php
-$myFile = $_POST["filename"];
-$fh = fopen($myFile, 'w+') or die("can't open file");
+$fileName = $_POST["filename"];
+$fh = fopen($fileName, 'w+') or die("can't open file");
 $stringData = $_POST["data"];
 fwrite($fh, $stringData);
-fclose($fh)
+fclose($fh);
+chmod($fileName, 0666);
 ?>

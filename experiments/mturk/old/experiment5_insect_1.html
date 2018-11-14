@@ -1,0 +1,647 @@
+<!--
+
+Show 100 either avlonia's or bevlonia's, with them having to decide which is which.
+
+1) Fetch from server what the category I am learning is, and what the foil category is.
+This needs to not be random but chosen so that pairs of subjects see the same categories
+as each other but learn a different one (swaps foil and target category). Foil category
+is always a different feature.
+
+2) Half of them have to have the target feature and half also have to the foil feature,
+with half overlap. So 25 avolnia, 25 bev., 25 both, 25 neither.
+
+3) Break to explain instructions.
+
+4) Again generate 25 of each overlap, this time for the person to study for 3s/item.
+
+5) Then memory test. 80 old items, 20 of each kind. 90 new items: 30 avlonias, 30
+bevlonias, 30 of neither.
+
+-->
+<style>
+.categorizeImage {
+  display:none;
+}
+
+#question {
+  display:none;
+}
+
+#instrucBox {
+  font-family: Arial, sans-serif;
+  font-style: italic;
+  margin: 10px auto;
+  width:500px;
+}
+
+#experimentBox {
+  margin: 30px auto;
+  margin-top: 10px;
+  width:500px;
+  height: 500px;
+  border: 1px solid gray;
+  text-align:center;
+}
+
+.textInBox {
+  position: relative;
+  font-size: 16pt;
+  color: #222;
+  font-family: Arial, sans-serif;
+  top: 200px;
+  display: none;
+}
+
+.buttonStart {
+  font-size: 16pt;
+  font-family: Arial, sans-serif;
+}
+
+#wrong {
+  color: maroon;
+}
+
+#correct {
+  color: green;
+}
+
+#done {
+  display: none;
+}
+
+#timSubmit {
+  font-weight: bold;
+  color: black;
+  border: 3px outset gray;
+  background: #CCC;
+  padding: 5px;
+  text-decoration: none;
+}
+
+#timSubmit:hover {
+  border: 3px solid gray;
+}
+
+#timSubmit:active {
+  border: 3px inset gray;
+}
+
+.instrucBox {
+  font-family: Arial, sans-serif;
+  line-height: 1.4em;
+  margin: 30px auto;
+  width:500px;
+}
+
+#instrucBox {
+  display: none;
+}
+#experimentBox {
+  display: none;
+}
+#encodingInstruc {
+  display: none;
+}
+#retrievalInstruc {
+  display: none;
+}
+
+#trialCnt {
+  float: right;
+}
+
+#startExperiment {
+  display: none;
+}
+</style>
+
+<div class="instrucBox" id="categoryInstruc1" style="padding:5px; text-align:left">
+<p>This HIT will involve 3 short tasks, all involving pictures of insects. It should take approximately 12-15 minutes to do all 3 tasks.</p>
+<p>During the first task, you will see one insect at a time and have to determine whether or not it is a <b>Lepidoptera</b>. Lepidoptera is a particular species of insect. They are different from all other insects in one simple way -- and your job is to find out what that is. For example, it could be that lepidoptera all have 3 body segments, but no other insects do. Or lepidoptera could be the only insects that have a pink antenna; or a round-shaped body segment; or green wings.</p>
+<p><img src="http://web-mir.ccn.duke.edu/flower/images/insects/insect_1_triangle_2_purple_1_green.png" width=245><img src="http://web-mir.ccn.duke.edu/flower/images/insects/insect_1_circle_1_orange_2_blue.png" width=245></p>
+<p>As you can see from these examples, the insects in this experiment will differ in a number of ways: (1) the number of antennae, (2) the color of the antennae, (3) the shape of the body segments, (4) the number of their body segments, and (5) the color of their wings. One of these features will determine what is and is not a Lepidoptera.</p>
+<p>In the first task, you'll be shown a single insect, and then be asked if it is or not a Lepidoptera (press 'y' if yes, 'n' if no). At first, you'll have to guess. Eventually, though, you'll figure out what makes something a Lepidoptera. You will have 54 insects to judge. Do your best to determine what makes something a Lepidoptera.</p><br>
+<p><a href="javascript:StartCategorization()" class="buttonStart" id="startExperiment">I'm Ready to Start Part 1</a><span class="buttonStart" id="loading">Loading images... Please wait.</span></p><br>
+<p><small>By answering the following questions, you are participating in a study being performed by psychologists in the Duke Department of Psychology and Neuroscience. If you have questions about this research, please contact Felipe De Brigard at felipe.debrigard@duke.edu. Your participation in this research is voluntary. You may decline to answer any or all of the following questions. You may decline further participation, at any time, without adverse consequences. Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.</small></p>
+</div>
+
+<div class="instrucBox" id="encodingInstruc" style="padding:5px; text-align:left">
+<p>Great job!</p>
+<p>During the second task, you will have to remember insects. You'll be shown 16 insects, one at a time, for just a few seconds each. Do your best to remember these insects as well as you can. If you remember a large number of them successfully, you'll likely get bonus pay.
+<p>Some of the insects you have to remember might be Lepidoptera and some might not.</p>
+<p><a class="buttonStart" href="javascript:StartEncoding(0)">Start memory task</a></p>
+</div>
+
+<div class="instrucBox" id="retrievalInstruc" style="padding:5px; text-align:left">
+<p>Great job!</p>
+<p>During the third and final task, you will have to say which insects you saw in the previous part and which you didn't. You'll be shown 48 insects, one at a time. Some you will have seen before, and some you won't have seen. For each insect, you have to say whether you saw it before. If you did see it, press the 'y' key. If you didn't, press the 'n' key. Please do your best!</p>
+<p><a class="buttonStart" href="javascript:StartRetrieval()">Start memory test</a></p>
+</div>
+
+
+<div id="instrucBox"><span id="instrucTextCur">Do you think this is a Lepidoptera? <b>(y/n)</b></span><span id="trialCnt">Trial 1 of 100</span></div>
+<div id="experimentBox">
+<div id="imagesForCategorizing"></div>
+<div id="imagesForEncoding"></div>
+<div id="imagesForRetrieval"></div>
+<div class="textInBox" id="question">Was this a Lepidoptera?<br><br>y / n</div>
+<div class="textInBox" id="correct">Correct!</div>
+<div class="textInBox" id="wrong">Incorrect!</div>
+
+<div class="textInBox" id="done" style="top:60px">Done! You got <span id="numRight">0</span> out of 50 correct.<br><br>Any comments for us?<br><br>
+<textarea name="comments" id="comments" style="width: 300px; height: 200px"></textarea><br><br>
+<a href="javascript:SaveData()" id="timSubmit">Submit</a>
+</div>
+<div class="textInBox" id="saving">Saving . . .</div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script src="http://web-mir.ccn.duke.edu/flower/TimTurkTools.js"></script>
+
+<script>
+/* GENERAL SETUP
+   ------------------------------------------------- */
+
+/* Define the features */
+var features = {};
+features['segment_count'] = new Array('1', '2', '3');
+features['segment_shape'] = new Array('circle', 'triangle', 'rectangle');
+features['wing_color'] = new Array('blue', 'yellow', 'green');
+features['antennae_count'] = new Array('1', '2', '4');
+features['antennae_color'] = new Array('purple', 'orange', 'lightblue');
+
+/* List of feature names */
+var tKeys = Object.keys(features);
+
+/* Which ones define our categories -
+     these should be fetched from a server */
+var featureLearned = Math.floor(Math.random()*tKeys.length);
+var featureFoil = Math.floor(Math.random()*tKeys.length);
+while (featureLearned == featureFoil) {
+  featureFoil = Math.floor(Math.random()*tKeys.length);
+}
+var valueLearned = Math.floor(Math.random()*features[tKeys[featureLearned]].length);
+var valueFoil = Math.floor(Math.random()*features[tKeys[featureFoil]].length);
+
+/* For now, output the learned features */
+console.log('learned feature: ' + tKeys[featureLearned]);
+console.log('learned value: ' + features[tKeys[featureLearned]][valueLearned]);
+console.log('unlearned feature: ' + tKeys[featureFoil]);
+console.log('unlearned value: ' + features[tKeys[featureFoil]][valueFoil]);
+
+/* Get an object that is either a member of the
+   learned category or not; and a member of the foil
+   category or not. Make sure the new object does
+   not equal any of the objects in avoidObjectsList
+   learned is the index of the learned value
+   foil is the index of the unlearned value
+   */
+function GetObject(learned, foil, avoidObjectsList) {
+  var avoidObjects = new Array();
+  for (var i=0; i<avoidObjectsList.length; i++) {
+    avoidObjects.push.apply(avoidObjects, avoidObjectsList[i]);
+  }
+
+  var tKeys = Object.keys(features);
+  var nObject = {};
+  for (var i=0; i<tKeys.length;i++) {
+    var index = Math.floor(Math.random()*3);
+    nObject[tKeys[i]] = features[tKeys[i]][index];
+  }
+
+  nObject[tKeys[featureLearned]] = learned;
+  nObject[tKeys[featureFoil]] = foil;
+
+  /* Check to see if it matches anything we are supposed to avoid */
+  var overlaps = false;
+  for (var i=0; i<avoidObjects.length; i++) {
+    if (JSON.stringify(avoidObjects[i].object)===JSON.stringify(nObject)) {
+      overlaps = true;
+      break;
+    }
+  }
+
+  /* If it does match an object we want to avoid, recurse to generate a new object: */
+  return (overlaps)? GetObject(learned, foil, avoidObjectsList) : nObject;
+}
+
+/*
+ * Get an array of objects for this stage of the paradigm.
+ * count- the number of objects to generate
+ * stage- a string identifying the stage of the paradigm
+ *        (categorization, encoding, retrieval)
+ * htmlTag- where to store the image html src
+ *
+ * returns [objects, imageHTML]
+ */
+function GetObjects(count, stage, pLearned, pFoil) {
+  var imageHTML = '';
+  var index = 0;
+  var items = [];
+  var remainderItems = [];
+  var pNotLearned = (1 - pLearned) / (features[tKeys[featureLearned]].length - 1);
+  var pNotFoil = (1 - pFoil) / (features[tKeys[featureFoil]].length - 1);
+
+  for (var i=0; i<features[tKeys[featureLearned]].length; i++) {
+    for (var j=0; j<features[tKeys[featureFoil]].length; j++) {
+      var isTarget = i == valueLearned;
+      var isFoil = j == valueFoil;
+      if (isTarget && isFoil)
+        n = pLearned * pFoil * count;
+      else if (isTarget)
+        n = pLearned * pNotFoil * count;
+      else if (isFoil)
+        n = pNotLearned * pFoil * count;
+      else
+        n = pNotLearned * pNotFoil * count;
+
+      for (var k=0; k<n; k++) {
+        var obj = GetObject(features[tKeys[featureLearned]][i],
+                            features[tKeys[featureFoil]][j],
+                            [items]);
+        var curItem = {'object': obj,
+                       'filename': GetFilename(obj),
+                       'isTarget': isTarget,
+                       'isFoil': isFoil,
+                       'id': stage + index
+                     };
+        if (k < Math.floor(n)) {
+          index++;
+          items.push(curItem);
+          imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
+        } else {
+          remainderItems.push(curItem);
+        }
+      }
+    }
+  }
+
+  // add in the appropriate amount of remainder items
+  while (items.length < count) {
+    var curItem = remainderItems.splice(Math.floor(Math.random()*remainderItems.length), 1)[0];
+    curItem.id = stage + index;
+    index++;
+    items.push(curItem);
+    imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
+  }
+
+  return [items, imageHTML];
+}
+
+/* Get filename for an object */
+function GetFilename(obj) {
+  return ('http://web-mir.ccn.duke.edu/flower/images/insects/insect_'
+    + obj.segment_count + "_" + obj.segment_shape + "_"
+    + obj.antennae_count + "_" + obj.antennae_color
+    + '_1_' + obj.wing_color + ".png");
+}
+
+/* Parameters for stimuli */
+nCategorization = 54;
+pLearnedCategorization = 1/3.0;
+pFoilCategorization = 1/3.0;
+
+nEncoding = 18;
+pLearnedEncoding = 1/3.0;
+pFoilEncoding = 1/3.0;
+
+nRetrieval = 54;
+pLearnedRetrieval = 1/3.0;  // p for lures, not old items
+pFoilRetrieval = 1/3.0;
+
+console.log('pLearnedCategorization: ' + pLearnedCategorization);
+console.log('pFoilCategorization: ' + pFoilCategorization);
+console.log('pLearnedEncoding: ' + pLearnedEncoding);
+console.log('pFoilEncoding: ' + pFoilEncoding);
+console.log('pLearnedRetrieval: ' + pLearnedRetrieval);
+console.log('pFoilRetrieval: ' + pFoilRetrieval);
+
+
+/* Build the listsof items to use for categorization,
+    for encoding, and for memory tests */
+var itemsForCategorization = [];
+var itemsForEncoding = [];
+var itemsForRetrieval = [];
+
+var orderCategorization = RandomOrder(nCategorization);
+var orderEncoding = RandomOrder(nEncoding);
+var orderRetrieval = RandomOrder(nRetrieval);
+
+/* Global trackers for which trial we're on; always
+    used, no matter what part of the experiment we're in */
+var curTrial = 0;
+var curTrialItem = {};
+var startTrialTime = 0;
+
+/* Create the set of objects to show in the categorization
+    phase */
+function CreateCategorizationList() {
+  var [objects, imageHTML] = GetObjects(nCategorization, 'categorize',
+                                        pLearnedCategorization, pFoilCategorization);
+  itemsForCategorization = objects;
+  $('#imagesForCategorizing').html(imageHTML);
+}
+
+/* Create the set of objects to show in the encoding
+    phase */
+function CreateEncodingList() {
+  var [objects, imageHTML] = GetObjects(nEncoding, 'encode',
+                                        pLearnedEncoding, pFoilEncoding);
+  itemsForEncoding = objects;
+  $('#imagesForEncoding').html(imageHTML);
+}
+
+/* Create the set of objects to show in the retrieval/test
+    phase */
+function CreateRetrievalList() {
+  var nLures = nRetrieval - nEncoding;
+  var [objects, imageHTML] = GetObjects(nLures, 'retrieval',
+                                        pLearnedRetrieval, pFoilRetrieval);
+  itemsForRetrieval = objects;
+  // set isOld to false
+  for (var i=0; i<nLures; i++) {
+    itemsForRetrieval[i].isOld = false;
+  }
+
+  for (var i=0; i<nEncoding; i++) {
+    var curItemObj = itemsForEncoding[i];
+    var curItem = {'object': curItemObj.object,
+                   'filename': curItemObj.filename,
+                   'isTarget': curItemObj.isTarget,
+                   'isFoil': curItemObj.isFoil,
+                   'isOld': true,
+                   'id': 'retrieval' + (i + nLures)
+                  };
+    itemsForRetrieval.push(curItem);
+    imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
+  }
+
+  $('#imagesForRetrieval').html(imageHTML);
+}
+
+CreateCategorizationList();
+CreateEncodingList();
+CreateRetrievalList();
+
+/* CATEGORIZATION TASK
+   ------------------------------------------------- */
+function StartCategorization() {
+  if (IsOnTurk() && IsTurkPreview()) {
+    alert('Please accept the HIT before beginning!');
+    return;
+  }
+  $('#categoryInstruc1').hide();
+  $('#instrucBox').show();
+  $('#experimentBox').show();
+  NextTrialCategorization();
+}
+
+function NextTrialCategorization() {
+  $('#trialCnt').text("Trial " + (curTrial+1) + " of " + itemsForCategorization.length);
+  curTrialItem = itemsForCategorization[orderCategorization[curTrial]];
+  var curID = '#' + curTrialItem.id;
+  $(curID).show();
+  startTrialTime = (new Date()).getTime();
+  setTimeout(function() {
+    $(document).bind('keyup', 'y', PressedYesCategorization);
+    $(document).bind('keyup', 'n', PressedNoCategorization);
+   }, 200);
+}
+
+function PressedYesCategorization() {
+  var wasCorrect =  curTrialItem.isTarget;
+  ResponseCategorization(wasCorrect);
+}
+
+function PressedNoCategorization() {
+  var wasCorrect =  !curTrialItem.isTarget;
+  ResponseCategorization(wasCorrect);
+}
+
+function ResponseCategorization(correct) {
+  var curID = '#' + curTrialItem.id;
+  $(curID).hide();
+  curTrialItem['wasCorrect'] = correct;
+  curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
+	$(document).unbind('keyup', PressedYesCategorization);
+	$(document).unbind('keyup', PressedNoCategorization);
+
+  if (correct) {
+    $('#correct').show();
+  } else {
+    $('#wrong').show();
+  }
+
+  if (curTrial<itemsForCategorization.length-1) { //XXX: For testing
+    setTimeout(function() {
+      $('#correct').hide();
+      $('#wrong').hide();
+      curTrial++;
+      NextTrialCategorization();
+     }, 1000);
+   } else {
+     setTimeout(function() {
+      $('#correct').hide();
+      $('#wrong').hide();
+      ShowEncodingStart();
+     }, 1000);
+   }
+}
+
+/* ENCODING TASK
+   ------------------------------------------------- */
+function ShowEncodingStart() {
+  $('#instrucBox').hide();
+  $('#experimentBox').hide();
+  $('#encodingInstruc').show();
+  $('#instrucTextCur').html("&nbsp; &nbsp;");
+}
+
+function StartEncoding(i) {
+  if (i==0) {
+    $('#instrucTextCur').text("Remember these " + nEncoding + " insects as best you can!");
+    $('#instrucBox').show();
+    $('#experimentBox').show();
+    $('.categorizeImage').hide();
+    $('#encodingInstruc').hide();
+  }
+  $('#trialCnt').text("Insect " + (i+1) + " of " + itemsForEncoding.length);
+  curTrialItem = itemsForEncoding[orderEncoding[i]];
+  var curID = '#' + curTrialItem.id;
+  $(curID).show();
+  setTimeout(function() {
+      $(curID).hide();
+      if (i<itemsForEncoding.length-1) { //XXX:For testing
+        setTimeout(function() {
+          StartEncoding(i+1);
+        }, 1000);
+      } else {
+         setTimeout(function() {
+          StartMemoryRetrievalTask();
+        }, 1000);
+      }
+  }, 3000);
+}
+
+/* MEMORY RETRIEVAL TASK
+   ------------------------------------------------- */
+var correctCount = 0;
+function StartMemoryRetrievalTask() {
+  $('#instrucBox').hide();
+  $('#experimentBox').hide();
+  $('#retrievalInstruc').show();
+  $('#instrucTextCur').html("&nbsp; &nbsp;");
+  curTrial = 0;
+}
+
+function StartRetrieval() {
+  $('#retrievalInstruc').hide();
+  $('#instrucTextCur').html("Did you see this insect earlier? <b>(y/n)</b>");
+  $('#instrucBox').show();
+  $('#experimentBox').show();
+  $('.categorizeImage').hide();
+  NextTrialRetrieval();
+}
+
+function NextTrialRetrieval() {
+  $('.categorizeImage').hide();
+  $('#trialCnt').text("Trial " + (curTrial+1) + " of " + itemsForRetrieval.length);
+  curTrialItem = itemsForRetrieval[orderRetrieval[curTrial]];
+  var curID = '#' + curTrialItem.id;
+  $(curID).show();
+  startTrialTime = (new Date()).getTime();
+  setTimeout(function() {
+    $(document).bind('keyup', 'y', PressedYesRetrieval);
+    $(document).bind('keyup', 'n', PressedNoRetrieval);
+   }, 300);
+}
+
+function PressedYesRetrieval() {
+  var wasCorrect =  curTrialItem.isOld;
+  ResponseRetrieval(wasCorrect);
+}
+
+function PressedNoRetrieval() {
+  var wasCorrect =  !curTrialItem.isOld;
+  ResponseRetrieval(wasCorrect);
+}
+
+function ResponseRetrieval(correct) {
+  curTrialItem['wasCorrect'] = correct;
+  correctCount += (correct) ? 1 : 0;
+  curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
+	$(document).unbind('keyup', PressedYesRetrieval);
+	$(document).unbind('keyup', PressedNoRetrieval);
+  $('#' + curTrialItem.id).hide();
+
+  if (curTrial<itemsForRetrieval.length-1) {
+    setTimeout(function() {
+      curTrial++;
+      NextTrialRetrieval();
+     }, 1000);
+   } else {
+     setTimeout(function() {
+      ShowDone();
+     }, 1000);
+   }
+}
+
+/* DONE
+   ------------------------------------------------- */
+function ShowDone() {
+  $('#instrucTextCur').html("&nbsp; &nbsp;");
+  $('#numRight').text(correctCount);
+  $('#done').show();
+}
+
+function SaveData() {
+  $('#done').hide();
+  $('#saving').show();
+
+  Save("featuredLearned", featureLearned);
+  Save("featureFoil", featureFoil);
+  Save("valueLearned", valueLearned);
+  Save("valueFoil", valueFoil);
+
+  Save("orderCategorization", orderCategorization);
+  Save("orderEncoding", orderEncoding);
+  Save("orderRetrieval", orderRetrieval);
+
+  for (var i=0; i<itemsForCategorization.length; i++) {
+    Save(itemsForCategorization[i].id, itemsForCategorization[i]);
+  }
+  for (var i=0; i<itemsForEncoding.length; i++) {
+    Save(itemsForEncoding[i].id, itemsForEncoding[i]);
+  }
+  for (var i=0; i<itemsForRetrieval.length; i++) {
+    Save(itemsForRetrieval[i].id, itemsForRetrieval[i]);
+  }
+  Save("userAgent", navigator.userAgent);
+  Save("windowWidth", $(window).width());
+  Save("windowHeight", $(window).height());
+  Save("screenWidth", screen.width);
+  Save("screenHeight", screen.height);
+
+  var newDate = new Date();
+  var curID = (IsOnTurk())? GetAssignmentId() : prompt("Well done! You have completed the first section. Here is the complettion code you need to continue to the second section: eranait9t_me0e3u9t0qdd9. Enter your mTurk ID below:", "id");
+  d = {
+    "curID": curID,
+    "curTime": newDate.today() + " @ " + newDate.timeNow(),
+    "userAgent": navigator.userAgent,
+    "windowWidth": $(window).width(),
+    "windowHeight": $(window).height(),
+    "screenWidth": screen.width,
+    "screenHeight": screen.height,
+    "comments": $('#comments').val(),
+    "featuredLearned": featureLearned,
+    "featureFoil": featureFoil,
+    "valueLearned": valueLearned,
+    "valueFoil": valueFoil,
+    "orderCategorization": orderCategorization,
+    "orderEncoding": orderEncoding,
+    "orderRetrieval": orderRetrieval,
+    "itemsForCategorization": itemsForCategorization,
+    "itemsForEncoding": itemsForEncoding,
+    "itemsForRetrieval": itemsForRetrieval
+  };
+  SendToServer(curID, d);
+}
+
+function Save(name, content) {
+  $('#instrucBox').append(
+    "<input type='hidden' name='" + name + "' value='" + JSON.stringify(content) + "'>");
+}
+
+function SendToServer(id, curData) {
+  var dataToServer = {
+    'id': id,
+    'experimentName': 'insect_E5_1',
+    'curData': JSON.stringify(curData)
+  };
+
+/*  http://www.people.fas.harvard.edu/~tbrady/save.cgi */
+  $.post("http://web-mir.ccn.duke.edu/flower/save.php",
+    dataToServer,
+    function(data) {
+      if (IsOnTurk()) {
+        document.forms[0].submit();
+      } else {
+        $('#saving').hide();
+      }
+    }
+  ).fail(function(data) {
+    if (IsOnTurk()) {
+      document.forms[0].submit();
+    } else {
+      $('#saving').hide();
+    }
+  });
+}
+
+$(function() {
+  /* On page load */
+  $('#submitButton').hide();
+  $('#loading').hide();
+  $('#startExperiment').show();
+});
+</script>

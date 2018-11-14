@@ -1,0 +1,785 @@
+<style>
+.categorizeImage {
+  display:none;
+}
+  
+#question {
+  display:none;
+}
+
+#instrucBox {
+  font-family: Arial, sans-serif;
+  font-style: italic;
+  margin: 10px auto;
+  width:500px;
+}
+
+#experimentBox {
+  margin: 30px auto;
+  margin-top: 10px;
+  width:500px;
+  height: 500px;
+  border: 1px solid gray;
+  text-align:center;
+}
+
+.textInBox {
+  position: relative;
+  font-size: 16pt;
+  color: #222;
+  font-family: Arial, sans-serif;
+  top: 200px;
+  display: none;
+}
+
+.buttonStart {
+  font-size: 16pt;
+  font-family: Arial, sans-serif; 
+}
+
+#wrong {
+	position: absolute;
+	top:5%;
+	width: 100%;
+  color: maroon;
+  background: url(http://people.fas.harvard.edu/~tbrady/bg.png);
+  z-index: 1;
+}
+
+#correct {
+	position: absolute;
+	top:5%;
+	width:100%;
+  color: green;
+  background: url(http://people.fas.harvard.edu/~tbrady/bg.png);
+  z-index: 1;
+}
+
+#done {
+  display: none;
+}
+
+#timSubmit {
+  font-weight: bold; 
+  color: black; 
+  border: 3px outset gray; 
+  background: #CCC; 
+  padding: 5px; 
+  text-decoration: none;
+}
+
+#timSubmit:hover {
+  border: 3px solid gray; 
+}
+
+#timSubmit:active {
+  border: 3px inset gray; 
+}
+
+.instrucBox {
+  font-family: Arial, sans-serif;
+  line-height: 1.4em;
+  margin: 30px auto;
+  width:500px;
+}
+
+#instrucBox {
+  display: none;
+}
+#experimentBox {
+  display: none;
+  position:relative;
+}
+#encodingInstruc {
+  display: none;
+}
+#retrievalInstruc {
+  display: none;
+}
+
+#trialCnt {
+  float: right;
+}
+
+#startExperiment {
+  display: none;
+}
+</style>
+
+<div class="instrucBox" id="categoryInstruc1" style="padding:5px; text-align:left">
+<h2>Please only do ONE of these HITs (Memory Task 2). Thanks!</h2>
+<p>This HIT will involve 3 short tasks, all involving pictures of flowers. It should take approximately 12-15 minutes to do all 3 tasks.</p>
+<p>During the first task, you will see one flower at a time and have to determine whether or not it is an <b>avlonia</b>. Avlonias are a particular species of flower. They are different from all other flowers in one simple way -- and your job is to find out what that is. For example, it could be that avlonias all have 4 petals, but no other flowers do. Or avlonias could be the only flowers that have a pink center; or the only ones with a round center; or they could be the only ones with 2 sepals (black ovals) between each petal.</p>
+<p><img src="http://people.fas.harvard.edu/~tbrady/Images2/stim_4_green_square_purple_2.png" width=245><img src="http://people.fas.harvard.edu/~tbrady/Images2/stim_6_pink_tri_blue_0.png" width=245></p>
+<p>As you can see from these examples, the flowers in this experiment will differ in a number of ways: (1) the number of petals, (2) the color of the petals, (3) the shape of their center, (4) the color of their center, (5) the number of sepals between each petal (the black ovals). One of these features will determine what is and is not an avlonia.</p>
+<p>In the first task, you'll be shown a single flower, and then be asked if it is or not an avlonia (press 'y' if yes, 'n' if no). At first, you'll have to guess. Eventually, though, you'll figure out what makes something an avlonia. You will have 60 flowers to judge. Do your best to determine what makes something an avlonia.</p><br>
+<p><a href="javascript:StartCategorization()" class="buttonStart" id="startExperiment">I'm Ready to Start Part 1</a><span class="buttonStart" id="loading">Loading images... Please wait.</span></p><br>
+<p><small>By answering the following questions, you are participating in a study being performed by psychologists in the Harvard Department of Psychology. If you have questions about this research, please contact Timothy Brady at tbrady@wjh.harvard.edu. Your participation in this research is voluntary. You may decline to answer any or all of the following questions. You may decline further participation, at any time, without adverse consequences. Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.</small></p>
+<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>
+<input type="hidden" id="serverContacted" name="serverContacted" value="0">
+</div>
+
+<div class="instrucBox" id="encodingInstruc" style="padding:5px; text-align:left">
+<p>Great job!</p>
+<p>During the second task, you will have to remember flowers. You'll be shown 20 flowers, one at a time, for just a few seconds each. Do your best to remember these flowers as well as you can. If you remember a large number of them successfully, you'll likely get bonus pay. 
+<p>Some of the flowers you have to remember might be avlonias and some might not.</p>
+<p><a class="buttonStart" href="javascript:StartEncoding(0)">Start memory task</a></p>
+</div>
+
+<div class="instrucBox" id="retrievalInstruc" style="padding:5px; text-align:left">
+<p>Great job!</p>
+<p>During the third and final task, you will have to say which flowers you saw in the previous part and which you didn't. You'll be shown 50 flowers, one at a time. Some you will have seen before, and some you won't have seen. For each flower, you have to say whether you saw it before. If you did see it, press the 'y' key. If you didn't, press the 'n' key. Please do your best!</p>
+<p><a class="buttonStart" href="javascript:StartRetrieval()">Start memory test</a></p>
+</div>
+
+
+<div id="instrucBox"><span id="instrucTextCur">Do you think this is an avlonia? <b>(y/n)</b></span><span id="trialCnt">Trial 1 of 100</span></div>
+<div id="experimentBox">
+<div id="imagesForCategorizing"></div>
+<div id="imagesForEncoding"></div>
+<div id="imagesForRetrieval"></div>
+<div class="textInBox" id="question">Was this an avlonia?<br><br>y / n</div>
+<div class="textInBox" id="correct">Correct!</div>
+<div class="textInBox" id="wrong">Incorrect!</div>
+
+<div class="textInBox" id="done" style="top:60px">Done! You got <span id="numRight">0</span> out of 50 correct.<br><br>Any comments for us?<br><br>
+<textarea name="comments" id="comments" style="width: 300px; height: 200px"></textarea><br><br>
+<a href="javascript:SaveData()" id="timSubmit">Submit</a>
+</div>
+<div class="textInBox" id="saving">Saving . . .</div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script>
+function GetWorkerId() {
+	var workerId = turkGetParam( 'workerId', 'NONE' );
+	return workerId;
+}	
+
+function IsTurkPreview() {
+	return GetWorkerId() == "NONE";
+}	
+
+function IsOnTurk() {
+  return ((window.location.host.indexOf('mturk')!=-1) || document.forms["mturk_form"] ||
+    (top != self && window.parent.location.host.indexOf("mturk") != -1));
+}
+
+function GetAssignmentId() {
+	var assignmentId = turkGetParam( 'assignmentId', 'NONE' );
+	return assignmentId;
+}	
+
+function RandomOrder(num) {
+  var order = new Array();
+  for (var i=0; i<num; i++) { 
+    order.push(i); 
+  }
+  return Shuffle(order);
+}
+
+Shuffle = function(o) { 
+	for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+	return o;
+};
+
+// Check if this worker's actual ID is on the block list or not
+function CheckBlockList(blockListName, funcForBlocked) {
+	if (!IsTurkPreview()) {
+		$.ajax({             
+			crossDomain: true,
+			dataType: 'jsonp',	
+			url: 'https://timbrady.org/turk/checkDuplicates.pl', 
+      data:{'workerId': GetWorkerId(), 
+			 'blockListName': blockListName}, 
+			success: function(data) {
+				$('#serverContacted').val(1);
+				if (data.blocked == 1) {
+					funcForBlocked();
+				}
+			},
+			error: function(jx, status, error) {
+				$('#serverContacted').val(0);
+			}
+		});
+	}
+}
+
+
+//For todays date;
+Date.prototype.today = function(){ 
+    return ((this.getDate() < 10)?"0":"") + this.getDate() +"/"+(((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+ this.getFullYear() 
+};
+//For the time now
+Date.prototype.timeNow = function(){
+     return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
+};
+
+/*
+ * jQuery Hotkeys Plugin
+ * Copyright 2010, John Resig
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ *
+ * Based upon the plugin by Tzury Bar Yochay:
+ * http://github.com/tzuryby/hotkeys
+ *
+ * Original idea by:
+ * Binny V A, http://www.openjs.com/scripts/events/keyboard_shortcuts/
+*/
+
+(function(jQuery){
+
+	jQuery.hotkeys = {
+		version: "0.8",
+
+		specialKeys: {
+			8: "backspace", 9: "tab", 13: "return", 16: "shift", 17: "ctrl", 18: "alt", 19: "pause",
+			20: "capslock", 27: "esc", 32: "space", 33: "pageup", 34: "pagedown", 35: "end", 36: "home",
+			37: "left", 38: "up", 39: "right", 40: "down", 45: "insert", 46: "del", 
+			96: "0", 97: "1", 98: "2", 99: "3", 100: "4", 101: "5", 102: "6", 103: "7",
+			104: "8", 105: "9", 106: "*", 107: "+", 109: "-", 110: ".", 111 : "/", 
+			112: "f1", 113: "f2", 114: "f3", 115: "f4", 116: "f5", 117: "f6", 118: "f7", 119: "f8", 
+			120: "f9", 121: "f10", 122: "f11", 123: "f12", 144: "numlock", 145: "scroll", 191: "/", 224: "meta"
+		},
+
+		shiftNums: {
+			"`": "~", "1": "!", "2": "@", "3": "#", "4": "$", "5": "%", "6": "^", "7": "&", 
+			"8": "*", "9": "(", "0": ")", "-": "_", "=": "+", ";": ": ", "'": "\"", ",": "<", 
+			".": ">",  "/": "?",  "\\": "|"
+		}
+	};
+
+	function keyHandler( handleObj ) {
+		// Only care when a possible input has been specified
+		if ( typeof handleObj.data !== "string" ) {
+			return;
+		}
+
+		var origHandler = handleObj.handler,
+			keys = handleObj.data.toLowerCase().split(" ");
+
+		handleObj.handler = function( event ) {
+			// Don't fire in text-accepting inputs that we didn't directly bind to
+			if ( this !== event.target && (/textarea|select/i.test( event.target.nodeName ) ||
+				 event.target.type === "text") ) {
+				return;
+			}
+
+			// Keypress represents characters, not special keys
+			var special = event.type !== "keypress" && jQuery.hotkeys.specialKeys[ event.which ],
+				character = String.fromCharCode( event.which ).toLowerCase(),
+				key, modif = "", possible = {};
+
+			// check combinations (alt|ctrl|shift+anything)
+			if ( event.altKey && special !== "alt" ) {
+				modif += "alt+";
+			}
+
+			if ( event.ctrlKey && special !== "ctrl" ) {
+				modif += "ctrl+";
+			}
+
+			// TODO: Need to make sure this works consistently across platforms
+			if ( event.metaKey && !event.ctrlKey && special !== "meta" ) {
+				modif += "meta+";
+			}
+
+			if ( event.shiftKey && special !== "shift" ) {
+				modif += "shift+";
+			}
+
+			if ( special ) {
+				possible[ modif + special ] = true;
+
+			} else {
+				possible[ modif + character ] = true;
+				possible[ modif + jQuery.hotkeys.shiftNums[ character ] ] = true;
+
+				// "$" can be triggered as "Shift+4" or "Shift+$" or just "$"
+				if ( modif === "shift+" ) {
+					possible[ jQuery.hotkeys.shiftNums[ character ] ] = true;
+				}
+			}
+
+			for ( var i = 0, l = keys.length; i < l; i++ ) {
+				if ( possible[ keys[i] ] ) {
+					return origHandler.apply( this, arguments );
+				}
+			}
+		};
+	}
+
+	jQuery.each([ "keydown", "keyup", "keypress" ], function() {
+		jQuery.event.special[ this ] = { add: keyHandler };
+	});
+
+})( jQuery );
+</script>
+<script>
+/* GENERAL SETUP
+   ------------------------------------------------- */
+   
+/* Define the features */
+var features = {};
+features['numPetal'] = new Array('2', '4', '6', '8');
+features['petalColor'] = new Array('blue', 'pink', 'yellow', 'green');
+features['centerShape'] = new Array('square', 'tri', 'circle', 'star');
+features['centerColor'] = new Array('purple', 'orange', 'brightgreen', 'lightblue');
+features['numSepal'] = new Array('0', '1', '2', '3'); // third one out at end
+
+CheckBlockList('Tim-Flowers', isBlocked);
+function isBlocked() {
+  $('#categoryInstruc1').html("Sorry, it looks like you've already done one of these HITs.<br><br>We ask that you only do 1 HIT of this kind (Memory Game 2).<br><br>Please return this HIT.");
+  $('#submitButton').hide();
+}
+
+/* List of feature names */
+var tKeys = Object.keys(features);
+
+/* Which ones define our categories - 
+     these should be fetched from a server */
+var featureLearned = ${featureLearned}-1;
+var featureFoil = ${featureFoil}-1;
+
+// Learn an avlonia, or a bevlonia?
+var learningGroup = ${learningGroup};
+
+var valueLearned = ${valueLearned}-1;
+var valueFoil = ${valueFoil}-1;
+
+/* Get an object that is either a member of the
+   learned category or not; and a member of the foil
+   category or not. Make sure the new object does
+   not equal any of the objects in avoidObjectsList   */
+function GetObject(learned, foil, avoidObjectsList) {
+  var avoidObjects = new Array();
+  for (var i=0; i<avoidObjectsList.length; i++) {
+    avoidObjects.push.apply(avoidObjects, avoidObjectsList[i]);
+  }
+  
+  var tKeys = Object.keys(features);
+  var nObject = {};
+  for (var i=0; i<tKeys.length;i++) {
+    var val = Math.floor(Math.random()*4);
+    
+    /* Ensure that the featureLearned only equals the valueLearned if 
+        we asked it to */
+    if (featureLearned==i) { 
+      if (learned) {
+        val = valueLearned;
+      } else {
+        while(val==valueLearned) {
+          val = Math.floor(Math.random()*4);
+        }
+      }
+    }
+    
+    /* Ensure that the featureFoil only equals the valueFoil if 
+        we asked it to */
+    if (featureFoil==i) { 
+      if (foil) {
+        val = valueFoil;
+      } else {
+        while(val==valueFoil) {
+          val = Math.floor(Math.random()*4);
+        }
+      }
+    }     
+    nObject[tKeys[i]] = features[tKeys[i]][val];
+  }
+  
+  /* Check to see if it matches anything we are supposed to avoid */
+  var overlaps = false;
+  for (var i=0; i<avoidObjects.length; i++) {
+    if (JSON.stringify(avoidObjects[i].object)===JSON.stringify(nObject)) {
+      overlaps = true;
+      break;
+    }
+  }
+  
+  /* If it does match an object we want to avoid, recurse to generate a new object: */
+  return (overlaps)? GetObject(learned, foil, avoidObjectsList) : nObject;
+}
+
+/* Get filename for an object */
+function GetFilename(obj) {
+  return ("http://people.fas.harvard.edu/~tbrady/Images2/stim_" + obj.numPetal + "_" + obj.petalColor + "_" + obj.centerShape + "_" + obj.centerColor + "_" + 
+    obj.numSepal + ".png");
+}
+
+
+/* Build the listsof items to use for categorization,
+    for encoding, and for memory tests */
+var itemsForCategorization = [];
+var itemsForEncoding = [];
+var itemsForRetrieval = [];
+
+var orderCategorization = RandomOrder(60);
+var orderEncoding = RandomOrder(20);
+var orderRetrieval = RandomOrder(50);
+
+/* Global trackers for which trial we're on; always
+    used, no matter what part of the experiment we're in */
+var curTrial = 0;
+var curTrialItem = {};
+var startTrialTime = 0;
+
+/* Create the set of objects to show in the categorization
+    phase */
+function CreateCategorizationList() {
+  var imageHTML = '';
+  for (var i=0; i<60; i++) {
+    var isTarget = i<30;
+    var isFoil = i<15 || i>45;
+    var obj = GetObject(isTarget, isFoil, 
+      [itemsForCategorization]);
+    var curItem = {'object': obj, 
+                   'filename': GetFilename(obj),
+                   'isTarget': isTarget,
+                   'isFoil': isFoil,
+                   'id': 'categorize' + i
+                  };
+    itemsForCategorization.push(curItem);
+    imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
+  }
+  $('#imagesForCategorizing').html(imageHTML);
+}
+
+/* Create the set of objects to show in the encoding
+    phase */ 
+function CreateEncodingList() {    
+  var imageHTML = '';
+  for (var i=0; i<20; i++) {
+    var isTarget = i<10;
+    var isFoil = i<5 || i>15;
+    var obj = GetObject(isTarget, isFoil, 
+      [itemsForCategorization, itemsForEncoding]);
+    var curItem = {'object': obj, 
+                   'filename': GetFilename(obj),
+                   'isTarget': isTarget,
+                   'isFoil': isFoil,
+                   'id': 'encode' + i
+                  };
+    itemsForEncoding.push(curItem);
+    imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
+  }
+  $('#imagesForEncoding').html(imageHTML);   
+}
+
+/* Create the set of objects to show in the retrieval/test
+    phase */ 
+function CreateRetrievalList() {        
+  var imageHTML = '';
+  for (var i=0; i<20; i++) {
+    var curItemObj = itemsForEncoding[i];
+    var curItem = {'object': curItemObj.object, 
+                   'filename': curItemObj.filename,
+                   'isTarget': curItemObj.isTarget,
+                   'isFoil': curItemObj.isFoil,
+                   'isOld': true,
+                   'id': 'retrieval' + i
+                  };
+    itemsForRetrieval.push(curItem);
+    imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
+  }
+  for (var i=0; i<30; i++) {
+    var isTarget = i<10;
+    var isFoil = i>=10 && i<20;
+    var obj = GetObject(isTarget, isFoil, 
+      [itemsForCategorization, itemsForEncoding, itemsForRetrieval]);
+    var curItem = {'object': obj, 
+                   'filename': GetFilename(obj),
+                   'isTarget': isTarget,
+                   'isFoil': isFoil,
+                   'isOld': false,
+                   'id': 'retrieval' + (i+20)
+                  };
+    itemsForRetrieval.push(curItem);
+    imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
+  }
+  $('#imagesForRetrieval').html(imageHTML);   
+}
+
+CreateCategorizationList();
+CreateEncodingList();
+CreateRetrievalList();
+
+/* CATEGORIZATION TASK 
+   ------------------------------------------------- */
+function StartCategorization() {
+  if (IsOnTurk() && IsTurkPreview()) {
+    alert('Please accept the HIT before beginning!');
+    return;
+  }
+  $('#categoryInstruc1').hide();
+  $('#instrucBox').show();
+  $('#experimentBox').show();
+  NextTrialCategorization();
+}
+
+function NextTrialCategorization() {  
+  $('#trialCnt').text("Trial " + (curTrial+1) + " of " + itemsForCategorization.length);
+  curTrialItem = itemsForCategorization[orderCategorization[curTrial]];
+  var curID = '#' + curTrialItem.id;
+  $(curID).show();
+  startTrialTime = (new Date()).getTime();
+  setTimeout(function() {
+    $(document).bind('keyup', 'y', PressedYesCategorization);
+    $(document).bind('keyup', 'n', PressedNoCategorization);
+   }, 200);
+}
+
+function PressedYesCategorization() {
+  var wasCorrect =  curTrialItem.isTarget;
+  ResponseCategorization(wasCorrect);
+}
+
+function PressedNoCategorization() {
+  var wasCorrect =  !curTrialItem.isTarget;
+  ResponseCategorization(wasCorrect);
+}
+
+function ResponseCategorization(correct) {
+  var curID = '#' + curTrialItem.id;
+  curTrialItem['wasCorrect'] = correct;
+  curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
+	$(document).unbind('keyup', PressedYesCategorization);
+	$(document).unbind('keyup', PressedNoCategorization);
+  
+  if (correct) {
+    if (curTrialItem.isTarget) {
+    	$('#correct').html('Correct!<br>This is an avlonia!');
+    } else {
+    	$('#correct').html('Correct!<br>This is NOT an avlonia!');
+    } 
+    $('#correct').show();
+  } else {
+    if (curTrialItem.isTarget) {
+    	$('#wrong').html('Incorrect!<br>This is an avlonia!');
+    } else {
+    	$('#wrong').html('Incorrect!<br>This is NOT an avlonia!');
+    }
+    $('#wrong').show();
+  }
+  
+  if (curTrial<itemsForCategorization.length-1) {
+    setTimeout(function() { 
+    	$(curID).hide();
+      $('#correct').hide();
+      $('#wrong').hide();
+      curTrial++;
+      NextTrialCategorization();
+     }, 2000);
+   } else {
+     setTimeout(function() { 
+      $(curID).hide();
+      $('#correct').hide();
+      $('#wrong').hide();
+      $('#correct').html('Correct!');
+      $('#wrong').html('Incorrect!');      
+      ShowEncodingStart();
+     }, 2000);
+   }
+}
+
+/* ENCODING TASK 
+   ------------------------------------------------- */
+function ShowEncodingStart() {
+  $('#instrucBox').hide();
+  $('#experimentBox').hide();
+  $('#encodingInstruc').show();
+  $('#instrucTextCur').html("&nbsp; &nbsp;");  
+}
+
+function StartEncoding(i) {
+  if (i==0) {
+    $('#instrucTextCur').text("Remember these 20 flowers as best you can!");
+    $('#instrucBox').show();
+    $('#experimentBox').show();  
+    $('.categorizeImage').hide();
+    $('#encodingInstruc').hide();
+  }
+  $('#trialCnt').text("Flower " + (i+1) + " of " + itemsForEncoding.length);
+  curTrialItem = itemsForEncoding[orderEncoding[i]];
+  var curID = '#' + curTrialItem.id;
+  $(curID).show();
+  setTimeout(function() {
+      $(curID).hide();
+      if (i<itemsForEncoding.length-1) { //XXX:For testing
+        setTimeout(function() {
+          StartEncoding(i+1);
+        }, 1000);
+      } else {
+         setTimeout(function() {
+          StartMemoryRetrievalTask();
+        }, 1000);     
+      }
+  }, 5000);
+}
+
+/* MEMORY RETRIEVAL TASK 
+   ------------------------------------------------- */
+var correctCount = 0;
+function StartMemoryRetrievalTask() {
+  $('#instrucBox').hide();
+  $('#experimentBox').hide();  
+  $('#retrievalInstruc').show();
+  $('#instrucTextCur').html("&nbsp; &nbsp;");  
+  curTrial = 0;
+}
+
+function StartRetrieval() {
+  $('#retrievalInstruc').hide();
+  $('#instrucTextCur').html("Did you see this flower earlier? <b>(y/n)</b>");
+  $('#instrucBox').show();
+  $('#experimentBox').show();  
+  $('.categorizeImage').hide(); 
+  NextTrialRetrieval();
+}
+
+function NextTrialRetrieval() {
+  $('.categorizeImage').hide();
+  $('#trialCnt').text("Trial " + (curTrial+1) + " of " + itemsForRetrieval.length);
+  curTrialItem = itemsForRetrieval[orderRetrieval[curTrial]];
+  var curID = '#' + curTrialItem.id;
+  $(curID).show();
+  startTrialTime = (new Date()).getTime();
+  setTimeout(function() {
+    $(document).bind('keyup', 'y', PressedYesRetrieval);
+    $(document).bind('keyup', 'n', PressedNoRetrieval);
+   }, 300);
+}
+
+function PressedYesRetrieval() {
+  var wasCorrect =  curTrialItem.isOld;
+  ResponseRetrieval(wasCorrect);
+}
+
+function PressedNoRetrieval() {
+  var wasCorrect =  !curTrialItem.isOld;
+  ResponseRetrieval(wasCorrect);
+}
+
+function ResponseRetrieval(correct) {
+  curTrialItem['wasCorrect'] = correct;
+  correctCount += (correct) ? 1 : 0;
+  curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
+	$(document).unbind('keyup', PressedYesRetrieval);
+	$(document).unbind('keyup', PressedNoRetrieval);
+  $('#' + curTrialItem.id).hide();
+  
+  if (curTrial<itemsForRetrieval.length-1) {
+    setTimeout(function() { 
+      curTrial++;
+      NextTrialRetrieval();
+     }, 1000);
+   } else {
+     setTimeout(function() { 
+      ShowDone();
+     }, 1000);
+   }
+}
+
+/* DONE
+   ------------------------------------------------- */
+function ShowDone() {
+  $('#instrucTextCur').html("&nbsp; &nbsp;"); 
+  $('#numRight').text(correctCount);
+  $('#done').show();
+}
+
+function SaveData() {
+  $('#done').hide();
+  $('#saving').show();
+  
+  Save("learningGroup", learningGroup);
+  
+  Save("featuredLearned", featureLearned);
+  Save("featureFoil", featureFoil);
+  Save("valueLearned", valueLearned);
+  Save("valueFoil", valueFoil);
+  
+  Save("orderCategorization", orderCategorization);
+  Save("orderEncoding", orderEncoding);
+  Save("orderRetrieval", orderRetrieval);
+  
+  for (var i=0; i<itemsForCategorization.length; i++) {
+    Save(itemsForCategorization[i].id, itemsForCategorization[i]);
+  }
+  for (var i=0; i<itemsForEncoding.length; i++) {
+    Save(itemsForEncoding[i].id, itemsForEncoding[i]);
+  }
+  for (var i=0; i<itemsForRetrieval.length; i++) {
+    Save(itemsForRetrieval[i].id, itemsForRetrieval[i]);
+  }  
+  Save("userAgent", navigator.userAgent);
+  Save("windowWidth", $(window).width());
+  Save("windowHeight", $(window).height());
+  Save("screenWidth", screen.width);
+  Save("screenHeight", screen.height);
+  
+  var newDate = new Date();
+  var curID = (IsOnTurk())? GetAssignmentId() : prompt("Doesn't look like you are on Turk, so you're probably testing. Enter an ID to save your data with:", "id");
+  d = { 
+    "curID": curID,
+    "curTime": newDate.today() + " @ " + newDate.timeNow(),
+    "userAgent": navigator.userAgent,
+    "windowWidth": $(window).width(),
+    "windowHeight": $(window).height(),
+    "screenWidth": screen.width,
+    "screenHeight": screen.height,    
+    "comments": $('#comments').val(),
+    "learningGroup": learningGroup,
+    "featuredLearned": featureLearned,
+    "featureFoil": featureFoil,
+    "valueLearned": valueLearned,
+    "valueFoil": valueFoil,
+    "orderCategorization": orderCategorization,
+    "orderEncoding": orderEncoding,
+    "orderRetrieval": orderRetrieval,
+    "itemsForCategorization": itemsForCategorization,
+    "itemsForEncoding": itemsForEncoding,
+    "itemsForRetrieval": itemsForRetrieval
+  };
+  SendToServer(curID, d);
+}
+
+function Save(name, content) {
+  $('#instrucBox').append(
+    "<input type='hidden' name='" + name + "' value='" + JSON.stringify(content) + "'>");
+}
+
+function SendToServer(id, curData) {
+  var dataToServer = {
+    'id': id,
+    'experimentName': 'E2_data',
+    'curData': JSON.stringify(curData)
+  };  
+  
+  $.post("http://www.people.fas.harvard.edu/~tbrady/save.cgi",
+    dataToServer,
+    function(data) { 
+      if (IsOnTurk()) {
+        document.forms[0].submit(); 
+      } else {
+        $('#saving').hide();
+      }
+    }
+  ).fail(function(data) { 
+    if (IsOnTurk()) {
+      document.forms[0].submit(); 
+    } else {
+      $('#saving').hide();
+    } 
+  });
+}
+
+$(function() {
+  /* On page load */
+  $('#submitButton').hide();
+  $('#loading').hide();
+  $('#startExperiment').show();
+});
+</script>
+
+

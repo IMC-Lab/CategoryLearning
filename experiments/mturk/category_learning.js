@@ -52,18 +52,40 @@ function nextAssignment(oldAssignment, values) {
 
 /*
  * Setup the html fields and links to run the experiment
+ * experimentName- a string defining the name of the experiment, and what folder
+ *                 to save behavioral data in.
+ * assignmentFilename- the json file caching the current feature/value assignment
+ * GetFilename- a function to get the filename of an image defined by a feature set
+ * values- a mapping of feature names to all possible values for the feature
+ * nLearning- number of learning trials
+ * pLearnedLearning- percentage of stimuli in the learned category during learning
+ * pFoilLearning- percentage of stimuli in the foil category during learning
+ * nStudy- number of study trials
+ * pLearnedStudy- percentage of stimuli in the learned category during study
+ * pFoilStudy- percentage of stimuli in the foil category during study
+ * nTest- number of test trials
+ * pLearnedTest- percentage of lures in the learned category during test
+ * pFoilTest- percentage of lures in the foil category during test
+ * progressDir- the directory to save experiment progress information for multiple
+ *              experiments. This is set to null by default, if only one experiment
+ *              is being run.
+ * learningFn- a function to run learning on button press
+ * studyFn- a function to run study on button press
+ * testFn- a function to run test on button press
+ * saveFn- a function to save experient data on button press
  */
 async function StartExperiment(experimentName, assignmentFilename, GetFilename, values,
-                         nLearning, pLearnedLearning, pFoilLearning,
-                         nStudy, pLearnedStudy, pFoilStudy,
-                         nTest, pLearnedTest, pFoilTest) {
+                               nLearning, pLearnedLearning, pFoilLearning,
+                               nStudy, pLearnedStudy, pFoilStudy,
+                               nTest, pLearnedTest, pFoilTest, dataDir='data', progressDir=null,
+                               learningFn=null, studyFn=null, testFn=null, saveFn=null) {
   $('#numLearning').text(nLearning);
   $('#numStudy').text(nStudy);
   $('#numTest').text(nTest);
   $('#submitButton').hide();
   $('#startLearning').hide()
 
-  let assignment = await fetchJSON('http://web-mir.ccn.duke.edu/flower/' + assignmentFilename);
+  let assignment = await fetchJSON(assignmentFilename);
   await writeJSON(assignmentFilename, nextAssignment(assignment, values));
 
   /* List of feature names */
@@ -102,22 +124,30 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
   /* Set up button presses to their linked function */
   let stimuliType = experimentName.split("_")[0];
   document.getElementById('startLearning').onclick
-    = function(){ StartLearning(itemsForLearning); };
+    = (learningFn)? function() { learningFn(itemsForLearning); }
+                  : function() { StartLearning(itemsForLearning); };
   document.getElementById('startStudy').onclick
-    = function(){ StartStudy(stimuliType, itemsForStudy); };
+    = (studyFn)? function() { studyFn(stimuliType, itemsForStudy); }
+               : function() { StartStudy(stimuliType, itemsForStudy); };
   document.getElementById('startTest').onclick
-    = function(){ StartTest(stimuliType, itemsForTest); };
+    = (testFn)? function () { testFn(stimuliType, itemsForTest); }
+              : function () { StartTest(stimuliType, itemsForTest); };
   document.getElementById('timSubmit').onclick
-    = async function() {
-        await SaveData(experimentName, featureLearned, valueLearned,
-                       featureFoil, valueFoil, itemsForLearning,
-                       itemsForStudy, itemsForTest);
+    = (saveFn)? async function() {
+                  saveFn(experimentName, featureLearned, valueLearned,
+                         featureFoil, valueFoil, itemsForLearning,
+                         itemsForStudy, itemsForTest);
+                }
+              : async function() {
+                  await SaveData(experimentName, dataDir, progressDir, featureLearned,
+                                 valueLearned, featureFoil, valueFoil,
+                                 itemsForLearning, itemsForStudy, itemsForTest);
 
-        // try to close the window after the data is saved.
-        if (window.opener) {
-           close();
-        }
-      };
+                  // try to close the window after the data is saved.
+                  if (window.opener) {
+                     close();
+                  }
+                };
 
   // After 90s show the link to continue
   setTimeout(function () {
@@ -451,11 +481,11 @@ function ShowDone(itemsForTest) {
   $('#done').show();
 }
 
-async function ShowNextExperiment() {
+async function ShowNextExperiment(progressFilename) {
   let progress;
   try {
     // wait for a second just to make sure the progress has been updated
-    progress = await retry(fetchJSON('http://web-mir.ccn.duke.edu/flower/data/progress/' + curID + '.json'), 10, 75);
+    progress = await retry(fetchJSON(progressFilename), 10, 75);
   } catch (error) {
     return false;
   }
@@ -484,28 +514,37 @@ async function ShowNextExperiment() {
  * Else, prompt the user for an ID until they give a non-empty response.
  */
 function GetID(event) {
-  let id = (window.opener)? window.opener.curID : curID;
+  let id;
+  try {
+   id = (window.opener)? window.opener.curID : curID;
+  } catch (error) { id = null; }
+
   while (!id || id === "") {
     id = (IsOnTurk())? GetAssignmentId() : prompt('Please enter your mTurk ID:','');
   }
   return id;
 }
 
-async function SaveData(experimentName, featureLearned, valueLearned, featureFoil,
-                        valueFoil, itemsForLearning, itemsForStudy, itemsForTest) {
+async function SaveData(experimentName, dataDir, progressDir, featureLearned, valueLearned,
+                        featureFoil, valueFoil, itemsForLearning, itemsForStudy, itemsForTest) {
   $('#done').hide();
   $('#saving').show();
 
-  let hitRate = parseFloat($('#numRight').text(), 10) / itemsForStudy.length;
-  let earnedBonus = hitRate >= 0.85;
+  let correctRate = parseFloat($('#numRight').text(), 10) / itemsForTest.length;
+  let earnedBonus = correctRate >= 0.85;
   let curID = GetID();
-  console.log('curID' + curID);
-  let progress = await fetchJSON('http://web-mir.ccn.duke.edu/flower/data/progress/' + curID + '.json');
-  progress['curExperiment'] = progress['curExperiment'] + 1;
-  await writeJSON('data/progress/' + curID + '.json', progress);
+  let progress;
+  if (progressDir) {
+    progress = await fetchJSON(progressDir + curID + '.json');
+    progress['curExperiment'] = progress['curExperiment'] + 1;
+    await writeJSON(progressDir + curID + '.json', progress);
+  } else {
+    progress = {'curExperiment':1, 'numExperiments':1};
+  }
+
 
   Save("experimentNumber", progress['curExperiment']);
-  Save("hitRate", hitRate);
+  Save("correctRate", correctRate);
   Save("earnedBonus", earnedBonus);
   Save("featuredLearned", featureLearned);
   Save("featureFoil", featureFoil);
@@ -538,7 +577,7 @@ async function SaveData(experimentName, featureLearned, valueLearned, featureFoi
     "screenHeight": screen.height,
     "comments": $('#comments').val(),
     "experimentNumber": progress['curExperiment'],
-    "hitRate": hitRate,
+    "correctRate": correctRate,
     "earnedBonus": earnedBonus,
     "featureLearned": featureLearned,
     "featureFoil": featureFoil,
@@ -549,7 +588,7 @@ async function SaveData(experimentName, featureLearned, valueLearned, featureFoi
     "itemsForTest": itemsForTest
   };
 
-  return SendToServer(curID, d, experimentName);
+  return SendToServer(curID, d, experimentName, dataDir);
 }
 
 function Save(name, content) {
@@ -557,9 +596,11 @@ function Save(name, content) {
     "<input type='hidden' name='" + name + "' value='" + JSON.stringify(content) + "'>");
 }
 
-function SendToServer(id, curData, experimentName) {
+function SendToServer(id, curData, experimentName, dataDir) {
+  console.log('Saving to: ' + dataDir + '/' + experimentName + '/' + id + '.txt');
   let dataToServer = {
     'id': id,
+    'directory': dataDir,
     'experimentName': experimentName,
     'curData': JSON.stringify(curData)
   };
