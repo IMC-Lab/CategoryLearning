@@ -5,6 +5,7 @@ function [data, exit] = test(window, old_stim, lure_stim, parameters)
     [old_stim(:).is_old] = deal(true);
     [lure_stim(:).is_old] = deal(false);
     stim = Shuffle([old_stim, lure_stim]);
+    [stim(:).phase] = deal('test');
     data = stim;
     
     % Display the instruction screen

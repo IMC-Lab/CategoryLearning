@@ -44,4 +44,12 @@ function [data, exit] = study(window, stim, parameters)
     % Blank screen
     Screen('Flip', window);
     WaitSecs(exprnd(parameters.studyITI));
+    
+    % Fill in the rest of the data columns
+    [data(:).phase] = deal('study');
+    [data(:).response] = deal('');
+    [data(:).reaction_time] = deal(NaN);
+    [data(:).expected_response] = deal('');
+    [data(:).is_correct] = deal(NaN);
+    [data(:).is_old] = deal(false);
 end

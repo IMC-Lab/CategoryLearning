@@ -4,6 +4,7 @@ function CategoryLearning(varargin)
 %                   of memories: A category learning paradigm to explore
 %                   schema-driven recognition" by De Brigard  et al (2017).
 %
+% BIAC :- run with fMRI scanner? Defaults to false.
 % features :- a struct containing stimulus features associated with the
 %             set of the feature's possible values.
 % getFilename :- a function to generate a filename given a set of
@@ -55,11 +56,11 @@ function CategoryLearning(varargin)
     KbCheck;
     WaitSecs(0.01);
     GetSecs();
-    
 
     try
     % parse the input
     p = inputParser;
+    p.addParameter('BIAC', false, @islogical);
     p.addParameter('features', struct(), ...
                    @(x) ~isempty(x) & ~any(structfun(@isempty, x)));
     p.addParameter('getFilename', @getFilenameDefault,...
@@ -84,7 +85,7 @@ function CategoryLearning(varargin)
     p.addParameter('studyTime', 5.0, @(x) x > 0);
     p.addParameter('studyITI', 1.0, @(x) x > 0); 
     
-    p.addParameter('oldTrials', 9, @(x) x > 0);
+    p.addParameter('oldTrials', 9, @(x) x >= 0);
     p.addParameter('lureTrials', 9, @(x) x > 0);
     p.addParameter('lurePLearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('lurePUnlearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
@@ -94,7 +95,7 @@ function CategoryLearning(varargin)
     p.addParameter('testOldKey', 'y', @ischar);
     p.addParameter('testNewKey', 'n', @ischar);
     p.parse(varargin{:});
-    parameters = p.Results;  
+    parameters = p.Results;
     
     % Define the learned category
     conds = get_conditions(parameters.features,...
@@ -133,7 +134,20 @@ function CategoryLearning(varargin)
     KbQueueCreate();
     KbQueueStart();
     
-    disp(strcat('Participant Number:', string(parameters.participantNumber)))
+    % Enable psychtoolbox for BIAC computers
+    if parameters.BIAC
+        addpath('\\Munin\Data\Programs\MATLAB\PsychToolbox\3.0.11');
+        BIACSetupPsychtoolbox;
+        WaitForScanner;
+    end
+    
+    % save the parameter settings
+    writetable(removevars(struct2table(parameters), {'features', 'getFilename'}),...
+               strcat(sprintf('%03d', parameters.participantNumber),...
+               '_parameters.csv'));
+
+    disp(strcat('Participant Number: ', string(parameters.participantNumber)))
+    save_data = NaN;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Learning phase
     disp('Learning Phase')
@@ -141,8 +155,7 @@ function CategoryLearning(varargin)
                                 parameters.learningPLearned,...
                                 parameters.learningPUnlearned);
     [learning_data, exit] = learn(window, learning_stim, parameters);
-    writetable(struct2table(learning_data),...
-               strcat(string(parameters.participantNumber), '_learn.csv'));
+    save_data = learning_data;
     if exit
         error('Aborting experiment');
     end
@@ -154,8 +167,8 @@ function CategoryLearning(varargin)
                              parameters.studyPLearned,...
                              parameters.studyPUnlearned, learning_stim);
     [study_data, exit] = study(window, study_stim, parameters);
-    writetable(struct2table(study_data),... 
-               strcat(string(parameters.participantNum), '_study.csv'));
+    save_data = [save_data, study_data];
+    
     if exit
         error('Aborting experiment');
     end
@@ -163,13 +176,12 @@ function CategoryLearning(varargin)
     % Test phase
     disp('Test Phase')
     old = Shuffle(study_stim);
-    old = old(1:parameters.oldTrials);
+    old = old(1:min(parameters.oldTrials, length(old)));
     lures = get_stimuli(parameters, parameters.lureTrials,...
                         parameters.lurePLearned, parameters.lurePUnlearned,...
                         [learning_stim, study_stim]);
     [test_data, exit] = test(window, old, lures, parameters);
-    writetable(struct2table(test_data),...
-               strcat(string(parameters.participantNum), '_test.csv'));
+    save_data = [save_data, test_data];
     if exit
         error('Aborting experiment');
     end
@@ -177,13 +189,27 @@ function CategoryLearning(varargin)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Thank the participants
     [~, height] = Screen('WindowSize', window);
-    Screen('TextSize', window, 96);
-    DrawFormattedText(window, 'Thank you for your participation!', 'center', height/3.0, 0);
+    Screen('TextSize', window, 84);
+    DrawFormattedText(window, 'Thank you for \nyour participation!', 'center', height/3.0, 0);
     Screen('TextSize', window, 48);
     DrawFormattedText(window, 'Press any key to exit.', 'center', height*2/3.0, 0);
     Screen('Flip', window);
     KbStrokeWait();
     
+    % save all of the data
+    writetable(struct2table(save_data),...
+               strcat(sprintf('%03d', parameters.participantNumber), '.csv'));
+    
+    catch EXCEPTION
+    ListenChar(0);
+    sca;
+    
+    % save all of the current data
+    if exist('save_data')
+        writetable(struct2table(save_data),...
+                   strcat(sprintf('%03d', parameters.participantNumber), '.csv'));
+    end
+    rethrow(EXCEPTION);
     end
     ListenChar(0);
     sca;

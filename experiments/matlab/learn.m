@@ -4,6 +4,8 @@ function [data, exit] = learn(window, stim, parameters)
     % initialize the data array
     exit = 0;
     data = stim;
+    [data(:).phase] = deal('learn');
+    [data(:).is_old] = deal(false);  % fill in absent values
     
     [~, height] = Screen('WindowSize', window);
     Screen('TextSize', window, 96);
@@ -60,7 +62,7 @@ function [data, exit] = learn(window, stim, parameters)
        if data(i).is_correct
            DrawFormattedText(window, 'Correct', 'center', 'center', [0, 1, 0]);
        else
-           DrawFormattedText(window, 'Inorrect', 'center', 'center', [1, 0, 0]);
+           DrawFormattedText(window, 'Incorrect', 'center', 'center', [1, 0, 0]);
        end
        Screen('Flip', window);
        WaitSecs(parameters.learningFeedbackTime);

@@ -6,7 +6,7 @@ function filename = getFilenameDefault(stim, varargin)
     p.addParameter('dir', '.');
     p.addParameter('prefix', 'stim');
     p.addParameter('extension', '.png');
-    p.addParameter('exclude', {'is_learned', 'is_unlearned', 'is_old'});
+    p.addParameter('exclude', {'phase', 'is_learned', 'is_unlearned', 'is_old'});
     p.addParameter('delim', '_');
     p.parse(varargin{:});
     
