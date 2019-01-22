@@ -16,6 +16,15 @@ function [data, exit] = learn(window, stim, parameters)
     Screen('Flip', window);
     KbStrokeWait();
     
+    %[~, height] = Screen('WindowSize', window);
+    %Screen('TextSize', window, 96);
+    %DrawFormattedText(window, parameters.learningInstruc, 'center', height/3.0, 0);
+    %Screen('TextSize', window, 48);
+    %DrawFormattedText(window, 'Press any key to continue.', 'center',...
+    %                  height*2/3.0, 0);
+    %Screen('Flip', window);
+    %KbStrokeWait();
+    
     for i = 1:parameters.learningTrials
        Screen('Flip', window);
        WaitSecs(exprnd(parameters.learningITI));

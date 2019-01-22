@@ -78,12 +78,14 @@ function CategoryLearning(varargin)
     p.addParameter('learningFeedbackTime', 1.0, @(x) x >= 0);
     p.addParameter('learningYKey', 'y', @ischar);
     p.addParameter('learningNKey', 'n', @ischar);
+    p.addParameter('learningInstruc', '', @ischar);
     
     p.addParameter('studyTrials', 9, @(x) x > 0);
     p.addParameter('studyPLearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('studyPUnlearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('studyTime', 5.0, @(x) x > 0);
-    p.addParameter('studyITI', 1.0, @(x) x > 0); 
+    p.addParameter('studyITI', 1.0, @(x) x > 0);
+    p.addParameter('studyInstruc', '', @ischar);
     
     p.addParameter('oldTrials', 9, @(x) x >= 0);
     p.addParameter('lureTrials', 9, @(x) x > 0);
@@ -94,6 +96,7 @@ function CategoryLearning(varargin)
     p.addParameter('testTimeout', 5.0, @(x) x > 0);
     p.addParameter('testOldKey', 'y', @ischar);
     p.addParameter('testNewKey', 'n', @ischar);
+    p.addParameter('testInstruc', '', @ischar);
     p.parse(varargin{:});
     parameters = p.Results;
     
@@ -147,10 +150,10 @@ function CategoryLearning(varargin)
                '_parameters.csv'));
 
     disp(strcat('Participant Number: ', string(parameters.participantNumber)))
-    save_data = NaN;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Learning phase
     disp('Learning Phase')
+    disp(learningInstruc)
     learning_stim = get_stimuli(parameters, parameters.learningTrials,...
                                 parameters.learningPLearned,...
                                 parameters.learningPUnlearned);
@@ -163,6 +166,7 @@ function CategoryLearning(varargin)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Study phase
     disp('Study Phase')
+    disp(studyInstruc)
     study_stim = get_stimuli(parameters, parameters.studyTrials,...
                              parameters.studyPLearned,...
                              parameters.studyPUnlearned, learning_stim);
@@ -175,6 +179,7 @@ function CategoryLearning(varargin)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Test phase
     disp('Test Phase')
+    disp(testInstruc)
     old = Shuffle(study_stim);
     old = old(1:min(parameters.oldTrials, length(old)));
     lures = get_stimuli(parameters, parameters.lureTrials,...
