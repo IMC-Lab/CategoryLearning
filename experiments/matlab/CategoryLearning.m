@@ -78,12 +78,14 @@ function CategoryLearning(varargin)
     p.addParameter('learningFeedbackTime', 1.0, @(x) x >= 0);
     p.addParameter('learningYKey', 'y', @ischar);
     p.addParameter('learningNKey', 'n', @ischar);
+    p.addParameter('learningInstructionsFn', @(x) disp(''));
     
     p.addParameter('studyTrials', 9, @(x) x > 0);
     p.addParameter('studyPLearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('studyPUnlearned', 1.0/3.0, @(x) x > 0 && x < 1.0);
     p.addParameter('studyTime', 5.0, @(x) x > 0);
-    p.addParameter('studyITI', 1.0, @(x) x > 0); 
+    p.addParameter('studyITI', 1.0, @(x) x > 0);
+    p.addParameter('studyInstructionsFn', @(x) disp(''));
     
     p.addParameter('oldTrials', 9, @(x) x >= 0);
     p.addParameter('lureTrials', 9, @(x) x > 0);
@@ -94,6 +96,7 @@ function CategoryLearning(varargin)
     p.addParameter('testTimeout', 5.0, @(x) x > 0);
     p.addParameter('testOldKey', 'y', @ischar);
     p.addParameter('testNewKey', 'n', @ischar);
+    p.addParameter('testInstructionsFn', @(x) disp(''));
     p.parse(varargin{:});
     parameters = p.Results;
     
