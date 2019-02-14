@@ -3,6 +3,9 @@ function categ_data_prep(dataFolder)
 currDate = datestr(datetime('today'),'yyyymmdd');
 dataPath = 'data/raw/';
 outPath = 'data/';
+nLearning = 72;
+nStudy = 18;
+nTest = 54;
 
 %% read in data
 catlisting = dir([dataPath, dataFolder, '/*.txt']);
@@ -11,14 +14,13 @@ numSub = length(catlisting);
 %% open file
 catlog = fopen([outPath,'cat_',currDate,'_',dataFolder,'.csv'],'w');
 if contains(dataFolder, 'flower', 'IgnoreCase', true)
-    disp('flower')
     featureSet = {'numPetal', 'petalColor', 'centerShape', 'centerColor', 'numSepal'};
     featVStr = '%d,%s,%s,%s,%d,';
-    fprintf(catlog,'subject,experimentNumber,task,featureLearned,valueLearned,featureFoil,valueFoil,numPetal,petalColor,centerShape,centerColor,numSepal,isTarget,isFoil,wasCorrect,RT,isOld\n');
+    fprintf(catlog,'subject,experimentNumber,task,isInstructed,isPracticed,featureLearned,valueLearned,featureFoil,valueFoil,numPetal,petalColor,centerShape,centerColor,numSepal,isTarget,isFoil,wasCorrect,RT,isOld\n');
 elseif contains(dataFolder, 'insect','IgnoreCase',true)
     featVStr = '%d,%s,%s,%d,%s,';
     featureSet = {'segment_count', 'segment_shape', 'wing_color', 'antennae_count', 'antennae_color'};
-    fprintf(catlog,'subject,experimentNumber,task,featureLearned,valueLearned,featureFoil,valueFoil,segmentCount,segmentShape,wingColor,antennaeCount,antennaeColor,isTarget,isFoil,wasCorrect,RT,isOld\n');
+    fprintf(catlog,'subject,experimentNumber,task,isInstructed,isPracticed,featureLearned,valueLearned,featureFoil,valueFoil,segmentCount,segmentShape,wingColor,antennaeCount,antennaeColor,isTarget,isFoil,wasCorrect,RT,isOld\n');
 end
 
 %% extract data
@@ -35,6 +37,7 @@ for sbj = 1:numSub
     numRet = length(catS.itemsForTest);
     totTrs = numCat + numEnc + numRet;
     
+    if totTrs == (nLearning + nStudy + nTest)
     for tr = 1:totTrs
         if tr <= numCat
             taskStr = 'learn';
@@ -81,10 +84,13 @@ for sbj = 1:numSub
         end
         
         
-        fprintf(catlog,['%d,%d,%s,%s,%s,%s,%s,',featVStr,'%d,%d,%d,%d,%d\n'],...
-            sbj,catS.experimentNumber,taskStr,catS.featureLearned,catS.valueLearned,catS.featureFoil,catS.valueFoil,...
+        fprintf(catlog,['%d,%d,%s,%d,%d,%s,%s,%s,%s,',featVStr,'%d,%d,%d,%d,%d\n'],...
+            sbj,catS.experimentNumber,taskStr,catS.isInstructed,catS.isPracticed,...
+            catS.featureLearned,catS.valueLearned,catS.featureFoil,catS.valueFoil,...
             fV1,fV2,fV3,fV4,fV5,thisIsTaget,thisIsFoil,thisWasCorrect,thisRT,thisIsOld);
-        
+    end 
+    
+    else disp(['Excluding ', filename])
     end
     end
 end

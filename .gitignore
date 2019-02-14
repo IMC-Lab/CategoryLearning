@@ -1,3 +1,11 @@
 # temporary files
 *.*~
 */#*.*#
+
+# images & data files
+*.pdf
+*.png
+*.jpg
+*.txt
+*.csv
+analysis/mturk/data
