@@ -1,5 +1,4 @@
-function sortedStruct = SDT_cat_mem_prep(dataFile,rawData,versionIdx,needExperts)
-
+function sortedStruct = SDT_cat_mem_prep(dataFile, rawData, versionIdx, needExperts, plot)
 % prepare datasets for SDT fitting
 % INPUT: rawData - retrieval matrix
 %        versionIdx - Bayesian SDT model versions
@@ -34,40 +33,65 @@ else
     subIdx = 1:numSub;
 end
 
-% preallocation
-learnedSet   = nan(numSub,4);
-unlearnedSet = nan(numSub,4);
-neitherSet   = nan(numSub,4);
-bothSet      = nan(numSub,4);
+numSub
+% pre-allocation
+learnedHits   = nan(numSub, 1);
+learnedMisses = nan(numSub, 1);
+learnedFAs    = nan(numSub, 1);
+learnedCRs    = nan(numSub, 1);
+unlearnedHits   = nan(numSub, 1);
+unlearnedMisses = nan(numSub, 1);
+unlearnedFAs    = nan(numSub, 1);
+unlearnedCRs     = nan(numSub, 1);
+neitherHits   = nan(numSub, 1);
+neitherMisses = nan(numSub, 1);
+neitherFAs    = nan(numSub, 1);
+neitherCRs    = nan(numSub, 1);
+bothHits    = nan(numSub, 1);
+bothMisses  = nan(numSub, 1);
+bothFAs     = nan(numSub, 1);
+bothCRs     = nan(numSub, 1);
 
 for ss = 1:numSub
     thisT = rawData(rawData.subject == subIdx(ss),:);
     
-    learnedSet(ss,1) = sum(thisT.isTarget == 1 & thisT.isFoil == 0 & thisT.isOld == 1 & thisT.wasCorrect == 1);% hit
-    learnedSet(ss,2) = sum(thisT.isTarget == 1 & thisT.isFoil == 0 & thisT.isOld == 1 & thisT.wasCorrect == 0);% miss
-    learnedSet(ss,3) = sum(thisT.isTarget == 1 & thisT.isFoil == 0 & thisT.isOld == 0 & thisT.wasCorrect == 0);% false alarm
-    learnedSet(ss,4) = sum(thisT.isTarget == 1 & thisT.isFoil == 0 & thisT.isOld == 0 & thisT.wasCorrect == 1);% correct rejection
+    learnedHits(ss)   = sum(thisT.isTarget == 1 & thisT.isFoil == 0 & thisT.isOld == 1 & thisT.wasCorrect == 1);
+    learnedMisses(ss) = sum(thisT.isTarget == 1 & thisT.isFoil == 0 & thisT.isOld == 1 & thisT.wasCorrect == 0);
+    learnedFAs(ss)    = sum(thisT.isTarget == 1 & thisT.isFoil == 0 & thisT.isOld == 0 & thisT.wasCorrect == 0);
+    learnedCRs(ss)    = sum(thisT.isTarget == 1 & thisT.isFoil == 0 & thisT.isOld == 0 & thisT.wasCorrect == 1);
  
-    unlearnedSet(ss,1) = sum(thisT.isTarget == 0 & thisT.isFoil == 1 & thisT.isOld == 1 & thisT.wasCorrect == 1);% hit
-    unlearnedSet(ss,2) = sum(thisT.isTarget == 0 & thisT.isFoil == 1 & thisT.isOld == 1 & thisT.wasCorrect == 0);% miss
-    unlearnedSet(ss,3) = sum(thisT.isTarget == 0 & thisT.isFoil == 1 & thisT.isOld == 0 & thisT.wasCorrect == 0);% false alarm
-    unlearnedSet(ss,4) = sum(thisT.isTarget == 0 & thisT.isFoil == 1 & thisT.isOld == 0 & thisT.wasCorrect == 1);% correct rejection
+    unlearnedHits(ss)   = sum(thisT.isTarget == 0 & thisT.isFoil == 1 & thisT.isOld == 1 & thisT.wasCorrect == 1);
+    unlearnedMisses(ss) = sum(thisT.isTarget == 0 & thisT.isFoil == 1 & thisT.isOld == 1 & thisT.wasCorrect == 0);
+    unlearnedFAs(ss)    = sum(thisT.isTarget == 0 & thisT.isFoil == 1 & thisT.isOld == 0 & thisT.wasCorrect == 0);
+    unlearnedCRs(ss)     = sum(thisT.isTarget == 0 & thisT.isFoil == 1 & thisT.isOld == 0 & thisT.wasCorrect == 1);
     
-    neitherSet(ss,1) = sum(thisT.isTarget == 0 & thisT.isFoil == 0 & thisT.isOld == 1 & thisT.wasCorrect == 1);% hit
-    neitherSet(ss,2) = sum(thisT.isTarget == 0 & thisT.isFoil == 0 & thisT.isOld == 1 & thisT.wasCorrect == 0);% miss
-    neitherSet(ss,3) = sum(thisT.isTarget == 0 & thisT.isFoil == 0 & thisT.isOld == 0 & thisT.wasCorrect == 0);% false alarm
-    neitherSet(ss,4) = sum(thisT.isTarget == 0 & thisT.isFoil == 0 & thisT.isOld == 0 & thisT.wasCorrect == 1);% correct rejection
+    neitherHits(ss)   = sum(thisT.isTarget == 0 & thisT.isFoil == 0 & thisT.isOld == 1 & thisT.wasCorrect == 1);
+    neitherMisses(ss) = sum(thisT.isTarget == 0 & thisT.isFoil == 0 & thisT.isOld == 1 & thisT.wasCorrect == 0);
+    neitherFAs(ss)    = sum(thisT.isTarget == 0 & thisT.isFoil == 0 & thisT.isOld == 0 & thisT.wasCorrect == 0);
+    neitherCRs(ss)    = sum(thisT.isTarget == 0 & thisT.isFoil == 0 & thisT.isOld == 0 & thisT.wasCorrect == 1);
     
-    bothSet(ss,1) = sum(thisT.isTarget == 1 & thisT.isFoil == 1 & thisT.isOld == 1 & thisT.wasCorrect == 1);% hit
-    bothSet(ss,2) = sum(thisT.isTarget == 1 & thisT.isFoil == 1 & thisT.isOld == 1 & thisT.wasCorrect == 0);% miss
-    bothSet(ss,3) = sum(thisT.isTarget == 1 & thisT.isFoil == 1 & thisT.isOld == 0 & thisT.wasCorrect == 0);% false alarm
-    bothSet(ss,4) = sum(thisT.isTarget == 1 & thisT.isFoil == 1 & thisT.isOld == 0 & thisT.wasCorrect == 1);% correct rejection
+    bothHits(ss)    = sum(thisT.isTarget == 1 & thisT.isFoil == 1 & thisT.isOld == 1 & thisT.wasCorrect == 1);
+    bothMisses(ss)  = sum(thisT.isTarget == 1 & thisT.isFoil == 1 & thisT.isOld == 1 & thisT.wasCorrect == 0);
+    bothFAs(ss)     = sum(thisT.isTarget == 1 & thisT.isFoil == 1 & thisT.isOld == 0 & thisT.wasCorrect == 0);
+    bothCRs(ss)     = sum(thisT.isTarget == 1 & thisT.isFoil == 1 & thisT.isOld == 0 & thisT.wasCorrect == 1);
 end
 
-sortedStruct.learnedSet = learnedSet;
-sortedStruct.unlearnedSet = unlearnedSet;
-sortedStruct.neitherSet = neitherSet;
-sortedStruct.bothSet = bothSet;
+sortedStruct.learnedHits = learnedHits;
+sortedStruct.learnedMisses = learnedMisses;
+sortedStruct.learnedFAs = learnedFAs;
+sortedStruct.learnedCRs = learnedCRs;
+sortedStruct.unlearnedHits = unlearnedHits;
+sortedStruct.unlearnedMisses = unlearnedMisses;
+sortedStruct.unlearnedFAs = unlearnedFAs;
+sortedStruct.unlearnedCRs = unlearnedCRs;
+sortedStruct.neitherHits = neitherHits;
+sortedStruct.neitherMisses = neitherMisses;
+sortedStruct.neitherFAs = neitherFAs;
+sortedStruct.neitherCRs = neitherCRs;
+sortedStruct.bothHits = bothHits;
+sortedStruct.bothMisses = bothMisses;
+sortedStruct.bothFAs = bothFAs;
+sortedStruct.bothCRs = bothCRs;
 
 if versionIdx == 2
     save('/Users/Saoirse/Dropbox/Duke/De Brigard lab/[2]Categorization/Data/SDT_sortedData.mat',...
@@ -82,44 +106,54 @@ datasetLabels = {'Learned','Unlearned','Neither','Both'};
 
 % hit rate = # hits / (# hits + # misses)
 % FA rate = # FAs / (# FAs + # correct rejections)
-learnedHitRates = learnedSet(:,1)./(learnedSet(:,1)+learnedSet(:,2));
-learnedFARates  = learnedSet(:,3)./(learnedSet(:,3)+learnedSet(:,4));
+learnedHitRates = learnedHits./(learnedHits+learnedMisses);
+learnedFARates  = learnedFAs./(learnedFAs+learnedCRs);
 
-unlearnedHitRates = unlearnedSet(:,1)./(unlearnedSet(:,1)+unlearnedSet(:,2));
-unlearnedFARates  = unlearnedSet(:,3)./(unlearnedSet(:,3)+unlearnedSet(:,4));
+unlearnedHitRates = unlearnedHits./(unlearnedHits+unlearnedMisses);
+unlearnedFARates  = unlearnedFAs./(unlearnedFAs+unlearnedCRs);
 
-neitherHitRates = neitherSet(:,1)./(neitherSet(:,1)+neitherSet(:,2));
-neitherFARates  = neitherSet(:,3)./(neitherSet(:,3)+neitherSet(:,4));
+neitherHitRates = neitherHits./(neitherHits+neitherMisses);
+neitherFARates  = neitherFAs./(neitherFAs+neitherCRs);
 
-bothHitRates = bothSet(:,1)./(bothSet(:,1)+bothSet(:,2));
-bothFARates  = bothSet(:,3)./(bothSet(:,3)+bothSet(:,4));
+bothHitRates = bothHits./(bothHits+bothMisses);
+bothFARates  = bothFAs./(bothFAs+bothCRs);
 
-figure;
-subplot(1,2,1)
-% HIT
-meanVec = [mean(learnedHitRates),mean(unlearnedHitRates),mean(neitherHitRates),mean(bothHitRates)];
-errorVec = [std(learnedHitRates),std(unlearnedHitRates),std(neitherHitRates),std(bothHitRates)]./sqrt(numSub);
-errorbar(meanVec,errorVec,'k.','LineWidth',line_width)
-hold on
-bar(meanVec)
-xticks(1:4)
-xticklabels(datasetLabels)
-xtickangle(45)
-ylim([0 0.8])
-title('Hit rate')
-set(gca,'FontSize',font_size)
+sortedStruct.learnedHitRate = learnedHitRates;
+sortedStruct.learnedFARate = learnedFARates;
+sortedStruct.unlearnedHitRate = unlearnedHitRates;
+sortedStruct.unlearnedFARate = unlearnedFARates;
+sortedStruct.neitherHitRate = neitherHitRates;
+sortedStruct.neitherFARate = neitherFARates;
+sortedStruct.bothHitRate = bothHitRates;
+sortedStruct.bothFARate = bothFARates;
 
-subplot(1,2,2)
-% False alarm
-meanVec = [mean(learnedFARates),mean(unlearnedFARates),mean(neitherFARates),mean(bothFARates)];
-errorVec = [std(learnedFARates),std(unlearnedFARates),std(neitherFARates),std(bothFARates)]./sqrt(numSub);
-errorbar(meanVec,errorVec,'k.','LineWidth',line_width)
-hold on
-bar(meanVec)
-xticks(1:4)
-xticklabels(datasetLabels)
-xtickangle(45)
-ylim([0 0.8])
-title('False alarm rate')
-set(gca,'FontSize',font_size)
+if plot
+    figure;
+    subplot(1,2,1)
+    % HIT
+    meanVec = [mean(learnedHitRates),mean(unlearnedHitRates),mean(neitherHitRates),mean(bothHitRates)];
+    errorVec = [std(learnedHitRates),std(unlearnedHitRates),std(neitherHitRates),std(bothHitRates)]./sqrt(numSub);
+    errorbar(meanVec,errorVec,'k.','LineWidth',line_width)
+    hold on
+    bar(meanVec)
+    xticks(1:4)
+    xticklabels(datasetLabels)
+    xtickangle(45)
+    ylim([0 0.8])
+    title('Hit rate')
+    set(gca,'FontSize',font_size)
 
+    subplot(1,2,2)
+    % False alarm
+    meanVec = [mean(learnedFARates),mean(unlearnedFARates),mean(neitherFARates),mean(bothFARates)];
+    errorVec = [std(learnedFARates),std(unlearnedFARates),std(neitherFARates),std(bothFARates)]./sqrt(numSub);
+    errorbar(meanVec,errorVec,'k.','LineWidth',line_width)
+    hold on
+    bar(meanVec)
+    xticks(1:4)
+    xticklabels(datasetLabels)
+    xtickangle(45)
+    ylim([0 0.8])
+    title('False alarm rate')
+    set(gca,'FontSize',font_size)
+end

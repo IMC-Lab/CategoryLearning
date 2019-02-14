@@ -1,9 +1,13 @@
 % categorization experiment
-function thisT = categ_data_extraction(fileName,whichstage)
+function thisT = categ_data_extraction(fileName,whichstage,varargin)
 isOldData = -1;
 
 %% read data
 dataRootPath = 'data/';
+if ~isempty(varargin)
+    dataRootPath = varargin{1};
+end
+
 T = readtable([dataRootPath, fileName]);
 
 lrnT = T(strcmp(T.task,'learn'),:);

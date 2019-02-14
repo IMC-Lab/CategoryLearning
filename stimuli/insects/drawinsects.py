@@ -5,7 +5,8 @@ from PIL import Image, ImageColor, ImageDraw
 
 COMPONENT_DIR = 'Components'
 OUTPUT_DIR = 'images'
-FILE_TYPE = '.png'
+OUTPUT_FILE_TYPE = '.png'
+COMPONENT_FILE_TYPE = '.png'
 IMG_W = 500
 IMG_H = 500
 
@@ -36,7 +37,7 @@ WING_COLORS = {'blue':(60, 0, 180),     # encoded in RGB
                'green':(0, 200, 75)}
 WING_OFFSET = (0, 25)
 
-def component(name, prefix='', folder_name=COMPONENT_DIR, file_type=FILE_TYPE):
+def component(name, prefix='', folder_name=COMPONENT_DIR, file_type=COMPONENT_FILE_TYPE):
     """Get the image for the component of a given name.
     prefix- the name of the component's feature (leg, segment, wing)
     name- the feature's value
@@ -123,4 +124,4 @@ for segment_count in SEGMENT_COUNTS:
                     insect.save(os.path.dirname(__file__) + '/' + OUTPUT_DIR
                                 + '/insect_' + str(segment_count) + '_' + segment_shape + '_'
                                 + str(antennae_count) + '_' + antennae_color + '_'
-                                + wing_color + FILE_TYPE)
+                                + wing_color + OUTPUT_FILE_TYPE)

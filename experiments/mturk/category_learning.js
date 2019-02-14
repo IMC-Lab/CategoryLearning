@@ -1,4 +1,5 @@
-var waitTime = 90000;
+//var waitTime = 90000;
+var waitTime = 30000;
 
 function retry(promise, n, wait) {
     return promise.fail(function(error) {
@@ -11,18 +12,19 @@ function retry(promise, n, wait) {
 
 
 function fetchJSON(filename) {
-  return $.getJSON(filename)
-          .done(function (jsonData) {
-            return jsonData;
-          }).fail(function (jsonData, textStatus, error) {
-            throw "getJSON failed, filename: " + filename
-                          + ", status: " + textStatus + ", error: " + error;
-          });
+  return $.post('https://web-mir.ccn.duke.edu/flower/get_json.php',
+                {filename: filename})
+          .then(function (data) { return JSON.parse(data); })
+          .fail(function (jsonData, textStatus, error) {
+                  throw "getJSON failed, filename: " + filename
+                                + ", status: " + textStatus + ", error: " + error;
+                });
 }
 
 function writeJSON(filename, data) {
-  return $.post('http://web-mir.ccn.duke.edu/flower/save_json.php',
-                {'filename': filename,
+  return $.post('https://web-mir.ccn.duke.edu/flower/save_json.php',
+                  // remove the web address for filename to save it locally
+                {'filename': filename.replace('https://web-mir.ccn.duke.edu/flower/', ''),
                  'data':JSON.stringify(data)})
             .fail(function (d, textStatus, error) {
               throw "POST json failed, status: " + textStatus + ", error: " + error;
@@ -30,7 +32,7 @@ function writeJSON(filename, data) {
 }
 
 // Given this participant's feature assignment, get the next one.
-function nextAssignment(oldAssignment, values) {
+function nextAssignmentDefault(oldAssignment, values) {
   let newAssignment = Object.assign({}, oldAssignment);
   let features = Object.keys(values);
 
@@ -43,7 +45,7 @@ function nextAssignment(oldAssignment, values) {
     newAssignment.featureLearned = newAssignment.featureLearned + 1;
   }
 
-  // if we reached the last feature than reset to 0
+  // if we reached the last feature then reset to 0
   if (newAssignment.featureLearned >= features.length) {
     newAssignment.featureLearned = 0;
   }
@@ -78,15 +80,21 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
                                nLearning, pLearnedLearning, pFoilLearning,
                                nStudy, pLearnedStudy, pFoilStudy,
                                nTest, pLearnedTest, pFoilTest, dataDir='data', progressDir=null,
-                               learningFn=null, studyFn=null, testFn=null, saveFn=null) {
+                               learningFn=null, studyFn=null, testFn=null, saveFn=null,
+                               nextAssignmentFn=null) {
   $('#numLearning').text(nLearning);
   $('#numStudy').text(nStudy);
   $('#numTest').text(nTest);
   $('#submitButton').hide();
-  $('#startLearning').hide()
+  $('#startLearning').hide();
 
   let assignment = await fetchJSON(assignmentFilename);
-  await writeJSON(assignmentFilename, nextAssignment(assignment, values));
+
+  if (nextAssignmentFn) {
+    await writeJSON(assignmentFilename, nextAssignmentFn(assignment, values));
+  } else {
+    await writeJSON(assignmentFilename, nextAssignmentDefault(assignment, values));
+  }
 
   /* List of feature names */
   let features = Object.keys(values);
@@ -100,14 +108,6 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
     featureFoil = features[Math.floor(Math.random()*features.length)];
   }
   let valueFoil = values[featureFoil][Math.floor(Math.random()*values[featureFoil].length)];
-
-  /* For now, output the learned features */
-  /*
-  console.log('learned feature: ' + featureLearned);
-  console.log('learned value: ' + valueLearned);
-  console.log('unlearned feature: ' + featureFoil);
-  console.log('unlearned value: ' + valueFoil);
-  */
 
   /* Build the lists of items to use for learning, study, and test */
   let itemsForLearning = CreateLearningList(nLearning, pLearnedLearning, pFoilLearning,
@@ -134,9 +134,9 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
               : function () { StartTest(stimuliType, itemsForTest); };
   document.getElementById('timSubmit').onclick
     = (saveFn)? async function() {
-                  saveFn(experimentName, featureLearned, valueLearned,
-                         featureFoil, valueFoil, itemsForLearning,
-                         itemsForStudy, itemsForTest);
+                  saveFn(experimentName, dataDir, progressDir, featureLearned,
+                         valueLearned, featureFoil, valueFoil,
+                         itemsForLearning, itemsForStudy, itemsForTest);
                 }
               : async function() {
                   await SaveData(experimentName, dataDir, progressDir, featureLearned,
@@ -148,12 +148,13 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
                      close();
                   }
                 };
-
-  // After 90s show the link to continue
-  setTimeout(function () {
-      $('#loadingLearning').hide();
-      $('#startLearning').show();
-  }, waitTime);
+  return {'featureLearned':featureLearned,
+          'valueLearned':valueLearned,
+          'featureFoil':featureFoil,
+          'valueFoil':valueFoil,
+          'itemsForLearning':itemsForLearning,
+          'itemsForStudy':itemsForStudy,
+          'itemsForTest':itemsForTest};
 }
 
 /* Get an object that is either a member of the
@@ -605,7 +606,7 @@ function SendToServer(id, curData, experimentName, dataDir) {
     'curData': JSON.stringify(curData)
   };
 
-  return $.post("http://web-mir.ccn.duke.edu/flower/save.php",
+  return $.post("https://web-mir.ccn.duke.edu/flower/save.php",
                 dataToServer,
                 function(data) {
                   if (IsOnTurk()) {
