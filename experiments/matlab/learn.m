@@ -15,6 +15,7 @@ function [data, exit] = learn(window, stim, parameters)
                       height*2/3.0, 0);
     Screen('Flip', window);
     KbStrokeWait();
+    parameters.learningInstruc(window);
     
     for i = 1:parameters.learningTrials
        Screen('Flip', window);

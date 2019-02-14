@@ -17,6 +17,7 @@ function [data, exit] = test(window, old_stim, lure_stim, parameters)
                       height*2/3.0);
     Screen('Flip', window);
     KbStrokeWait();
+    parameters.testInstruc(window);
     
     for i = 1:length(stim)
        Screen('Flip', window);
