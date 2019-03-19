@@ -26,6 +26,12 @@ function objs = get_stimuli(parameters, count, p_learned, p_unlearned, exclude)
         for j = 1:length(parameters.features.(parameters.unlearned_feature))
             is_learned = i == parameters.learned_value_idx;
             is_unlearned = j == parameters.unlearned_value_idx;
+            disp(i)
+            disp(paramaters.learned_value_idx)
+            disp(i == parameters.learned_value_idx)
+            disp(j)
+            disp(parameters.unlearned_value_idx)
+            disp(j == parameters.unlearned_value_idx)
             % calculate the number of stimuli with these values
             if is_learned && is_unlearned
                 N = p_learned * p_unlearned * count;

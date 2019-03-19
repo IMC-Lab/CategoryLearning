@@ -11,6 +11,7 @@ function [data, exit] = study(window, stim, parameters)
                       height*2/3.0, 0);
     Screen('Flip', window);
     KbStrokeWait();
+    parameters.studyInstruc(window);
     KbQueueFlush();
     KbEventFlush();
     
