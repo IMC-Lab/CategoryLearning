@@ -198,6 +198,14 @@ let pFoilTest = 1/3.0;
 
 // start once the page loads
 $(function () {
+    if (IsOnTurk() && IsTurkPreview()) {
+      $('#numLearning').text(nLearning);
+      $('#numStudy').text(nStudy);
+      $('#numTest').text(nTest);
+      $('#startLearning').hide();
+      return;
+    }
+    
     StartExperiment('insect_E5_replication', assignmentFilename, GetInsectFilename, values,
                     nLearning, pLearnedLearning, pFoilLearning,
                     nStudy, pLearnedStudy, pFoilStudy,

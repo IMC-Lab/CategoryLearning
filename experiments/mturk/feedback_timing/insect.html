@@ -214,18 +214,29 @@ function nextAssignment(oldAssignment, values) {
 }
 
 // start once the page loads
-$(StartExperiment('insect_E5_replication', assignmentFilename, GetInsectFilename, values,
+/* On page load */
+$(function () {
+  if (IsOnTurk() && IsTurkPreview()) {
+    $('#numLearning').text(nLearning);
+    $('#numStudy').text(nStudy);
+    $('#numTest').text(nTest);
+    $('#startLearning').hide();
+    return;
+  }
+
+  StartExperiment('insect_feedback', assignmentFilename, GetFlowerFilename, values,
                   nLearning, pLearnedLearning, pFoilLearning,
                   nStudy, pLearnedStudy, pFoilStudy,
-                  nTest, pLearnedTest, pFoilTest, dataDir)
-                .then(function (expData) {
-                  feedbackDelay = conditions[expData.condition];
-                  console.log('Feedback Delay: ' + feedbackDelay);
+                  nTest, pLearnedTest, pFoilTest, dataDir, null,
+                  null, null, null, null, nextAssignment)
+                  .then(function (expData) {
+                    feedbackDelay = conditions[expData.condition];
+                    console.log('Feedback Duration: ' + feedbackDelay);
 
-                  // After 90s show the link to continue
-                  setTimeout(function () {
-                    $('#loadingLearning').hide();
-                    $('#startLearning').show();
-                  }, waitTime);}));
-
+                    // After 90s show the link to continue
+                    setTimeout(function () {
+                      $('#loadingLearning').hide();
+                      $('#startLearning').show();
+                    }, waitTime);});
+  });
 </script>

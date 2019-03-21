@@ -211,7 +211,16 @@ function nextAssignment(oldAssignment, values) {
 }
 
 /* On page load */
-$(StartExperiment('flower_feedback', assignmentFilename, GetFlowerFilename, values,
+$(function () {
+  if (IsOnTurk() && IsTurkPreview()) {
+    $('#numLearning').text(nLearning);
+    $('#numStudy').text(nStudy);
+    $('#numTest').text(nTest);
+    $('#startLearning').hide();
+    return;
+  }
+
+  StartExperiment('flower_feedback', assignmentFilename, GetFlowerFilename, values,
                   nLearning, pLearnedLearning, pFoilLearning,
                   nStudy, pLearnedStudy, pFoilStudy,
                   nTest, pLearnedTest, pFoilTest, dataDir, null,
@@ -219,10 +228,11 @@ $(StartExperiment('flower_feedback', assignmentFilename, GetFlowerFilename, valu
                   .then(function (expData) {
                     feedbackDelay = conditions[expData.condition];
                     console.log('Feedback Duration: ' + feedbackDelay);
-                    
+
                     // After 90s show the link to continue
                     setTimeout(function () {
                       $('#loadingLearning').hide();
                       $('#startLearning').show();
-                    }, waitTime);}));
+                    }, waitTime);});
+  });
 </script>

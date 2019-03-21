@@ -269,20 +269,29 @@ async function SaveExpData(experimentName, dataDir, progressDir, featureLearned,
 }
 
 /* On page load */
-$(StartExperiment('turtle_feedback', assignmentFilename, GetTurtleFilename, values,
+/* On page load */
+$(function () {
+  if (IsOnTurk() && IsTurkPreview()) {
+    $('#numLearning').text(nLearning);
+    $('#numStudy').text(nStudy);
+    $('#numTest').text(nTest);
+    $('#startLearning').hide();
+    return;
+  }
+
+  StartExperiment('turtle_feedback', assignmentFilename, GetFlowerFilename, values,
                   nLearning, pLearnedLearning, pFoilLearning,
                   nStudy, pLearnedStudy, pFoilStudy,
                   nTest, pLearnedTest, pFoilTest, dataDir, null,
-                  null, null, null, SaveExpData, nextAssignment)
+                  null, null, null, null, nextAssignment)
                   .then(function (expData) {
-                    console.log(conditions[expData.condition]);
-                    // set the feedback delay for the experiment
                     feedbackDelay = conditions[expData.condition];
-
+                    console.log('Feedback Duration: ' + feedbackDelay);
 
                     // After 90s show the link to continue
                     setTimeout(function () {
                       $('#loadingLearning').hide();
                       $('#startLearning').show();
-                    }, waitTime);}));
+                    }, waitTime);});
+  });
 </script>
