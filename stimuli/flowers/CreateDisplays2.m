@@ -8,7 +8,7 @@ win = Screen('OpenWindow', 0, [255 255 255], [0 0 screenX screenY]);
 Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 petals = {'Components/petal_concave.png'};
 centers = {'Components/middle_square.png', 'Components/middle_triangle.png', ...
-	   'Components/middle_circle.png'};
+	   'Components/middle_circle.png', 'Components/middle_star.png'};
 
 screenRct = Screen('Rect', win);
 rct = CenterRect([0 0 200 100], screenRct);
