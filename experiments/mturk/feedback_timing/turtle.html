@@ -117,10 +117,10 @@ b's, 30 of neither.
 
 <div class="instrucBox" id="categoryInstruc1" style="padding:5px; text-align:left">
 <p>This HIT will involve 3 short tasks, all involving pictures of turtles. It should take approximately 12-15 minutes to do all 3 tasks.</p>
-<p>During the first task, you will see one turtle at a time and have to determine whether or not it is an <b>avlonia</b>. Avlonias are a particular species of turtle. They are different from all other turtles in one simple way -- and your job is to find out what that is. For example, it could be that avlonias all have 3 spots, but no other turtles do. Or avlonias could be the only turtles that have a round shell; or green legs; or fins instead of legs.</p>
+<p>During the first task, you will see one turtle at a time and have to determine whether or not it is an <b>aelonii</b>. Aeloniis are a particular species of turtle. They are different from all other turtles in one simple way -- and your job is to find out what that is. For example, it could be that aeloniis all have 3 spots, but no other turtles do. Or aeloniis could be the only turtles that have a round shell; or green legs; or fins instead of legs.</p>
 <p><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/turtles/images/turtle_circle_1_orange_tortoise_yellow.png" width=245><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/turtles/images/turtle_triangle_3_lightblue_fin_green.png" width=245></p>
 <p>As you can see from these examples, the turtles in this experiment will differ in a number of ways: (1) the number of spots, (2) the color of the spots, (3) the shape of the shell, (4) the shape of their legs, and (5) the color of their legs</p>
-<p>In the first task, you'll be shown a single turtle, and then be asked if it is or not an avlonia (press 'y' if yes, 'n' if no). At first, you'll have to guess. Eventually, though, you'll figure out what makes something an avlonia. You will have <span id="numLearning">0</span> turtles to judge. Do your best to determine what makes something an avlonia.</p><br>
+<p>In the first task, you'll be shown a single turtle, and then be asked if it is or not an aelonii (press 'y' if yes, 'n' if no). At first, you'll have to guess. Eventually, though, you'll figure out what makes something an aelonii. You will have <span id="numLearning">0</span> turtles to judge. Do your best to determine what makes something an aelonii.</p><br>
 <p><a href="#" class="buttonStart" id="startLearning">I'm Ready to Start Part 1</a>
   <span class="buttonStart" id="loadingLearning">Loading images... Please wait.</span></p><br>
 <p><small>By answering the following questions, you are participating in a study being performed by psychologists in the Duke Department of Psychology and Neuroscience. If you have questions about this research, please contact Felipe De Brigard at felipe.debrigard@duke.edu. Your participation in this research is voluntary. You may decline to answer any or all of the following questions. You may decline further participation, at any time, without adverse consequences. Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.</small></p>
@@ -129,7 +129,7 @@ b's, 30 of neither.
 <div class="instrucBox" id="studyInstruc" style="padding:5px; text-align:left">
 <p>Great job!</p>
 <p>During the second task, you will have to remember turtles. You'll be shown <span id="numStudy">0</span> turtles, one at a time, for just a few seconds each. Do your best to remember these turtles as well as you can. If you remember a large number of them successfully, you'll likely get bonus pay.
-<p>Some of the flowers you have to remember might be avlonias and some might not.</p>
+<p>Some of the turtles you have to remember might be aeloniis and some might not.</p>
 <p><a class="buttonStart" href="#" id="startStudy">Start memory task</a>
   <span class="buttonStart" id="loadingStudy">Loading images... Please wait.</span></p>
 </div>
@@ -142,12 +142,12 @@ b's, 30 of neither.
 </div>
 
 
-<div id="instrucBox"><span id="instrucTextCur">Do you think this is an avlonia? <b>(y/n)</b></span><span id="trialCnt">Trial 1 of 100</span></div>
+<div id="instrucBox"><span id="instrucTextCur">Do you think this is an aelonii? <b>(y/n)</b></span><span id="trialCnt">Trial 1 of 100</span></div>
 <div id="experimentBox">
 <div id="imagesForLearning"></div>
 <div id="imagesForStudy"></div>
 <div id="imagesForTest"></div>
-<div class="textInBox" id="question">Was this an avlonia?<br><br>y / n</div>
+<div class="textInBox" id="question">Was this an aelonii?<br><br>y / n</div>
 <div class="textInBox" id="correct">Correct!</div>
 <div class="textInBox" id="wrong">Incorrect!</div>
 
@@ -279,7 +279,7 @@ $(function () {
     return;
   }
 
-  StartExperiment('turtle_feedback', assignmentFilename, GetFlowerFilename, values,
+  StartExperiment('turtle_feedback', assignmentFilename, GetTurtleFilename, values,
                   nLearning, pLearnedLearning, pFoilLearning,
                   nStudy, pLearnedStudy, pFoilStudy,
                   nTest, pLearnedTest, pFoilTest, dataDir, null,
