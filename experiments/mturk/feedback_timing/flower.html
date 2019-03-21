@@ -217,11 +217,9 @@ $(StartExperiment('flower_feedback', assignmentFilename, GetFlowerFilename, valu
                   nTest, pLearnedTest, pFoilTest, dataDir, null,
                   null, null, null, null, nextAssignment)
                   .then(function (expData) {
-                    console.log(expData);
-                    //feedbackDuration = conditions[expData['condition']];
-                    console.log('Feedback Duration: ' + feedbackDuration);
-                    console.log('Wait time: ' + waitTime);
-
+                    feedbackDelay = conditions[expData.condition];
+                    console.log('Feedback Duration: ' + feedbackDelay);
+                    
                     // After 90s show the link to continue
                     setTimeout(function () {
                       $('#loadingLearning').hide();

@@ -1,7 +1,9 @@
-//var waitTime = 90000;
-//var waitTime = 30000;
-var waitTime = 0;
-var feedbackDuration = 0;
+var waitTime = 30000;
+var feedbackDelay = 0;
+var feedbackDuration = 1000;
+var studyDuration = 3000;
+var studyITI = 1000;
+var testITI = 1000;
 
 function retry(promise, n, wait) {
     return promise.fail(function(error) {
@@ -368,8 +370,8 @@ function ResponseLearning(correct, curTrial, itemsForLearning, startTrialTime) {
      } else {
        ShowStudyStart();
      }
-   }, 1000);
-  }, feedbackDuration);
+   }, feedbackDuration);
+ }, feedbackDelay);
 }
 
 /* STUDY TASK ------------------------------------------------- */
@@ -408,8 +410,8 @@ function NextTrialStudy(curTrial, stimuliType, itemsForStudy) {
       } else {
         StartMemoryTestTask();
       }
-    }, 1000);
-  }, 3000);
+    }, studyITI);
+  }, studyDuration);
 }
 
 /* MEMORY TEST TASK ------------------------------------------------- */
@@ -468,7 +470,7 @@ function ResponseTest(correct, curTrial, itemsForTest, startTrialTime) {
     } else {
       ShowDone(itemsForTest);
     }
-  }, 1000);
+  }, testITI);
 }
 
 

@@ -219,10 +219,8 @@ $(StartExperiment('insect_E5_replication', assignmentFilename, GetInsectFilename
                   nStudy, pLearnedStudy, pFoilStudy,
                   nTest, pLearnedTest, pFoilTest, dataDir)
                 .then(function (expData) {
-                  console.log(expData);
-                  //feedbackDuration = conditions[expData['condition']];
-                  console.log('Feedback Duration: ' + feedbackDuration);
-                  console.log('Wait time: ' + waitTime);
+                  feedbackDelay = conditions[expData.condition];
+                  console.log('Feedback Delay: ' + feedbackDelay);
 
                   // After 90s show the link to continue
                   setTimeout(function () {

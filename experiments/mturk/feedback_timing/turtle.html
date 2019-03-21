@@ -181,15 +181,15 @@ function GetTurtleFilename(obj) {
 }
 
 /* Parameters for stimuli */
-let nLearning = 9; //72;
+let nLearning = 72;
 let pLearnedLearning = 1/3.0;
 let pFoilLearning = 1/3.0;
 
-let nStudy = 9; //18;
+let nStudy = 18;
 let pLearnedStudy = 1/3.0;
 let pFoilStudy = 1/3.0;
 
-let nTest = 9; //54;
+let nTest = 54;
 let pLearnedTest = 1/3.0;  // p for lures, not old items
 let pFoilTest = 1/3.0;
 
@@ -276,8 +276,8 @@ $(StartExperiment('turtle_feedback', assignmentFilename, GetTurtleFilename, valu
                   null, null, null, SaveExpData, nextAssignment)
                   .then(function (expData) {
                     console.log(conditions[expData.condition]);
-                    // set the feedback duration for the trial
-                    feedbackDuration = conditions[expData.condition];
+                    // set the feedback delay for the experiment
+                    feedbackDelay = conditions[expData.condition];
 
 
                     // After 90s show the link to continue
