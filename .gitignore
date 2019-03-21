@@ -3,9 +3,9 @@
 */#*.*#
 
 # images & data files
-*.pdf
-*.png
-*.jpg
+analysis/mturk/*.pdf
+analysis/mturk/*.png
+analysis/mturk/*.jpg
 *.txt
 *.csv
 analysis/mturk/data
