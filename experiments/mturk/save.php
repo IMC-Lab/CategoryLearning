@@ -60,7 +60,7 @@
 
 	// save file
 	if (file_put_contents($fileName,$curData)) {
-		chmod($fileName, 0666);
+		chmod($fileName, 0777);
 		ob_end_clean();	ob_start();
 		//print_r($_POST); echo "\n";
 		print_r("Success saving data!\n");

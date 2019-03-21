@@ -69,10 +69,6 @@ bevlonias, 30 of neither.
   display: none;
 }
 
-#submitButton {
-  display: none;
-}
-
 #timSubmit {
   font-weight: bold;
   color: black;
@@ -124,17 +120,7 @@ bevlonias, 30 of neither.
 <p>During the first task, you will see one flower at a time and have to determine whether or not it is an <b>avlonia</b>. Avlonias are a particular species of flower. They are different from all other flowers in one simple way -- and your job is to find out what that is. For example, it could be that avlonias all have 4 petals, but no other flowers do. Or avlonias could be the only flowers that have a pink center; or a round petal shape; or a heart in their center.</p>
 <p><img src="https://web-mir.ccn.duke.edu/flower/images/flowers/stim_6_green_square_purple_2.png" width=245><img src="https://web-mir.ccn.duke.edu/flower/images/flowers/stim_4_yellow_circle_red_1.png" width=245></p>
 <p>As you can see from these examples, the flowers in this experiment will differ in a number of ways: (1) the number of petals, (2) the color of the petals, (3) the shape of the petals, (4) the shape of their center, (5) the color of their center, (6) the shape of the hole inside their center, and (7) the number of sepals (the black ovals between the petals). One of these features will determine what is and is not an avlonia.</p>
-
-<!-- Instruction paragraph for practiced condition -->
-<p>
-  <span>In the first task, you'll be shown a single flower, and then be <span id='asked'>asked</span> if it is or is not an avlonia</span>
-  <span id='keyInstructions'> (press 'y' if yes, 'n' if no)</span>.
-  <span id='categoryValue'><b>An avlonia is a flower that has <span id="avloniaDescription"></span>.</b></span>
-  <span id='guess'>At first, you'll have to guess. Eventually, though, you'll figure out what makes something an avlonia.</span>
-  You will have <span id="numLearning">0</span> flowers to <span id='judge'>judge</span>.
-  Do your best to <span id='goal'>determine</span> what makes something an avlonia.
-</p><br>
-
+<p>In the first task, you'll be shown a single flower, and then be asked if it is or not an avlonia (press 'y' if yes, 'n' if no). At first, you'll have to guess. Eventually, though, you'll figure out what makes something an avlonia. You will have <span id="numLearning">0</span> flowers to judge. Do your best to determine what makes something an avlonia.</p><br>
 <p><a href="#" class="buttonStart" id="startLearning">I'm Ready to Start Part 1</a>
   <span class="buttonStart" id="loadingLearning">Loading images... Please wait.</span></p><br>
 <p><small>By answering the following questions, you are participating in a study being performed by psychologists in the Duke Department of Psychology and Neuroscience. If you have questions about this research, please contact Felipe De Brigard at felipe.debrigard@duke.edu. Your participation in this research is voluntary. You may decline to answer any or all of the following questions. You may decline further participation, at any time, without adverse consequences. Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.</small></p>
@@ -162,8 +148,8 @@ bevlonias, 30 of neither.
 <div id="imagesForStudy"></div>
 <div id="imagesForTest"></div>
 <div class="textInBox" id="question">Was this an avlonia?<br><br>y / n</div>
-<div class="textInBox" id="correct">Correct</div>
-<div class="textInBox" id="wrong">Incorrect</div>
+<div class="textInBox" id="correct">Correct!</div>
+<div class="textInBox" id="wrong">Incorrect!</div>
 
 <div class="textInBox" id="done" style="top:60px">Done! You got <span id="numRight">0</span> out of <span id="numTotal">0</span> correct.<br><br>Any comments for us?<br><br>
 <textarea name="comments" id="comments" style="width: 300px; height: 200px"></textarea><br><br>
@@ -183,8 +169,8 @@ let values = {'numPetal':['4', '6', '8'],
               'centerColor':['brightgreen', 'orange', 'purple'],
               'numSepal':['1', '2', '3']};
 
-let assignmentFilename = 'exp6/experiment6_flower_assignment.json';
-let dataDir = 'exp6/data';
+let assignmentFilename = 'feedback_timing/flower_assignment.json'
+let dataDir = 'feedback_timing/data'
 
 /* Get filename for an object */
 function GetFlowerFilename(obj) {
@@ -207,94 +193,24 @@ let nTest = 54;
 let pLearnedTest = 1/3.0;  // p for lures, not old items
 let pFoilTest = 1/3.0;
 
-/* Parameters for learning conditions */
-let conditions = ['practiced', 'instructed', 'instructed+practiced', 'neither'];
-let condition = -1;
-let practiced = -1;
-let instructed = -1;
+/* Feedback timing conditions in ms */
+let conditions = [0.0, 6000.0];
 
-
+/* Update the learning condition if all values have been cycled through */
 function nextAssignment(oldAssignment, values) {
   let newAssignment = nextAssignmentDefault(oldAssignment, values);
 
-  // try incrementing the learning condition
   if (newAssignment.featureLearned == 0 && newAssignment.valueLearned == 0) {
-    newAssignment.learningCondition = newAssignment.learningCondition + 1;
+    newAssignment.condition = newAssignment.condition + 1;
 
-    // if we reached the last condition then reset to 0
-    if (newAssignment.learningCondition >= conditions.length) {
-      newAssignment.learningCondition = 0;
-    }
+    if (newAssignment.condition >= conditions.length)
+      newAssignment.condition = 0;
   }
 
   return newAssignment;
 }
 
-
-function StartPassiveLearning(itemsForLearning) {
-  if (IsOnTurk() && IsTurkPreview()) {
-    alert('Please accept the HIT before beginning!');
-    return;
-  }
-  $('#categoryInstruc1').hide();
-  $('#instrucTextCur').html('Is this is an avlonia?');
-  $('#instrucBox').show();
-  $('#experimentBox').show();
-  NextTrialPassiveLearning(0, itemsForLearning);
-}
-
-function NextTrialPassiveLearning(curTrial, itemsForLearning) {
-  // set the correct/incorrect text to yes/no
-  $('#correct').text('Yes');
-  $('#wrong').text('No');
-
-  $('#trialCnt').text("Trial " + (curTrial+1) + " of " + itemsForLearning.length);
-  $('#' + itemsForLearning[curTrial].id).show();
-  let startTrialTime = (new Date()).getTime();
-
-  // show the flower for 5 seconds
-  setTimeout(function () {
-    let curTrialItem = itemsForLearning[curTrial];
-    $('#' + curTrialItem.id).hide();
-    curTrialItem['wasCorrect'] = -1;  // set to -1 since no response is recorded
-    curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
-
-    if (curTrialItem['isTarget']) {
-      $('#correct').show();
-    } else {
-      $('#wrong').show();
-    }
-
-    setTimeout(function() {
-     $('#correct').hide();
-     $('#wrong').hide();
-
-     if (curTrial<itemsForLearning.length-1) {
-       NextTrialPassiveLearning(curTrial+1, itemsForLearning);
-     } else {
-       ShowStudyStart();
-     }
-   }, 1000);
- }, 3000);
-}
-
-function categoryDescription(feature, value) {
-  let featureDescr = {'numPetal':'petals',
-                      'petalColor':'petals',
-                      'centerShape':'center',
-                      'centerColor':'center',
-                      'numSepal':'sepals'};
-  let valueDescr = {'4':'four', '6':'six', '8':'eight',
-                    'blue':'blue', 'green':'green', 'yellow':'yellow',
-                    'circle':'circular', 'tri':'triangular', 'square':'square',
-                    'brightgreen':'green', 'orange':'orange', 'purple':'purple',
-                    '1':'one', '2':'two', '3':'three'};
-
-  return ((featureDescr[feature] === 'center')? 'a ' : '')
-          + valueDescr[value] + ' '
-          + ((featureDescr[feature] === 'sepals' && value === '1')? 'sepal' : featureDescr[feature]);
-}
-
+/* Save the condition, as well as all other experiment data */
 async function SaveExpData(experimentName, dataDir, progressDir, featureLearned, valueLearned,
                         featureFoil, valueFoil, itemsForLearning, itemsForStudy, itemsForTest) {
   $('#done').hide();
@@ -304,8 +220,7 @@ async function SaveExpData(experimentName, dataDir, progressDir, featureLearned,
   let earnedBonus = correctRate >= 0.85;
   let curID = GetID();
 
-  Save("isPracticed", practiced);
-  Save("isInstructed", instructed);
+  Save("condition", feedbackDuration);
   Save("correctRate", correctRate);
   Save("earnedBonus", earnedBonus);
   Save("featuredLearned", featureLearned);
@@ -338,8 +253,7 @@ async function SaveExpData(experimentName, dataDir, progressDir, featureLearned,
     "screenWidth": screen.width,
     "screenHeight": screen.height,
     "comments": $('#comments').val(),
-    "isPracticed": practiced,
-    "isInstructed": instructed,
+    "condition": feedbackDuration,
     "correctRate": correctRate,
     "earnedBonus": earnedBonus,
     "featureLearned": featureLearned,
@@ -354,54 +268,21 @@ async function SaveExpData(experimentName, dataDir, progressDir, featureLearned,
   return SendToServer(curID, d, experimentName, dataDir);
 }
 
-
 /* On page load */
-$(function () {
-    $('#categoryValue').hide();
+$(StartExperiment('flower_feedback', assignmentFilename, GetFlowerFilename, values,
+                  nLearning, pLearnedLearning, pFoilLearning,
+                  nStudy, pLearnedStudy, pFoilStudy,
+                  nTest, pLearnedTest, pFoilTest, dataDir, null,
+                  null, null, null, SaveExpData, nextAssignment)
+                  .then(function (expData) {
+                    console.log(conditions[expData.condition]);
+                    // set the feedback duration for the trial
+                    feedbackDuration = conditions[expData.condition];
 
-    fetchJSON(assignmentFilename).then(function (data) {
-      condition = conditions[data.learningCondition];
-      practiced = condition.includes('practiced');
-      instructed = condition.includes('instructed');
 
-      let learningFn = null;  // if the learning is active, use the default learning fn
-      if (!practiced) {
-        learningFn = StartPassiveLearning;
-        $('#asked').text('told');
-        $('#keyInstructions').hide();
-        $('#judge').text('view');
-      }
-
-      //console.log(condition);
-      if (IsOnTurk() && IsTurkPreview()) {
-        $('#numLearning').text(nLearning);
-        $('#numStudy').text(nStudy);
-        $('#numTest').text(nTest);
-        $('#startLearning').hide();
-        return;
-      }
-
-      StartExperiment('flower_E6', assignmentFilename, GetFlowerFilename, values,
-                      nLearning, pLearnedLearning, pFoilLearning,
-                      nStudy, pLearnedStudy, pFoilStudy,
-                      nTest, pLearnedTest, pFoilTest, dataDir, null,
-                      learningFn, null, null, SaveExpData, nextAssignment)
-                      .then(function (expData) {
-                        if (instructed) {
-                          $('#avloniaDescription').text(categoryDescription(expData['featureLearned'], expData['valueLearned']));
-                          $('#categoryValue').show();
-                          $('#guess').hide();
-                          $('#goal').text('remember');
-                        }
-
-                        // After 90s show the link to continue
-                        setTimeout(function () {
-                            $('#loadingLearning').hide();
-                            $('#startLearning').show();
-                        }, waitTime);
-                      });
-
-    });
-  });
-
+                    // After 90s show the link to continue
+                    setTimeout(function () {
+                      $('#loadingLearning').hide();
+                      $('#startLearning').show();
+                    }, waitTime);}));
 </script>

@@ -169,7 +169,7 @@ let values = {'segment_count':['1', '2', '3'],
               'antennae_count':['1', '2', '4'],
               'antennae_color':['brightgreen', 'orange', 'purple']};
 
-let assignmentFilename = 'exp5/experiment5_insect_assignment.json';
+let assignmentFilename = 'feedback_timing/insect_assignment.json';
 let dataDir = 'exp5/data';
 // directory for saving progress over multiple experiments
 // NOTE: add as parameter to StartExperiment if running using experiment5.html
@@ -197,17 +197,9 @@ let pLearnedTest = 1/3.0;  // p for lures, not old items
 let pFoilTest = 1/3.0;
 
 // start once the page loads
-$(function () {
-    StartExperiment('insect_E5_replication', assignmentFilename, GetInsectFilename, values,
-                    nLearning, pLearnedLearning, pFoilLearning,
-                    nStudy, pLearnedStudy, pFoilStudy,
-                    nTest, pLearnedTest, pFoilTest, dataDir);
-
-    // After 90s show the link to continue
-    setTimeout(function () {
-        $('#loadingLearning').hide();
-        $('#startLearning').show();
-    }, waitTime);
-  });
+$(StartExperiment('insect_E5_replication', assignmentFilename, GetInsectFilename, values,
+                  nLearning, pLearnedLearning, pFoilLearning,
+                  nStudy, pLearnedStudy, pFoilStudy,
+                  nTest, pLearnedTest, pFoilTest, dataDir));
 
 </script>

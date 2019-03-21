@@ -1,5 +1,7 @@
 //var waitTime = 90000;
-var waitTime = 30000;
+//var waitTime = 30000;
+var waitTime = 0;
+var feedbackDuration = 0;
 
 function retry(promise, n, wait) {
     return promise.fail(function(error) {
@@ -148,13 +150,15 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
                      close();
                   }
                 };
-  return {'featureLearned':featureLearned,
+
+  return Object.assign(assignment,
+         {'featureLearned':featureLearned,
           'valueLearned':valueLearned,
           'featureFoil':featureFoil,
           'valueFoil':valueFoil,
           'itemsForLearning':itemsForLearning,
           'itemsForStudy':itemsForStudy,
-          'itemsForTest':itemsForTest};
+          'itemsForTest':itemsForTest});
 }
 
 /* Get an object that is either a member of the
@@ -348,23 +352,24 @@ function ResponseLearning(correct, curTrial, itemsForLearning, startTrialTime) {
   curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
 	$(document).unbind('keyup');
 
-  if (correct) {
-    $('#correct').show();
-  } else {
-    $('#wrong').show();
-  }
-
-
   setTimeout(function() {
-   $('#correct').hide();
-   $('#wrong').hide();
+    if (correct) {
+      $('#correct').show();
+    } else {
+      $('#wrong').show();
+    }
 
-   if (curTrial<itemsForLearning.length-1) {
-     NextTrialLearning(curTrial+1, itemsForLearning);
-   } else {
-     ShowStudyStart();
-   }
-  }, 1000);
+    setTimeout(function() {
+     $('#correct').hide();
+     $('#wrong').hide();
+
+     if (curTrial<itemsForLearning.length-1) {
+       NextTrialLearning(curTrial+1, itemsForLearning);
+     } else {
+       ShowStudyStart();
+     }
+   }, 1000);
+  }, feedbackDuration);
 }
 
 /* STUDY TASK ------------------------------------------------- */
