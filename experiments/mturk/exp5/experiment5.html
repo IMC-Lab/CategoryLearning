@@ -29,8 +29,8 @@
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-<script src="http://web-mir.ccn.duke.edu/flower/TimTurkTools.js"></script>
-<script src="http://web-mir.ccn.duke.edu/flower/category_learning.js"></script>
+<script src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/TimTurkTools.js"></script>
+<script src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/category_learning.js"></script>
 <script>
 var flowerFile = './experiment5_flower.html';
 var insectFile = './experiment5_insect.html';
@@ -59,7 +59,7 @@ var curID = null;
 
 // keep refreshing the experiment until it's completed
 function refresh() {
-  ShowNextExperiment('http://web-mir.ccn.duke.edu/flower/data/progress/' + curID + '.json')
+  ShowNextExperiment('https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/exp5/data/progress/' + curID + '.json')
   .then(function (done) {
     if (!done) {
       setTimeout(refresh, 10);
@@ -75,7 +75,7 @@ $(function() {
     $('#done').hide();
 
     curID = GetID();
-    writeJSON('data/progress/' + curID + '.json',
+    writeJSON('exp5/data/progress/' + curID + '.json',
               {'curID': curID,
                'curExperiment': 1,
                'numExperiments': numExperiments})

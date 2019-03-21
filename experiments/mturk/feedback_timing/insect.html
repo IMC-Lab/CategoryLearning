@@ -118,7 +118,7 @@ bevlonias, 30 of neither.
 <div class="instrucBox" id="categoryInstruc1" style="padding:5px; text-align:left">
 <p>This HIT will involve 3 short tasks, all involving pictures of insects. It should take approximately 12-15 minutes to do all 3 tasks.</p>
 <p>During the first task, you will see one insect at a time and have to determine whether or not it is a <b></b>. Acoptera is a particular species of insect. They are different from all other insects in one simple way -- and your job is to find out what that is. For example, it could be that acoptera all have 3 body segments, but no other insects do. Or acoptera could be the only insects that have a pink antenna; or a round-shaped body segment; or green wings.</p>
-<p><img src="http://web-mir.ccn.duke.edu/flower/images/insects/insect_1_triangle_2_purple_green.png" width=245><img src="http://web-mir.ccn.duke.edu/flower/images/insects/insect_1_circle_1_orange_blue.png" width=245></p>
+<p><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/insects/images/insect_1_triangle_2_purple_green.png" width=245><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/insects/images/insect_1_circle_1_orange_blue.png" width=245></p>
 <p>As you can see from these examples, the insects in this experiment will differ in a number of ways: (1) the number of antennae, (2) the color of the antennae, (3) the shape of the body segments, (4) the number of their body segments, and (5) the color of their wings. One of these features will determine what is and is not an acoptera.</p>
 <p>In the first task, you'll be shown a single insect, and then be asked if it is or not an acoptera (press 'y' if yes, 'n' if no). At first, you'll have to guess. Eventually, though, you'll figure out what makes something an acoptera. You will have <span id="numLearning">0</span> insects to judge. Do your best to determine what makes something an acoptera.</p><br>
 <p><a href="#" class="buttonStart" id="startLearning">I'm Ready to Start Part 1</a>
@@ -159,8 +159,8 @@ bevlonias, 30 of neither.
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-<script src="http://web-mir.ccn.duke.edu/flower/TimTurkTools.js"></script>
-<script src="http://web-mir.ccn.duke.edu/flower/category_learning.js"></script>
+<script src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/TimTurkTools.js"></script>
+<script src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/category_learning.js"></script>
 <script>
 /* Define the values for each feature */
 let values = {'segment_count':['1', '2', '3'],
@@ -169,7 +169,7 @@ let values = {'segment_count':['1', '2', '3'],
               'antennae_count':['1', '2', '4'],
               'antennae_color':['brightgreen', 'orange', 'purple']};
 
-let assignmentFilename = 'http://web-mir.ccn.duke.edu/flower/feedback_timing/insect_assignment.json';
+let assignmentFilename = 'feedback_timing/insect_assignment.json';
 let dataDir = 'exp5/data';
 // directory for saving progress over multiple experiments
 // NOTE: add as parameter to StartExperiment if running using experiment5.html
@@ -177,7 +177,7 @@ let progressDir = dataDir + '/progress';
 
 /* Get filename for an object */
 function GetInsectFilename(obj) {
-  return ('http://web-mir.ccn.duke.edu/flower/images/insects/insect_'
+  return ('https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/insects/images/insect_'
     + obj.segment_count + "_" + obj.segment_shape + "_"
     + obj.antennae_count + "_" + obj.antennae_color + '_'
     + obj.wing_color + ".png");
@@ -196,10 +196,38 @@ let nTest = 54;
 let pLearnedTest = 1/3.0;  // p for lures, not old items
 let pFoilTest = 1/3.0;
 
+/* Feedback timing conditions */
+let conditions = [0.0, 6.0];
+
+/* Update the learning condition if all values have been cycled through */
+function nextAssignment(oldAssignment, values) {
+  let newAssignment = nextAssignmentDefault(oldAssignment, values);
+
+  if (newAssignment.featureLearned == 0 && newAssignment.valueLearned == 0) {
+    newAssignment.condition = newAssignment.condition + 1;
+
+    if (newAssignment.condition >= conditions.length)
+      newAssignment.condition = 0;
+  }
+
+  return newAssignment;
+}
+
 // start once the page loads
 $(StartExperiment('insect_E5_replication', assignmentFilename, GetInsectFilename, values,
                   nLearning, pLearnedLearning, pFoilLearning,
                   nStudy, pLearnedStudy, pFoilStudy,
-                  nTest, pLearnedTest, pFoilTest, dataDir));
+                  nTest, pLearnedTest, pFoilTest, dataDir)
+                .then(function (expData) {
+                  console.log(expData);
+                  //feedbackDuration = conditions[expData['condition']];
+                  console.log('Feedback Duration: ' + feedbackDuration);
+                  console.log('Wait time: ' + waitTime);
+
+                  // After 90s show the link to continue
+                  setTimeout(function () {
+                    $('#loadingLearning').hide();
+                    $('#startLearning').show();
+                  }, waitTime);}));
 
 </script>

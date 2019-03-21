@@ -14,7 +14,7 @@ function retry(promise, n, wait) {
 
 
 function fetchJSON(filename) {
-  return $.post('https://web-mir.ccn.duke.edu/flower/get_json.php',
+  return $.post('https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/get_json.php',
                 {filename: filename})
           .then(function (data) { return JSON.parse(data); })
           .fail(function (jsonData, textStatus, error) {
@@ -24,9 +24,9 @@ function fetchJSON(filename) {
 }
 
 function writeJSON(filename, data) {
-  return $.post('https://web-mir.ccn.duke.edu/flower/save_json.php',
+  return $.post('https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/save_json.php',
                   // remove the web address for filename to save it locally
-                {'filename': filename.replace('https://web-mir.ccn.duke.edu/flower/', ''),
+                {'filename': filename.replace('https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/', ''),
                  'data':JSON.stringify(data)})
             .fail(function (d, textStatus, error) {
               throw "POST json failed, status: " + textStatus + ", error: " + error;
@@ -611,7 +611,7 @@ function SendToServer(id, curData, experimentName, dataDir) {
     'curData': JSON.stringify(curData)
   };
 
-  return $.post("https://web-mir.ccn.duke.edu/flower/save.php",
+  return $.post("https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/save.php",
                 dataToServer,
                 function(data) {
                   if (IsOnTurk()) {

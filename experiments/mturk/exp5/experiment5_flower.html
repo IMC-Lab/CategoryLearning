@@ -118,7 +118,7 @@ bevlonias, 30 of neither.
 <div class="instrucBox" id="categoryInstruc1" style="padding:5px; text-align:left">
 <p>This HIT will involve 3 short tasks, all involving pictures of flowers. It should take approximately 12-15 minutes to do all 3 tasks.</p>
 <p>During the first task, you will see one flower at a time and have to determine whether or not it is an <b>avlonia</b>. Avlonias are a particular species of flower. They are different from all other flowers in one simple way -- and your job is to find out what that is. For example, it could be that avlonias all have 4 petals, but no other flowers do. Or avlonias could be the only flowers that have a pink center; or a round petal shape; or a heart in their center.</p>
-<p><img src="https://web-mir.ccn.duke.edu/flower/images/flowers/stim_6_green_square_purple_2.png" width=245><img src="https://web-mir.ccn.duke.edu/flower/images/flowers/stim_4_yellow_circle_red_1.png" width=245></p>
+<p><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/flowers/images/stim_6_green_square_purple_2.png" width=245><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/flowers/images/stim_4_yellow_circle_orange_1.png" width=245></p>
 <p>As you can see from these examples, the flowers in this experiment will differ in a number of ways: (1) the number of petals, (2) the color of the petals, (3) the shape of the petals, (4) the shape of their center, (5) the color of their center, (6) the shape of the hole inside their center, and (7) the number of sepals (the black ovals between the petals). One of these features will determine what is and is not an avlonia.</p>
 <p>In the first task, you'll be shown a single flower, and then be asked if it is or not an avlonia (press 'y' if yes, 'n' if no). At first, you'll have to guess. Eventually, though, you'll figure out what makes something an avlonia. You will have <span id="numLearning">0</span> flowers to judge. Do your best to determine what makes something an avlonia.</p><br>
 <p><a href="#" class="buttonStart" id="startLearning">I'm Ready to Start Part 1</a>
@@ -159,8 +159,8 @@ bevlonias, 30 of neither.
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-<script src="https://web-mir.ccn.duke.edu/flower/TimTurkTools.js"></script>
-<script src="https://web-mir.ccn.duke.edu/flower/category_learning.js"></script>
+<script src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/TimTurkTools.js"></script>
+<script src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/category_learning.js"></script>
 <script>
 /* Define the values for each feature */
 let values = {'numPetal':['4', '6', '8'],
@@ -175,7 +175,7 @@ let progressDir = dataDir + '/progress/'
 
 /* Get filename for an object */
 function GetFlowerFilename(obj) {
-  return ("https://web-mir.ccn.duke.edu/flower/images/flowers/stim_"
+  return ("https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/flowers/images/stim_"
     + obj.numPetal + "_" + obj.petalColor + "_"
     + obj.centerShape + "_" + obj.centerColor
     + "_" + obj.numSepal + ".png");
