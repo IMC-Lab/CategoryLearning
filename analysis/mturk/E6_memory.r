@@ -34,81 +34,91 @@ runSDT <- function(data) {
     
     # analyze sensitivity (dprime)
     writeLines('\n\nSensitivity (dprime)')
-    print(ddply(sdtData, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
-                N=length(dprime), sensitivity=mean(dprime), sd=sd(dprime), se=(sd/sqrt(N))))
-    print(ddply(sdtData, c("isPracticed", "isInstructed"), summarise,
-                N=length(dprime), sensitivity=mean(dprime), sd=sd(dprime), se=(sd/sqrt(N))))
-    print(ddply(sdtData, c("isTarget", "isFoil"), summarise,
-                N=length(dprime), sensitivity=mean(dprime), sd=sd(dprime), se=(sd/sqrt(N))))
-    #print(summary(lmer(dprime ~ isInstructed*isPracticed*isTarget*isFoil
-    #                   + (1 | subject), data=sdtData)))
-    #print(summary(aov(dprime ~ isInstructed * isPracticed * isTarget * isFoil
-    #                             + Error(subject/(isTarget*isFoil)), data=sdtData)))
-    
+    #print(ddply(sdtData, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
+    #            N=length(dprime), sensitivity=mean(dprime), sd=sd(dprime), se=(sd/sqrt(N))))
+    #print(ddply(sdtData, c("isPracticed", "isInstructed"), summarise,
+    #            N=length(dprime), sensitivity=mean(dprime), sd=sd(dprime), se=(sd/sqrt(N))))
+    #print(ddply(sdtData, c("isTarget", "isFoil"), summarise,
+    #            N=length(dprime), sensitivity=mean(dprime), sd=sd(dprime), se=(sd/sqrt(N))))
+    print(summary(lmer(dprime ~ isInstructed*isPracticed*isTarget*isFoil + (1|subject), data=sdtData)))
     
     # analyze bias (c)
     writeLines('\n\nBias (C)')
-    print(ddply(sdtData, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
-                N=length(c), bias=mean(c), sd=sd(c), se=(sd/sqrt(N))))
-    print(ddply(sdtData, c("isPracticed", "isInstructed"), summarise,
-                N=length(c), bias=mean(c), sd=sd(c), se=(sd/sqrt(N))))
-    print(ddply(sdtData, c("isTarget", "isFoil"), summarise,
-                N=length(c), bias=mean(c), sd=sd(c), se=(sd/sqrt(N))))
-    #print(summary(lmer(c ~ isInstructed*isPracticed*isTarget*isFoil
-    #                   + (1 | subject), data=sdtData)))
-    #print(summary(aov(c ~ isInstructed * isPracticed * isTarget * isFoil
-    #                        + Error(subject/(isTarget*isFoil)), data=sdtData)))
+    #print(ddply(sdtData, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
+    #            N=length(c), bias=mean(c), sd=sd(c), se=(sd/sqrt(N))))
+    #print(ddply(sdtData, c("isPracticed", "isInstructed"), summarise,
+    #            N=length(c), bias=mean(c), sd=sd(c), se=(sd/sqrt(N))))
+    #print(ddply(sdtData, c("isTarget", "isFoil"), summarise,
+    #            N=length(c), bias=mean(c), sd=sd(c), se=(sd/sqrt(N))))
+    print(summary(lmer(c ~ isInstructed*isPracticed*isTarget*isFoil + (1|subject), data=sdtData)))
     
     return(sdtData)
 }
 
 analyze <- function(data) {
     # Run the ANOVA as 2x2 (isLearned x isFoil)
-    print(ddply(data, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
-                N=length(wasCorrect), mean=mean(wasCorrect), sd=sd(wasCorrect), se=(sd/sqrt(N))))
-    print(ddply(data, c("isPracticed", "isInstructed"), summarise,
-                N=length(wasCorrect), mean=mean(wasCorrect), sd=sd(wasCorrect), se=(sd/sqrt(N))))
-    print(ddply(data, c("isTarget", "isFoil"), summarise,
-                N=length(wasCorrect), mean=mean(wasCorrect), sd=sd(wasCorrect), se=(sd/sqrt(N))))
-
-    print(summary(glmer(wasCorrect ~ isPracticed * isInstructed * isTarget * isFoil
+    #print(ddply(data, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
+    #            N=length(wasCorrect), mean=mean(wasCorrect), sd=sd(wasCorrect), se=(sd/sqrt(N))))
+    #print(ddply(data, c("isPracticed", "isInstructed"), summarise,
+    #            N=length(wasCorrect), mean=mean(wasCorrect), sd=sd(wasCorrect), se=(sd/sqrt(N))))
+    #print(ddply(data, c("isTarget", "isFoil"), summarise,
+    #            N=length(wasCorrect), mean=mean(wasCorrect), sd=sd(wasCorrect), se=(sd/sqrt(N))))
+    print(summary(glmer(wasCorrect ~ isPracticed*isInstructed*isTarget*isFoil
                         + (1|subject), data=data, family=binomial(link='logit'))))
-    #print(summary(aov(rate ~ isInstructed * isPracticed * isTarget * isFoil
-    #                  + Error(subject/(isTarget*isFoil)), data=data)))
 }
 
 # analyze data from each file
 for (i in 1:length(args)) {
     filename <- args[i]
     writeLines(args[i])
-
+    
     memData <- subset(read.csv(filename, header=T), task=='test',
                       select=c('subject', 'isPracticed', 'isInstructed',
                                'isTarget', 'isFoil', 'isOld', 'wasCorrect', 'RT'))
-    hist(memData$RT, breaks=100)
+    print(length(unique(memData$subject)))
     meanRT = mean(memData$RT)
     sdRT = sd(memData$RT)
     exclude = (memData$RT > (meanRT+3*sdRT)) | (memData$RT < (meanRT-3*sdRT))
+    #memData <- memData[!exclude,]
     excludedSubjects = unique(memData$subject[exclude])
     memData <- memData[!(memData$subject %in% excludedSubjects),]
     print(length(unique(memData$subject)))
+    #quit()
     
+    # exclude subjects with low learning accuracy
+    learnData <- subset(read.csv(filename, header=T), task=='learn' & isPracticed==1)
+    nTrials <- nrow(subset(learnData, subject==learnData$subject[1]))
+    nSubj <- length(unique(learnData$subject))
+    learnData$trialNum <- rep(1:nTrials, times=nSubj)
+    startAcc <- aggregate(wasCorrect~subject+isInstructed, learnData,
+                         function (trials) mean(head(trials, 20)))
+    endAcc <- aggregate(wasCorrect~subject+isInstructed, learnData,
+                         function (trials) mean(tail(trials, 20)))
+    print(mean(subset(startAcc, isInstructed==1)$wasCorrect))
+    print(mean(subset(endAcc, isInstructed==1)$wasCorrect))
+    print(mean(subset(startAcc, isInstructed==0)$wasCorrect))
+    print(mean(subset(endAcc, isInstructed==0)$wasCorrect))
+    
+    excludedSubjects <- unique(endAcc$subject[endAcc$wasCorrect < 0.85])
+    memData <- memData[!(memData$subject %in% excludedSubjects),]
+        
+    print(length(unique(memData$subject)))
+    #quit()
     writeLines('\n\nRT')
-    print(ddply(memData, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
-                mean=mean(RT), sd=sd(RT), se=(sd/sqrt(length(RT)))))
-    print(ddply(memData, c("isPracticed", "isInstructed"), summarise,
-                mean=mean(RT), sd=sd(RT), se=(sd/sqrt(length(RT)))))
-    print(ddply(memData, c("isTarget", "isFoil"), summarise,
-                mean=mean(RT), sd=sd(RT), se=(sd/sqrt(length(RT)))))
-    print(summary(lmer(RT ~ isPracticed * isInstructed * isTarget * isFoil
-                       + (1|subject), data=memData)))
+    #print(ddply(memData, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
+    #            mean=mean(RT), sd=sd(RT), se=(sd/sqrt(length(RT)))))
+    #print(ddply(memData, c("isPracticed", "isInstructed"), summarise,
+    #            mean=mean(RT), sd=sd(RT), se=(sd/sqrt(length(RT)))))
+    #print(ddply(memData, c("isTarget", "isFoil"), summarise,
+    #            mean=mean(RT), sd=sd(RT), se=(sd/sqrt(length(RT)))))
+    print(summary(lmer(RT ~ isPracticed*isInstructed*isTarget*isFoil + (1|subject), data=memData)))
     
     hits <- subset(memData, isOld==1)
     FAs  <- subset(memData, isOld==0)   
     writeLines('\n\nHits')
-    #analyze(hits)
+    analyze(hits)
     writeLines('\n\nFAs')
-    #analyze(FAs)
+    analyze(FAs)
 
     sdtData <- runSDT(memData)
     writeLines('\n\n\n\n\n')
@@ -128,7 +138,7 @@ for (i in 1:length(args)) {
           aes(x=interaction(isFoil, isTarget), y=rt, color=interaction(isPracticed, isInstructed),
               group=interaction(isPracticed, isInstructed)) +
           geom_errorbar(aes(ymin=rt-se, ymax=rt+se), width=.2) +
-          geom_line(size=1))
+          geom_line(size=2) + theme_classic())
     dev.off()
     
     png('E6_hits.png', height=1000, width=1000)
@@ -144,7 +154,7 @@ for (i in 1:length(args)) {
           aes(x=interaction(isFoil, isTarget), y=hits, color=interaction(isPracticed, isInstructed),
               group=interaction(isPracticed, isInstructed)) +
           geom_errorbar(aes(ymin=hits-se, ymax=hits+se), width=.2) +
-          geom_line(size=1))
+          geom_line(size=2) + theme_classic())
     dev.off()
     
     
@@ -163,7 +173,7 @@ for (i in 1:length(args)) {
           aes(x=interaction(isFoil, isTarget), y=FAs, color=interaction(isPracticed, isInstructed),
               group=interaction(isPracticed, isInstructed)) +
           geom_errorbar(aes(ymin=FAs-se, ymax=FAs+se), width=.2) +
-          geom_line(size=1))
+          geom_line(size=2) + theme_classic())
     dev.off()
     
     png('E6_sensitivity.png', height=1000, width=1000)
@@ -180,7 +190,7 @@ for (i in 1:length(args)) {
               color=interaction(isPracticed, isInstructed),
               group=interaction(isPracticed, isInstructed)) +
           geom_errorbar(aes(ymin=sensitivity-se, ymax=sensitivity+se), width=.2) +
-          geom_line(size=1))
+          geom_line(size=2) + theme_classic())
     dev.off()
     
     png('E6_bias.png', height=1000, width=1000)
@@ -197,6 +207,6 @@ for (i in 1:length(args)) {
               color=interaction(isPracticed, isInstructed),
               group=interaction(isPracticed, isInstructed)) +
           geom_errorbar(aes(ymin=bias-se, ymax=bias+se), width=.2) +
-          geom_line(size=1))
+          geom_line(size=2) + theme_classic())
     dev.off()
 }
