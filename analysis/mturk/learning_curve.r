@@ -35,9 +35,12 @@ learning_curve <- function(trials, feature=NULL, value=NULL) {
           aes(x=trialNum, y=rate, color=isInstructed,group=isInstructed,fill=isInstructed) +
           stat_smooth(method="loess", span=0.1, se=TRUE, alpha=0.3) + theme_classic() +
           xlab('Trial') + ylab('Categorization Accuracy') +
-          theme(axis.text=element_text(size=12),
-                axis.title=element_text(size=24),
-                legend.title=element_blank()))
+          theme(axis.text=element_text(size=20),
+                axis.title.x=element_text(size=36, margin=margin(t=0.5, unit='cm')),
+                axis.title.y=element_text(size=36, margin=margin(r=0.5, unit='cm')),
+                legend.title=element_blank(),
+                legend.text=element_text(size=20),
+                plot.margin=margin(t=1, b=1, unit='cm')))
     dev.off()
 }
 
@@ -47,19 +50,24 @@ for (i in 1:length(args)) {
     writeLines(args[i])
     
     # import the data
-    trials.test <- subset(read.csv(filename, header=T), task=='test', select=c('subject', 'RT'))
-    trials.learn <- subset(read.csv(filename, header=T), task=='learn' & isPracticed,
-                           select=c('subject', 'isInstructed', 'featureLearned', 'valueLearned',
-                                    'wasCorrect', 'RT'))
-    
+    trials.test <- subset(read.csv(filename, header=T), task=='test')
+    trials.learn <- subset(read.csv(filename, header=T), task=='learn' & isPracticed)
+    endAcc <- aggregate(wasCorrect~subject, trials.learn, function (trials) mean(tail(trials, 20)))
+
+    testRT <- aggregate(RT ~ subject, trials.test, mean)
+    learnRT <- aggregate(RT ~ subject, trials.learn, mean)
+        
     # exclude subjects based on 3 sd's from the RT
-    exclude.test = (trials.test$RT > (mean(trials.test$RT) + 3*sd(trials.test$RT))) |
-        (trials.test$RT < (mean(trials.test$RT)-3*sd(trials.test$RT)))
-    exclude.learn = (trials.learn$RT > (mean(trials.learn$RT)+3*sd(trials.learn$RT))) |
-        (trials.learn$RT < (mean(trials.learn$RT)-3*sd(trials.learn$RT)))
-    excludedSubjects = unique(c(trials.test$subject[exclude.test],
-                                trials.learn$subject[exclude.learn]))
-    trials.learn <- trials.learn[!(trials.learn$subject %in% excludedSubjects),]
+    excluded = unique(c(#trials.test$subject[trials.test$RT >
+                        #                    (mean(trials.test$RT)+3*sd(trials.test$RT))],
+                        #trials.learn$subject[trials.learn$RT >
+                        #                     (mean(trials.learn$RT)+3*sd(trials.learn$RT))],
+                        learnRT$subject[learnRT$RT > (mean(learnRT$RT) + 3*sd(learnRT$RT))],
+                        testRT$subject[testRT$RT > (mean(testRT$RT) + 3*sd(testRT$RT))],
+                        endAcc$subject[endAcc$wasCorrect < 0.85]))
+    trials.test <- trials.test[!(trials.test$subject %in% excluded),]
+    trials.learn <- trials.learn[!(trials.learn$subject %in% excluded),]
+    
     trials.learn$isInstructed <- as.factor(sapply(trials.learn$isInstructed,
                                                   function (i) {
                                                       if (i) ' Instructed'
@@ -68,6 +76,7 @@ for (i in 1:length(args)) {
 
     
     learning_curve(trials.learn)
+    quit()
     for (feature in unique(trials.learn$featureLearned)) {
         learning_curve(trials.learn, feature)
         for (value in unique(subset(trials.learn, featureLearned==feature)$valueLearned))

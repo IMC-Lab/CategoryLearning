@@ -34,37 +34,24 @@ runSDT <- function(data) {
     
     # analyze sensitivity (dprime)
     writeLines('\n\nSensitivity (dprime)')
-    #print(ddply(sdtData, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
-    #            N=length(dprime), sensitivity=mean(dprime), sd=sd(dprime), se=(sd/sqrt(N))))
-    #print(ddply(sdtData, c("isPracticed", "isInstructed"), summarise,
-    #            N=length(dprime), sensitivity=mean(dprime), sd=sd(dprime), se=(sd/sqrt(N))))
-    #print(ddply(sdtData, c("isTarget", "isFoil"), summarise,
-    #            N=length(dprime), sensitivity=mean(dprime), sd=sd(dprime), se=(sd/sqrt(N))))
-    print(summary(lmer(dprime ~ isInstructed*isPracticed*isTarget*isFoil + (1|subject), data=sdtData)))
+    print(summary(lmer(dprime ~ isInstructed*isPracticed*isTarget*isFoil
+                       + (1|subject), data=sdtData)))
     
     # analyze bias (c)
     writeLines('\n\nBias (C)')
-    #print(ddply(sdtData, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
-    #            N=length(c), bias=mean(c), sd=sd(c), se=(sd/sqrt(N))))
-    #print(ddply(sdtData, c("isPracticed", "isInstructed"), summarise,
-    #            N=length(c), bias=mean(c), sd=sd(c), se=(sd/sqrt(N))))
-    #print(ddply(sdtData, c("isTarget", "isFoil"), summarise,
-    #            N=length(c), bias=mean(c), sd=sd(c), se=(sd/sqrt(N))))
-    print(summary(lmer(c ~ isInstructed*isPracticed*isTarget*isFoil + (1|subject), data=sdtData)))
+    print(summary(lmer(c ~ isInstructed*isPracticed*isTarget*isFoil
+                       + (1|subject), data=sdtData)))
     
     return(sdtData)
 }
 
 analyze <- function(data) {
-    # Run the ANOVA as 2x2 (isLearned x isFoil)
-    #print(ddply(data, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
-    #            N=length(wasCorrect), mean=mean(wasCorrect), sd=sd(wasCorrect), se=(sd/sqrt(N))))
-    #print(ddply(data, c("isPracticed", "isInstructed"), summarise,
-    #            N=length(wasCorrect), mean=mean(wasCorrect), sd=sd(wasCorrect), se=(sd/sqrt(N))))
-    #print(ddply(data, c("isTarget", "isFoil"), summarise,
-    #            N=length(wasCorrect), mean=mean(wasCorrect), sd=sd(wasCorrect), se=(sd/sqrt(N))))
-    print(summary(glmer(wasCorrect ~ isPracticed*isInstructed*isTarget*isFoil
-                        + (1|subject), data=data, family=binomial(link='logit'))))
+    # Run the LME as 2x2x2x2 (isLearnedxisFoilxIsPracticedxisInstructed)
+    m <- glmer(wasCorrect ~ isPracticed*isInstructed*isTarget*isFoil
+               + (1|subject), data=data, family=binomial(link='logit'))
+    print(summary(m))
+    writeLines('Odds Ratios: ')
+    print(exp(fixef(m)))
 }
 
 # analyze data from each file
@@ -72,49 +59,63 @@ for (i in 1:length(args)) {
     filename <- args[i]
     writeLines(args[i])
     
-    memData <- subset(read.csv(filename, header=T), task=='test',
-                      select=c('subject', 'isPracticed', 'isInstructed',
-                               'isTarget', 'isFoil', 'isOld', 'wasCorrect', 'RT'))
-    print(length(unique(memData$subject)))
-    meanRT = mean(memData$RT)
-    sdRT = sd(memData$RT)
-    exclude = (memData$RT > (meanRT+3*sdRT)) | (memData$RT < (meanRT-3*sdRT))
-    #memData <- memData[!exclude,]
-    excludedSubjects = unique(memData$subject[exclude])
-    memData <- memData[!(memData$subject %in% excludedSubjects),]
-    print(length(unique(memData$subject)))
-    #quit()
-    
-    # exclude subjects with low learning accuracy
+    memData <- subset(read.csv(filename, header=T), task=='test')
     learnData <- subset(read.csv(filename, header=T), task=='learn' & isPracticed==1)
-    nTrials <- nrow(subset(learnData, subject==learnData$subject[1]))
-    nSubj <- length(unique(learnData$subject))
-    learnData$trialNum <- rep(1:nTrials, times=nSubj)
-    startAcc <- aggregate(wasCorrect~subject+isInstructed, learnData,
-                         function (trials) mean(head(trials, 20)))
-    endAcc <- aggregate(wasCorrect~subject+isInstructed, learnData,
-                         function (trials) mean(tail(trials, 20)))
-    print(mean(subset(startAcc, isInstructed==1)$wasCorrect))
-    print(mean(subset(endAcc, isInstructed==1)$wasCorrect))
-    print(mean(subset(startAcc, isInstructed==0)$wasCorrect))
-    print(mean(subset(endAcc, isInstructed==0)$wasCorrect))
+    endAcc <- aggregate(wasCorrect~subject, learnData, function (trials) mean(tail(trials, 20)))
+    writeLines(sprintf('Total number of subjects: %d', length(unique(memData$subject))))
+
+    testRT <- aggregate(RT ~ subject, memData, mean)
+    learnRT <- aggregate(RT ~ subject, learnData, mean)
     
-    excludedSubjects <- unique(endAcc$subject[endAcc$wasCorrect < 0.85])
-    memData <- memData[!(memData$subject %in% excludedSubjects),]
-        
-    print(length(unique(memData$subject)))
-    #quit()
+    # exclude subjects with high RT or low learning accuracy
+    writeLines(sprintf('Mean Test RT+3SD: %f', (mean(memData$RT)+3*sd(memData$RT)) / 1000))
+    writeLines(sprintf('Mean Learning RT+3SD: %f', (mean(learnData$RT)+3*sd(learnData$RT)) / 1000))
+    excluded = unique(c(#memData$subject[memData$RT > (mean(memData$RT)+3*sd(memData$RT))],
+    #                    learnData$subject[learnData$RT > (mean(learnData$RT)+3*sd(learnData$RT))],
+        learnRT$subject[learnRT$RT > (mean(learnRT$RT) + 3*sd(learnRT$RT))],
+        testRT$subject[testRT$RT > (mean(testRT$RT) + 3*sd(testRT$RT))],
+        endAcc$subject[endAcc$wasCorrect < 0.85]))
+
+    excludedTrials <- which(testRT$RT %in% boxplot(testRT$RT, plot=F)$out)
+    print(min(testRT$RT))
+    print(max(testRT$RT))
+    print(mean(testRT$RT))
+    print(mean(testRT$RT) + 3*sd(testRT$RT))
+    print('')
+    print(min(learnRT$RT))
+    print(max(learnRT$RT))
+    print(mean(learnRT$RT))
+    print(mean(learnRT$RT) + 3*sd(learnRT$RT))
+    
+    
+    #writeLines(sprintf('Max RT- %f', min(memData$RT[excludedTrials])))
+    #writeLines(sprintf('Excluded Trials: %d', length(excludedTrials)))
+    #memData <- memData[-excludedTrials,]
+    
+    memData <- memData[!(memData$subject %in% excluded),]
+    learnData <- learnData[!(learnData$subject %in% excluded),]
+    writeLines(sprintf('After exclusion: %d', length(unique(memData$subject))))
+    
+    startAcc <- aggregate(wasCorrect~subject+isInstructed, learnData,
+                          function (trials) mean(head(trials, 10)))
+    endAcc <- aggregate(wasCorrect~subject+isInstructed, learnData,
+                        function (trials) mean(tail(trials, 10)))
+    writeLines(sprintf('Instructed: %f -> %f', mean(subset(startAcc, isInstructed==1)$wasCorrect),
+                       mean(subset(endAcc, isInstructed==1)$wasCorrect)))
+    writeLines(sprintf('Not Instructed: %f -> %f', mean(subset(startAcc, isInstructed==0)$wasCorrect),
+                       mean(subset(endAcc, isInstructed==0)$wasCorrect)))
+
+    
+    #print(aggregate(subject~isPracticed+isInstructed, memData, function (s) length(unique(s))))
+    #print(aggregate(subject~featureLearned+valueLearned+featureFoil+valueFoil, memData, function (s) length(unique(s))))
     writeLines('\n\nRT')
-    #print(ddply(memData, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
-    #            mean=mean(RT), sd=sd(RT), se=(sd/sqrt(length(RT)))))
-    #print(ddply(memData, c("isPracticed", "isInstructed"), summarise,
-    #            mean=mean(RT), sd=sd(RT), se=(sd/sqrt(length(RT)))))
-    #print(ddply(memData, c("isTarget", "isFoil"), summarise,
-    #            mean=mean(RT), sd=sd(RT), se=(sd/sqrt(length(RT)))))
-    print(summary(lmer(RT ~ isPracticed*isInstructed*isTarget*isFoil + (1|subject), data=memData)))
+    print(summary(lmer(RT ~ isPracticed*isInstructed*isTarget*isFoil
+                       + (1|subject), data=memData)))
     
     hits <- subset(memData, isOld==1)
-    FAs  <- subset(memData, isOld==0)   
+    FAs  <- subset(memData, isOld==0)
+    FAs$wasCorrect <- 1-FAs$wasCorrect
+    
     writeLines('\n\nHits')
     analyze(hits)
     writeLines('\n\nFAs')
@@ -125,7 +126,7 @@ for (i in 1:length(args)) {
     write.csv(sdtData, 'sdt.csv')
     
     # plot interaction plots
-    png('E6_RT.png', height=1000, width=1000)
+    png('E6_RT.png', height=500, width=1000)
     # remove individual differences (for within-subject studies)
     subjAvgs <- ddply(memData, c('subject'), summarise, subjAvg=mean(RT))
     condAvgs <- ddply(memData, c('isPracticed', 'isInstructed'), summarise, condAvg=mean(RT))
@@ -134,14 +135,22 @@ for (i in 1:length(args)) {
                         + subset(condAvgs, isPracticed == x['isPracticed']
                                  & isInstructed == x['isInstructed'])$condAvg)
     print(ggplot(ddply(memData, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
-                       N=length(RT), rt=mean(RT), sd=sd(RT), se=(sd/sqrt(N)))) +
+                       N=length(RT), rt=mean(RT), sd=sd(RT), ci=1.96*(sd/sqrt(N)))) +
           aes(x=interaction(isFoil, isTarget), y=rt, color=interaction(isPracticed, isInstructed),
               group=interaction(isPracticed, isInstructed)) +
-          geom_errorbar(aes(ymin=rt-se, ymax=rt+se), width=.2) +
-          geom_line(size=2) + theme_classic())
+          geom_errorbar(aes(ymin=rt-ci, ymax=rt+ci), width=.2) +
+          geom_line(size=2) + theme_classic() + ylab('Reaction Time') +
+          scale_x_discrete(labels=c('Neither', 'Not Learned', 'Learned', 'Both')) +
+          scale_color_discrete(labels=c('Neither', 'Practiced', 'Instructed', 'Both')) +
+          theme(axis.text=element_text(size=20),
+                axis.title.x=element_blank(),
+                axis.title.y=element_text(size=36, margin=margin(r=0.5, unit='cm')),
+                legend.title=element_blank(),
+                legend.text=element_text(size=20),
+                plot.margin=margin(t=1, b=1, unit='cm')))
     dev.off()
-    
-    png('E6_hits.png', height=1000, width=1000)
+
+    png('E6_hits.png', height=500, width=1000)
     # remove individual differences (for within-subject studies)
     subjAvgs <- ddply(hits, c('subject'), summarise, subjAvg=mean(wasCorrect))
     condAvgs <- ddply(hits, c('isPracticed', 'isInstructed'), summarise, condAvg=mean(wasCorrect))
@@ -150,17 +159,25 @@ for (i in 1:length(args)) {
                              + subset(condAvgs, isPracticed == x['isPracticed']
                                       & isInstructed == x['isInstructed'])$condAvg)
     print(ggplot(ddply(hits, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
-                       N=length(wasCorrect), hits=mean(wasCorrect), sd=sd(wasCorrect), se=(sd/sqrt(N)))) +
+                       N=length(wasCorrect), hits=mean(wasCorrect), sd=sd(wasCorrect),
+                       ci=1.96*(sd/sqrt(N)))) +
           aes(x=interaction(isFoil, isTarget), y=hits, color=interaction(isPracticed, isInstructed),
               group=interaction(isPracticed, isInstructed)) +
-          geom_errorbar(aes(ymin=hits-se, ymax=hits+se), width=.2) +
-          geom_line(size=2) + theme_classic())
+          geom_errorbar(aes(ymin=hits-ci, ymax=hits+ci), width=.2) +
+          geom_line(size=2) + theme_classic() + ylab('Hit Rate') +
+          scale_x_discrete(labels=c('Neither', 'Not Learned', 'Learned', 'Both')) +
+          scale_color_discrete(labels=c('Neither', 'Practiced', 'Instructed', 'Both')) +
+          theme(axis.text=element_text(size=20),
+                axis.title.x=element_blank(),
+                axis.title.y=element_text(size=36, margin=margin(r=0.5, unit='cm')),
+                legend.title=element_blank(),
+                legend.text=element_text(size=20),
+                plot.margin=margin(t=1, b=1, unit='cm')))
     dev.off()
     
     
-    png('E6_FAs.png', height=1000, width=1000)
+    png('E6_FAs.png', height=500, width=1000)
     # remove individual differences (for within-subject studies)
-    FAs$wasCorrect <- 1-FAs$wasCorrect
     subjAvgs <- ddply(FAs, c('subject'), summarise, subjAvg=mean(wasCorrect))
     condAvgs <- ddply(FAs, c('isPracticed', 'isInstructed'), summarise, condAvg=mean(wasCorrect))
     FAs$wasCorrect <- apply(FAs, 1, function (x) as.numeric(x['wasCorrect'])
@@ -169,14 +186,22 @@ for (i in 1:length(args)) {
                                      & isInstructed == x['isInstructed'])$condAvg)
     print(ggplot(ddply(FAs, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
                        N=length(wasCorrect), FAs=mean(wasCorrect),
-                       sd=sd(wasCorrect), se=(sd/sqrt(N)))) +
+                       sd=sd(wasCorrect), ci=1.96*(sd/sqrt(N)))) +
           aes(x=interaction(isFoil, isTarget), y=FAs, color=interaction(isPracticed, isInstructed),
               group=interaction(isPracticed, isInstructed)) +
-          geom_errorbar(aes(ymin=FAs-se, ymax=FAs+se), width=.2) +
-          geom_line(size=2) + theme_classic())
+          geom_errorbar(aes(ymin=FAs-ci, ymax=FAs+ci), width=.2) +
+          geom_line(size=2) + theme_classic() + ylab('FA Rate') +
+          scale_x_discrete(labels=c('Neither', 'Not Learned', 'Learned', 'Both')) +
+          scale_color_discrete(labels=c('Neither', 'Practiced', 'Instructed', 'Both')) +
+          theme(axis.text=element_text(size=20),
+                axis.title.x=element_blank(),
+                axis.title.y=element_text(size=36, margin=margin(r=0.5, unit='cm')),
+                legend.title=element_blank(),
+                legend.text=element_text(size=20),
+                plot.margin=margin(t=1, b=1, unit='cm')))
     dev.off()
     
-    png('E6_sensitivity.png', height=1000, width=1000)
+    png('E6_sensitivity.png', height=500, width=1000)
     # remove individual differences (for within-subject studies)
     subjAvgs <- ddply(sdtData, c('subject'), summarise, subjAvg=mean(dprime))
     condAvgs <- ddply(sdtData, c('isPracticed', 'isInstructed'), summarise, condAvg=mean(dprime))
@@ -185,15 +210,25 @@ for (i in 1:length(args)) {
                             + subset(condAvgs, isPracticed == x['isPracticed']
                                      & isInstructed == x['isInstructed'])$condAvg)
     print(ggplot(ddply(sdtData, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
-                       N=length(dprime), sensitivity=mean(dprime), sd=sd(dprime), se=(sd/sqrt(N)))) +
+                       N=length(dprime), sensitivity=mean(dprime), sd=sd(dprime),
+                       ci=1.96*(sd/sqrt(N)))) +
           aes(x=interaction(isFoil, isTarget), y=sensitivity,
               color=interaction(isPracticed, isInstructed),
               group=interaction(isPracticed, isInstructed)) +
-          geom_errorbar(aes(ymin=sensitivity-se, ymax=sensitivity+se), width=.2) +
-          geom_line(size=2) + theme_classic())
+          geom_errorbar(aes(ymin=sensitivity-ci, ymax=sensitivity+ci), width=.2) +
+          geom_line(size=2) + theme_classic() +
+          ylab(expression(paste('Sensitivity (', d*minute, ')'))) +
+          scale_x_discrete(labels=c('Neither', 'Not Learned', 'Learned', 'Both')) +
+          scale_color_discrete(labels=c('Neither', 'Practiced', 'Instructed', 'Both')) +
+          theme(axis.text=element_text(size=20),
+                axis.title.x=element_blank(),
+                axis.title.y=element_text(size=36, margin=margin(r=0.5, unit='cm')),
+                legend.title=element_blank(),
+                legend.text=element_text(size=20),
+                plot.margin=margin(t=1, b=1, unit='cm')))
     dev.off()
     
-    png('E6_bias.png', height=1000, width=1000)
+    png('E6_bias.png', height=500, width=1000)
     # remove individual differences (for within-subject studies)
     subjAvgs <- ddply(sdtData, c('subject'), summarise, subjAvg=mean(c))
     condAvgs <- ddply(sdtData, c('isPracticed', 'isInstructed'), summarise, condAvg=mean(c))
@@ -202,11 +237,19 @@ for (i in 1:length(args)) {
                        + subset(condAvgs, isPracticed == x['isPracticed']
                                 & isInstructed == x['isInstructed'])$condAvg)
     print(ggplot(ddply(sdtData, c("isPracticed", "isInstructed", "isTarget", "isFoil"), summarise,
-                       N=length(c), bias=mean(c), sd=sd(c), se=(sd/sqrt(N)))) +
+                       N=length(c), bias=mean(c), sd=sd(c), ci=1.96*(sd/sqrt(N)))) +
           aes(x=interaction(isFoil, isTarget), y=bias,
               color=interaction(isPracticed, isInstructed),
               group=interaction(isPracticed, isInstructed)) +
-          geom_errorbar(aes(ymin=bias-se, ymax=bias+se), width=.2) +
-          geom_line(size=2) + theme_classic())
+          geom_errorbar(aes(ymin=bias-ci, ymax=bias+ci), width=.2) +
+          geom_line(size=2) + theme_classic() + ylab('Bias (C)') +
+          scale_x_discrete(labels=c('Neither', 'Not Learned', 'Learned', 'Both')) +
+          scale_color_discrete(labels=c('Neither', 'Practiced', 'Instructed', 'Both')) +
+          theme(axis.text=element_text(size=20),
+                axis.title.x=element_blank(),
+                axis.title.y=element_text(size=36, margin=margin(r=0.5, unit='cm')),
+                legend.title=element_blank(),
+                legend.text=element_text(size=20),
+                plot.margin=margin(t=1, b=1, unit='cm')))
     dev.off()
 }
