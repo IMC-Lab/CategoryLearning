@@ -101,6 +101,10 @@ for (i in 1:length(args)) {
           geom_col(size=2) + theme_classic() + ylab('Reaction Time') +
           geom_errorbar(aes(ymin=rt-ci, ymax=rt+ci), width=.2) +
           facet_wrap(~condition, strip.position='bottom') +
+          aes(x=interaction(isFoil, isTarget), y=rt, fill=isTarget) +
+          geom_col(size=2) + theme_classic() + ylab('Reaction Time') +
+          geom_errorbar(aes(ymin=rt-ci, ymax=rt+ci), width=.2) +
+          facet_wrap(~condition, strip.position='bottom') +
           scale_x_discrete(labels=c('Neither', 'Not Learned', 'Learned', 'Both')) +
           theme(axis.text=element_text(size=20),
                 axis.title.x=element_blank(),
@@ -172,6 +176,10 @@ for (i in 1:length(args)) {
     print(ggplot(sdtData %>% group_by(condition, isTarget, isFoil) %>%
                  summarise(N=length(dprime), sensitivity=mean(dprime),
                            sd=sd(dprime), ci=(1.96*sd/sqrt(N)))) +
+          aes(x=interaction(isFoil, isTarget), y=sensitivity, fill=isTarget) +
+          geom_col(size=2) + theme_classic() +
+          geom_errorbar(aes(ymin=sensitivity-ci, ymax=sensitivity+ci), width=.2) +
+          facet_wrap(~condition, strip.position='bottom') +
           aes(x=interaction(isFoil, isTarget), y=sensitivity, fill=isTarget) +
           geom_col(size=2) + theme_classic() +
           geom_errorbar(aes(ymin=sensitivity-ci, ymax=sensitivity+ci), width=.2) +

@@ -63,6 +63,7 @@ for (i in 1:length(args)) {
     learnData <- subset(read.csv(filename, header=T), task=='learn' & isPracticed==1)
     endAcc <- aggregate(wasCorrect~subject, learnData, function (trials) mean(tail(trials, 20)))
     writeLines(sprintf('Total number of subjects: %d', length(unique(memData$subject))))
+<<<<<<< Updated upstream
 
     testRT <- aggregate(RT ~ subject, memData, mean)
     learnRT <- aggregate(RT ~ subject, learnData, mean)
@@ -76,6 +77,21 @@ for (i in 1:length(args)) {
         testRT$subject[testRT$RT > (mean(testRT$RT) + 3*sd(testRT$RT))],
         endAcc$subject[endAcc$wasCorrect < 0.85]))
 
+=======
+
+    testRT <- aggregate(RT ~ subject, memData, mean)
+    learnRT <- aggregate(RT ~ subject, learnData, mean)
+    
+    # exclude subjects with high RT or low learning accuracy
+    writeLines(sprintf('Mean Test RT+3SD: %f', (mean(memData$RT)+3*sd(memData$RT)) / 1000))
+    writeLines(sprintf('Mean Learning RT+3SD: %f', (mean(learnData$RT)+3*sd(learnData$RT)) / 1000))
+    excluded = unique(c(#memData$subject[memData$RT > (mean(memData$RT)+3*sd(memData$RT))],
+    #                    learnData$subject[learnData$RT > (mean(learnData$RT)+3*sd(learnData$RT))],
+        learnRT$subject[learnRT$RT > (mean(learnRT$RT) + 3*sd(learnRT$RT))],
+        testRT$subject[testRT$RT > (mean(testRT$RT) + 3*sd(testRT$RT))],
+        endAcc$subject[endAcc$wasCorrect < 0.85]))
+    
+>>>>>>> Stashed changes
     excludedTrials <- which(testRT$RT %in% boxplot(testRT$RT, plot=F)$out)
     print(min(testRT$RT))
     print(max(testRT$RT))
@@ -87,11 +103,14 @@ for (i in 1:length(args)) {
     print(mean(learnRT$RT))
     print(mean(learnRT$RT) + 3*sd(learnRT$RT))
     
+<<<<<<< Updated upstream
     
     #writeLines(sprintf('Max RT- %f', min(memData$RT[excludedTrials])))
     #writeLines(sprintf('Excluded Trials: %d', length(excludedTrials)))
     #memData <- memData[-excludedTrials,]
     
+=======
+>>>>>>> Stashed changes
     memData <- memData[!(memData$subject %in% excluded),]
     learnData <- learnData[!(learnData$subject %in% excluded),]
     writeLines(sprintf('After exclusion: %d', length(unique(memData$subject))))
