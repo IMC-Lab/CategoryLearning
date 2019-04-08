@@ -97,29 +97,18 @@ for (i in 1:length(args)) {
                         + subset(condAvgs, condition == x['condition'])$condAvg)
     print(ggplot(memData %>% group_by(condition, isTarget, isFoil) %>%
                  summarise(N=length(RT), rt=mean(RT), sd=sd(RT), ci=(1.96*sd/sqrt(N)))) +
-<<<<<<< Updated upstream
-          aes(x=interaction(isFoil, isTarget), y=rt, color=condition, group=condition) +
-          geom_errorbar(aes(ymin=rt-ci, ymax=rt+ci), width=.2) +
-          geom_line(size=2) + theme_classic() + ylab('Reaction Time') +
-=======
           aes(x=interaction(isFoil, isTarget), y=rt, fill=isTarget) +
           geom_col(size=2) + theme_classic() + ylab('Reaction Time') +
           geom_errorbar(aes(ymin=rt-ci, ymax=rt+ci), width=.2) +
           facet_wrap(~condition, strip.position='bottom') +
->>>>>>> Stashed changes
           scale_x_discrete(labels=c('Neither', 'Not Learned', 'Learned', 'Both')) +
           theme(axis.text=element_text(size=20),
                 axis.title.x=element_blank(),
                 axis.title.y=element_text(size=36, margin=margin(r=0.5, unit='cm')),
-<<<<<<< Updated upstream
-                legend.title=element_blank(),
-                legend.text=element_text(size=20),
-=======
                 legend.position='none',
                 strip.background=element_blank(),
                 strip.placement='outside',
                 strip.text=element_text(size=36),
->>>>>>> Stashed changes
                 plot.margin=margin(t=1, b=1, unit='cm')))
     dev.off()
     
@@ -133,29 +122,18 @@ for (i in 1:length(args)) {
     print(ggplot(hits %>% group_by(condition, isTarget, isFoil) %>%
                  summarise(N=length(wasCorrect), hits=mean(wasCorrect),
                            sd=sd(wasCorrect), ci=(1.96*sd/sqrt(N)))) +
-<<<<<<< Updated upstream
-          aes(x=interaction(isFoil, isTarget), y=hits, color=condition, group=condition) +
-          geom_errorbar(aes(ymin=hits-ci, ymax=hits+ci), width=.2) +
-          geom_line(size=2) + theme_classic() + ylab('Hit Rate') +
-=======
           aes(x=interaction(isFoil, isTarget), y=hits, fill=isTarget) +
           geom_col(size=2) + theme_classic() + ylab('Hit Rate') +
           geom_errorbar(aes(ymin=hits-ci, ymax=hits+ci), width=.2) +
           facet_wrap(~condition, strip.position='bottom') +
->>>>>>> Stashed changes
           scale_x_discrete(labels=c('Neither', 'Not Learned', 'Learned', 'Both')) +
           theme(axis.text=element_text(size=20),
                 axis.title.x=element_blank(),
                 axis.title.y=element_text(size=36, margin=margin(r=0.5, unit='cm')),
-<<<<<<< Updated upstream
-                legend.title=element_blank(),
-                legend.text=element_text(size=20),
-=======
                 legend.position='none',
                 strip.background=element_blank(),
                 strip.placement='outside',
                 strip.text=element_text(size=36),
->>>>>>> Stashed changes
                 plot.margin=margin(t=1, b=1, unit='cm')))
     dev.off()
         
@@ -169,29 +147,18 @@ for (i in 1:length(args)) {
     print(ggplot(FAs %>% group_by(condition, isTarget, isFoil) %>%
                  summarise(N=length(wasCorrect), FAs=mean(wasCorrect),
                            sd=sd(wasCorrect), ci=(1.96*sd/sqrt(N)))) +
-<<<<<<< Updated upstream
-          aes(x=interaction(isFoil, isTarget), y=FAs, color=condition, group=condition) +
-          geom_errorbar(aes(ymin=FAs-ci, ymax=FAs+ci), width=.2) +
-          geom_line(size=2) + theme_classic() + ylab('FA Rate') +
-=======
           aes(x=interaction(isFoil, isTarget), y=FAs, fill=isTarget) +
           geom_col(size=2) + theme_classic() + ylab('FA Rate') +
           geom_errorbar(aes(ymin=FAs-ci, ymax=FAs+ci), width=.2) +
           facet_wrap(~condition, strip.position='bottom') +
->>>>>>> Stashed changes
           scale_x_discrete(labels=c('Neither', 'Not Learned', 'Learned', 'Both')) +
           theme(axis.text=element_text(size=20),
                 axis.title.x=element_blank(),
                 axis.title.y=element_text(size=36, margin=margin(r=0.5, unit='cm')),
-<<<<<<< Updated upstream
-                legend.title=element_blank(),
-                legend.text=element_text(size=20),
-=======
                 legend.position='none',
                 strip.background=element_blank(),
                 strip.placement='outside',
                 strip.text=element_text(size=36),
->>>>>>> Stashed changes
                 plot.margin=margin(t=1, b=1, unit='cm')))
     dev.off()
     
@@ -205,30 +172,19 @@ for (i in 1:length(args)) {
     print(ggplot(sdtData %>% group_by(condition, isTarget, isFoil) %>%
                  summarise(N=length(dprime), sensitivity=mean(dprime),
                            sd=sd(dprime), ci=(1.96*sd/sqrt(N)))) +
-<<<<<<< Updated upstream
-          aes(x=interaction(isFoil, isTarget), y=sensitivity, color=condition, group=condition) +
-          geom_errorbar(aes(ymin=sensitivity-ci, ymax=sensitivity+ci), width=.2) +
-          geom_line(size=2) + theme_classic() +
-=======
           aes(x=interaction(isFoil, isTarget), y=sensitivity, fill=isTarget) +
           geom_col(size=2) + theme_classic() +
           geom_errorbar(aes(ymin=sensitivity-ci, ymax=sensitivity+ci), width=.2) +
           facet_wrap(~condition, strip.position='bottom') +
->>>>>>> Stashed changes
           ylab(expression(paste('Sensitivity (', d*minute, ')'))) +
           scale_x_discrete(labels=c('Neither', 'Not Learned', 'Learned', 'Both')) +
           theme(axis.text=element_text(size=20),
                 axis.title.x=element_blank(),
                 axis.title.y=element_text(size=36, margin=margin(r=0.5, unit='cm')),
-<<<<<<< Updated upstream
-                legend.title=element_blank(),
-                legend.text=element_text(size=20),
-=======
                 legend.position='none',
                 strip.background=element_blank(),
                 strip.placement='outside',
                 strip.text=element_text(size=36),
->>>>>>> Stashed changes
                 plot.margin=margin(t=1, b=1, unit='cm')))
     dev.off()
     
@@ -241,29 +197,18 @@ for (i in 1:length(args)) {
                        + subset(condAvgs, condition == x['condition'])$condAvg)
     print(ggplot(sdtData %>% group_by(condition, isTarget, isFoil) %>%
                  summarise(N=length(c), bias=mean(c), sd=sd(c), ci=(1.96*sd/sqrt(N)))) +
-<<<<<<< Updated upstream
-          aes(x=interaction(isFoil, isTarget), y=bias, color=condition, group=condition) +
-          geom_errorbar(aes(ymin=bias-ci, ymax=bias+ci), width=.2) +
-          geom_line(size=2) + theme_classic() + ylab('Bias (C)') +
-=======
           aes(x=interaction(isFoil, isTarget), y=bias, fill=isTarget) +
           geom_col(size=2) + theme_classic() + ylab('Bias (C)') +
           geom_errorbar(aes(ymin=bias-ci, ymax=bias+ci), width=.2) +
           facet_wrap(~condition, strip.position='bottom') +
->>>>>>> Stashed changes
           scale_x_discrete(labels=c('Neither', 'Not Learned', 'Learned', 'Both')) +
           theme(axis.text=element_text(size=20),
                 axis.title.x=element_blank(),
                 axis.title.y=element_text(size=36, margin=margin(r=0.5, unit='cm')),
-<<<<<<< Updated upstream
-                legend.title=element_blank(),
-                legend.text=element_text(size=20),
-=======
                 legend.position='none',
                 strip.background=element_blank(),
                 strip.placement='outside',
                 strip.text=element_text(size=36),
->>>>>>> Stashed changes
                 plot.margin=margin(t=1, b=1, unit='cm')))
     dev.off()
 }
