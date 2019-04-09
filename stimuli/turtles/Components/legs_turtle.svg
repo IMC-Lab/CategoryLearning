@@ -10,11 +10,11 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="194.73778"
-   height="162.70439"
-   viewBox="0 0 51.524375 43.048872"
+   height="135.20447"
+   viewBox="0 0 51.524375 35.77285"
    version="1.1"
    id="svg8"
-   inkscape:export-filename="/home/kevin/IMC/CategoryLearning/stimuli/turtles/Components/legs_turtle.png"
+   inkscape:export-filename="/home/kevin/IMC/CategoryLearning/stimuli/turtles/Components/legs_short_turtle.png"
    inkscape:export-xdpi="214"
    inkscape:export-ydpi="214"
    sodipodi:docname="legs_turtle.svg"
@@ -23,9 +23,9 @@
      id="defs2">
     <inkscape:perspective
        sodipodi:type="inkscape:persp3d"
-       inkscape:vp_x="1.3552395 : 9.0764537 : 1"
+       inkscape:vp_x="1.3552395 : 9.0764536 : 1"
        inkscape:vp_y="0 : 385.39424 : 0"
-       inkscape:vp_z="6.8393242 : 9.0764537 : 1"
+       inkscape:vp_z="6.8393242 : 9.0764536 : 1"
        inkscape:persp3d-origin="4.0972821 : 6.4422592 : 1"
        id="perspective814" />
   </defs>
@@ -36,9 +36,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="-41.58136"
-     inkscape:cy="103.17967"
+     inkscape:zoom="1.979899"
+     inkscape:cx="-31.134234"
+     inkscape:cy="91.282051"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -59,7 +59,7 @@
        spacingx="0.0026458334"
        spacingy="0.0026458334"
        originx="13.954384"
-       originy="5.0087605" />
+       originy="4.3473123" />
   </sodipodi:namedview>
   <metadata
      id="metadata5">
@@ -69,7 +69,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -77,10 +77,10 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-39.10718,-226.87585)">
+     transform="translate(-39.10718,-233.49042)">
     <path
        style="opacity:1;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.4650521;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 43.978414,228.53907 c -1.426804,-1.04702 -3.211972,-1.02212 -4.003021,0.0559 -0.791044,1.07797 -0.279296,2.7884 1.147507,3.83542 l 5.582271,4.09639 2.855514,-3.89128 z"
+       d="m 43.978414,235.15364 c -1.426804,-1.04702 -3.211972,-1.02212 -4.003021,0.0559 -0.791044,1.07797 -0.279296,2.7884 1.147507,3.83542 l 5.582271,4.09639 2.855514,-3.89128 z"
        id="rect850"
        inkscape:connector-curvature="0" />
     <path
@@ -90,7 +90,7 @@
        inkscape:connector-curvature="0" />
     <path
        style="opacity:1;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.4650521;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 85.760321,228.53907 c 1.426803,-1.04702 3.211971,-1.02212 4.00302,0.0559 0.791045,1.07797 0.279296,2.7884 -1.147507,3.83542 l -5.582271,4.09639 -2.855514,-3.89128 z"
+       d="m 85.760321,235.15364 c 1.426803,-1.04702 3.211971,-1.02212 4.00302,0.0559 0.791045,1.07797 0.279296,2.7884 -1.147507,3.83542 l -5.582271,4.09639 -2.855514,-3.89128 z"
        id="rect850-5"
        inkscape:connector-curvature="0" />
     <path
