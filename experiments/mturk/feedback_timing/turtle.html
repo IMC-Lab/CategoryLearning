@@ -118,8 +118,8 @@ b's, 30 of neither.
 <div class="instrucBox" id="categoryInstruc1" style="padding:5px; text-align:left">
 <p>This HIT will involve 3 short tasks, all involving pictures of turtles. It should take approximately 12-15 minutes to do all 3 tasks.</p>
 <p>During the first task, you will see one turtle at a time and have to determine whether or not it is an <b>aelonii</b>. Aeloniis are a particular species of turtle. They are different from all other turtles in one simple way -- and your job is to find out what that is. For example, it could be that aeloniis all have 3 spots, but no other turtles do. Or aeloniis could be the only turtles that have a round shell; or green legs; or fins instead of legs.</p>
-<p><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/turtles/images/turtle_circle_1_orange_tortoise_yellow.png" width=245><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/turtles/images/turtle_triangle_3_lightblue_fin_green.png" width=245></p>
-<p>As you can see from these examples, the turtles in this experiment will differ in a number of ways: (1) the number of spots, (2) the color of the spots, (3) the shape of the shell, (4) the shape of their legs, and (5) the color of their legs</p>
+<p><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/turtles/images/turtle_box_1_orange_circle_left_fin_blue.png" width=245><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/turtles/images/turtle_circle_3_purple_triangle_right_turtle_pink.png" width=245></p>
+<p>As you can see from these examples, the turtles in this experiment will differ in a number of ways: (1) the number of spots, (2) the color of their spots, (3) the shape of their shell, (4) the shape of their head, (5) the shape of their legs, (6) the color of their body, and (7) the direction their tail is pointing</p>
 <p>In the first task, you'll be shown a single turtle, and then be asked if it is or not an aelonii (press 'y' if yes, 'n' if no). At first, you'll have to guess. Eventually, though, you'll figure out what makes something an aelonii. You will have <span id="numLearning">0</span> turtles to judge. Do your best to determine what makes something an aelonii.</p><br>
 <p><a href="#" class="buttonStart" id="startLearning">I'm Ready to Start Part 1</a>
   <span class="buttonStart" id="loadingLearning">Loading images... Please wait.</span></p><br>
@@ -163,35 +163,40 @@ b's, 30 of neither.
 <script src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/category_learning.js"></script>
 <script>
 /* Define the values for each feature */
-let values = {'numSpots':['1', '2', '3'],
-              'spotColor':['brightgreen', 'orange', 'purple'],
-              'legColor':['blue', 'green', 'yellow'],
-              'legShape':['turtle', 'tortoise', 'fin'],
-              'shellShape':['circle', 'triangle', 'box']};
+let values = {'numSpots':['1', '3'],
+              'spotColor':['orange', 'purple'],
+              'legColor':['blue', 'pink'],
+              'legShape':['turtle', 'fin'],
+              'shellShape':['circle', 'box'],
+              'headShape':['circle', 'triangle'],
+              'tailDir':['left', 'right']};
 
 let assignmentFilename = 'feedback_timing/turtle_assignment.json'
 let dataDir = 'feedback_timing/data'
 
 /* Get filename for an object */
 function GetTurtleFilename(obj) {
+  console.log("https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/turtles/images/turtle_"
+    + obj.shellShape + "_" + obj.numSpots + "_" + obj.spotColor + "_"
+    + obj.headShape + "_" + obj.tailDir + "_" + obj.legShape + "_" + obj.legColor + ".png");
+
   return ("https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/turtles/images/turtle_"
-    + obj.shellShape + "_" + obj.numSpots + "_"
-    + obj.spotColor + "_" + obj.legShape
-    + "_" + obj.legColor + ".png");
+    + obj.shellShape + "_" + obj.numSpots + "_" + obj.spotColor + "_"
+    + obj.headShape + "_" + obj.tailDir + "_" + obj.legShape + "_" + obj.legColor + ".png");
 }
 
 /* Parameters for stimuli */
 let nLearning = 72;
-let pLearnedLearning = 1/3.0;
-let pFoilLearning = 1/3.0;
+let pLearnedLearning = 1/2.0;
+let pFoilLearning = 1/2.0;
 
 let nStudy = 18;
-let pLearnedStudy = 1/3.0;
-let pFoilStudy = 1/3.0;
+let pLearnedStudy = 1/2.0;
+let pFoilStudy = 1/2.0;
 
-let nTest = 54;
-let pLearnedTest = 1/3.0;  // p for lures, not old items
-let pFoilTest = 1/3.0;
+let nTest = 45;
+let pLearnedTest = 1/2.0;  // p for lures, not old items
+let pFoilTest = 1/2.0;
 
 /* Feedback timing conditions in ms */
 let conditions = [0.0, 6000.0];
@@ -220,7 +225,7 @@ async function SaveExpData(experimentName, dataDir, progressDir, featureLearned,
   let earnedBonus = correctRate >= 0.85;
   let curID = GetID();
 
-  Save("condition", feedbackDuration);
+  Save("condition", feedbackDelay);
   Save("correctRate", correctRate);
   Save("earnedBonus", earnedBonus);
   Save("featuredLearned", featureLearned);
@@ -253,7 +258,7 @@ async function SaveExpData(experimentName, dataDir, progressDir, featureLearned,
     "screenWidth": screen.width,
     "screenHeight": screen.height,
     "comments": $('#comments').val(),
-    "condition": feedbackDuration,
+    "condition": feedbackDelay,
     "correctRate": correctRate,
     "earnedBonus": earnedBonus,
     "featureLearned": featureLearned,
@@ -283,7 +288,7 @@ $(function () {
                   nLearning, pLearnedLearning, pFoilLearning,
                   nStudy, pLearnedStudy, pFoilStudy,
                   nTest, pLearnedTest, pFoilTest, dataDir, null,
-                  null, null, null, null, nextAssignment)
+                  null, null, null, SaveExpData, nextAssignment)
                   .then(function (expData) {
                     feedbackDelay = conditions[expData.condition];
                     console.log('Feedback Duration: ' + feedbackDelay);

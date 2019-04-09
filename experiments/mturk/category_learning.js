@@ -1,4 +1,4 @@
-var waitTime = 30000;
+var waitTime = 0; // 30000;
 var feedbackDelay = 0;
 var feedbackDuration = 1000;
 var studyDuration = 3000;
@@ -113,6 +113,11 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
   }
   let valueFoil = values[featureFoil][Math.floor(Math.random()*values[featureFoil].length)];
 
+    console.log('Learned Feature: ' + featureLearned);
+    console.log('Learned Value: ' + valueLearned);
+    console.log('Not-Learned Feature: ' + featureFoil);
+    console.log('Not-Learned Value: ' + valueFoil);
+    
   /* Build the lists of items to use for learning, study, and test */
   let itemsForLearning = CreateLearningList(nLearning, pLearnedLearning, pFoilLearning,
                                             values, featureLearned, valueLearned,
@@ -179,10 +184,10 @@ function GetObject(values, featureLearned, valueLearned,
   for (let i=0; i<avoidObjectsList.length; i++) {
     avoidObjects.push.apply(avoidObjects, avoidObjectsList[i]);
   }
-
+    
   let obj = {};
   for (let feature in values) {
-    obj[feature] = values[feature][Math.floor(Math.random()*3)];
+    obj[feature] = values[feature][Math.floor(Math.random()*values[feature].length)];
   }
 
   obj[featureLearned] = valueLearned;
