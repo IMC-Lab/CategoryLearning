@@ -33,7 +33,7 @@ TAIL_OFFSET = (0, 200)
 TAIL_TYPES = ['left', 'right']
               
 SPOT_PREFIX = 'spots'
-SPOT_COUNTS = range(1, 3) #range(1, 4)
+SPOT_COUNTS = [1, 3] #range(1, 4)
 SPOT_COLORS = {'purple':(205, 0, 255),   # encoded in RGB
                'orange':(255, 40, 15)} #,
                #'brightgreen':(0, 255, 60),
