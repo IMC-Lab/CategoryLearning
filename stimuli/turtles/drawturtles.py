@@ -23,10 +23,10 @@ HEAD_SHAPES = ['circle', 'triangle']
 LEG_PREFIX = 'legs_short'
 LEG_OFFSET = (0,15) # move legs lower than the center
 LEG_SHAPES = ['fin', 'turtle'] #, 'tortoise']
-LEG_COLORS = {'blue':(60, 0, 180),     # encoded in RGB
-              'pink':(190, 0, 125)} #,
+LEG_COLORS = {#'blue':(60, 0, 180),     # encoded in RGB
+              'pink':(190, 0, 125),
               #'yellow':(185, 160, 75),
-              #'green':(0, 200, 75)}
+              'green':(0, 200, 75)}
 
 TAIL_PREFIX = 'tail'
 TAIL_OFFSET = (0, 200)
@@ -34,10 +34,10 @@ TAIL_TYPES = ['left', 'right']
               
 SPOT_PREFIX = 'spots'
 SPOT_COUNTS = [1, 3] #range(1, 4)
-SPOT_COLORS = {'purple':(205, 0, 255),   # encoded in RGB
-               'orange':(255, 40, 15)} #,
+SPOT_COLORS = {#'purple':(205, 0, 255),   # encoded in RGB
+               'orange':(255, 40, 15),
                #'brightgreen':(0, 255, 60),
-               #'lightblue':(55, 175, 255)}
+               'lightblue':(55, 175, 255)}
 SPOT_OFFSET = (0, 35)
 
 def component(name, prefix='', folder_name=COMPONENT_DIR, file_type=COMPONENT_FILE_TYPE):

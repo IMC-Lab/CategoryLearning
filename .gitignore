@@ -1,6 +1,7 @@
 # temporary files
 **/*.*~
 **/#*.*#
+**/.#*
 
 # images & data files
 analysis/**/*.pdf

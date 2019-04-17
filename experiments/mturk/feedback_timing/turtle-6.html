@@ -120,7 +120,7 @@ b's, 30 of neither.
 <p>During the first task, you will see one turtle at a time and have to determine whether or not it is an <b>aelonii</b>. Aeloniis are a particular species of turtle. They are different from all other turtles in one simple way -- and your job is to find out what that is. For example, it could be that aeloniis all have 3 spots, but no other turtles do. Or aeloniis could be the only turtles that have a round shell; or green legs; or fins instead of legs.</p>
 <p><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/turtles/images/turtle_box_1_orange_circle_left_fin_green.png" width=245><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/turtles/images/turtle_circle_3_lightblue_triangle_right_turtle_pink.png" width=245></p>
 <p>As you can see from these examples, the turtles in this experiment will differ in a number of ways: (1) the number of spots, (2) the color of their spots, (3) the shape of their shell, (4) the shape of their head, (5) the shape of their legs, (6) the color of their body, and (7) the direction their tail is pointing</p>
-<p>In the first task, you'll be shown a single turtle, and then be asked if it is or not an aelonii (press 'y' if yes, 'n' if no). At first, you'll have to guess. Eventually, though, you'll figure out what makes something an aelonii. You will have <span id="numLearning">0</span> turtles to judge. Do your best to determine what makes something an aelonii.</p><br>
+<p>In the first task, you'll be shown a single turtle, and then be asked if it is or not an aelonii (press 'y' if yes, 'n' if no). 6 seconds after your response, you'll find out if you were right. At first, you'll have to guess. Eventually, though, you'll figure out what makes something an aelonii. You will have <span id="numLearning">0</span> turtles to judge. Do your best to determine what makes something an aelonii.</p><br>
 <p><a href="#" class="buttonStart" id="startLearning">I'm Ready to Start Part 1</a>
   <span class="buttonStart" id="loadingLearning">Loading images... Please wait.</span></p><br>
 <p><small>By answering the following questions, you are participating in a study being performed by psychologists in the Duke Department of Psychology and Neuroscience. If you have questions about this research, please contact Felipe De Brigard at felipe.debrigard@duke.edu. Your participation in this research is voluntary. You may decline to answer any or all of the following questions. You may decline further participation, at any time, without adverse consequences. Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.</small></p>
@@ -195,21 +195,7 @@ let pLearnedTest = 1/2.0;  // p for lures, not old items
 let pFoilTest = 1/2.0;
 
 /* Feedback timing conditions in ms */
-let conditions = [0.0, 6000.0];
-
-/* Update the learning condition if all values have been cycled through */
-function nextAssignment(oldAssignment, values) {
-  let newAssignment = nextAssignmentDefault(oldAssignment, values);
-
-  if (newAssignment.featureLearned == 0 && newAssignment.valueLearned == 0) {
-    newAssignment.condition = newAssignment.condition + 1;
-
-    if (newAssignment.condition >= conditions.length)
-      newAssignment.condition = 0;
-  }
-
-  return newAssignment;
-}
+feedbackDelay = 6000;
 
 /* Save the condition, as well as all other experiment data */
 async function SaveExpData(experimentName, dataDir, progressDir, featureLearned, valueLearned,
@@ -283,10 +269,9 @@ $(function () {
                   nLearning, pLearnedLearning, pFoilLearning,
                   nStudy, pLearnedStudy, pFoilStudy,
                   nTest, pLearnedTest, pFoilTest, dataDir, null,
-                  null, null, null, SaveExpData, nextAssignment)
+                  null, null, null, SaveExpData)
                   .then(function (expData) {
-                    feedbackDelay = conditions[expData.condition];
-                    console.log('Feedback Duration: ' + feedbackDelay);
+                    console.log('Feedback Delay: ' + feedbackDelay);
 
                     // After 90s show the link to continue
                     setTimeout(function () {
