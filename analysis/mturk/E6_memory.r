@@ -114,7 +114,7 @@ for (i in 1:length(args)) {
               color=interaction(isFoil, isTarget, isPracticed, isInstructed),
               group=interaction(isFoil, isTarget, isPracticed, isInstructed)) +
           geom_violin() +
-          theme_classic() + ylab('Reaction Time') +
+          theme_classic() + ylab('Reaction Time') + ylim(0, 5) +
           #scale_x_discrete(labels=c('Neither', 'Not Learned', 'Learned', 'Both')) +
           theme(axis.text=element_text(size=20),
                 axis.title.x=element_blank(),
@@ -123,8 +123,7 @@ for (i in 1:length(args)) {
                 legend.text=element_text(size=20),
                 plot.margin=margin(t=1, b=1, unit='cm')))
     dev.off()
-    quit()
-
+    
 
 
     
