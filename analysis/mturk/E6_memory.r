@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/local/bin/Rscript
 library(psycho)  # used for SDT analysis
 library(ggplot2)
 library(lmerTest)
@@ -88,18 +88,28 @@ for (i in 1:length(args)) {
     writeLines(sprintf('After exclusion: %d', length(unique(memData$subject))))
     
     ## exclude trials with high RT
-    writeLines(sprintf('Mean RT+3SD: %f', mean(memData$RT) + 3*sd(memData$RT)))
-    memData <- memData[memData$RT >= mean(memData$RT) - 3*sd(memData$RT) &
-                       memData$RT <= mean(memData$RT) + 3*sd(memData$RT),]    
+    print(nrow(memData))
+    rt.mad <- mad(memData$RT)
+    writeLines(sprintf('Median RT+3MAD: %f', mean(memData$RT) + 3*rt.mad))
+    memData <- memData[memData$RT >= median(memData$RT) - 3*rt.mad &
+                       memData$RT <= median(memData$RT) + 3*rt.mad,]    
+    print(nrow(memData))
     
     startAcc <- aggregate(wasCorrect~subject+isInstructed, learnData,
                           function (trials) mean(head(trials, 10)))
     endAcc <- aggregate(wasCorrect~subject+isInstructed, learnData,
                         function (trials) mean(tail(trials, 10)))
-    writeLines(sprintf('Instructed: %f -> %f', mean(subset(startAcc, isInstructed==1)$wasCorrect),
-                       mean(subset(endAcc, isInstructed==1)$wasCorrect)))
-    writeLines(sprintf('Not Instructed: %f -> %f', mean(subset(startAcc, isInstructed==0)$wasCorrect),
-                       mean(subset(endAcc, isInstructed==0)$wasCorrect)))
+    writeLines(sprintf('Instructed: %f %f -> %f %f',
+                       mean(subset(startAcc, isInstructed==1)$wasCorrect) * 100,
+                       sd(subset(startAcc, isInstructed==1)$wasCorrect) * 100,
+                       mean(subset(endAcc, isInstructed==1)$wasCorrect) * 100,
+                       sd(subset(endAcc, isInstructed==1)$wasCorrect) * 100))
+    writeLines(sprintf('Not Instructed: %f %f -> %f %f',
+                       mean(subset(startAcc, isInstructed==0)$wasCorrect) * 100,
+                       sd(subset(startAcc, isInstructed==0)$wasCorrect) * 100,
+                       mean(subset(endAcc, isInstructed==0)$wasCorrect) * 100,
+                       sd(subset(endAcc, isInstructed==0)$wasCorrect) * 100))
+    
     
     print(aggregate(subject~isPracticed+isInstructed, memData, function (s) length(unique(s))))
     ##print(aggregate(subject~featureLearned+valueLearned+featureFoil+valueFoil, memData, function (s) length(unique(s))))
@@ -127,10 +137,11 @@ for (i in 1:length(args)) {
 
 
     
-    #print(summary(lmer(RT ~ isPracticed*isInstructed*isTarget*isFoil
-    #                   + (1|subject), data=memData,
-    #                   contrasts=list(isPracticed=contr.sum, isInstructed=contr.sum,
-    #                                  isTarget=contr.sum, isFoil=contr.sum),)))
+    print(summary(lmer(RT ~ isPracticed*isInstructed*isTarget*isFoil*isOld
+                       + (1+isTarget*isOld|subject), data=memData,
+                       contrasts=list(isPracticed=contr.sum, isInstructed=contr.sum,
+                                      isTarget=contr.sum, isFoil=contr.sum),)))
+    quit()
     
     hits <- subset(memData, isOld==1)
     FAs  <- subset(memData, isOld==0)
