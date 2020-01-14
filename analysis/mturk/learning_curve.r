@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/local/bin/Rscript
 library(ggplot2)
 library(plyr)
 
@@ -50,37 +50,32 @@ for (i in 1:length(args)) {
     writeLines(args[i])
     
     # import the data
-    trials.test <- subset(read.csv(filename, header=T), task=='test')
-    trials.learn <- subset(read.csv(filename, header=T), task=='learn' & isPracticed)
-    endAcc <- aggregate(wasCorrect~subject, trials.learn, function (trials) mean(tail(trials, 20)))
-
-    testRT <- aggregate(RT ~ subject, trials.test, mean)
-    learnRT <- aggregate(RT ~ subject, trials.learn, mean)
-        
-    # exclude subjects based on 3 sd's from the RT
-    excluded = unique(c(#trials.test$subject[trials.test$RT >
-                        #                    (mean(trials.test$RT)+3*sd(trials.test$RT))],
-                        #trials.learn$subject[trials.learn$RT >
-                        #                     (mean(trials.learn$RT)+3*sd(trials.learn$RT))],
-                        learnRT$subject[learnRT$RT > (mean(learnRT$RT) + 3*sd(learnRT$RT))],
-                        testRT$subject[testRT$RT > (mean(testRT$RT) + 3*sd(testRT$RT))],
-                        endAcc$subject[endAcc$wasCorrect < 0.85]))
-    trials.test <- trials.test[!(trials.test$subject %in% excluded),]
-    trials.learn <- trials.learn[!(trials.learn$subject %in% excluded),]
+    memData <- subset(read.csv(filename, header=T), task=='test')
+    memData$RT <- memData$RT / 1000
     
-    trials.learn$isInstructed <- as.factor(sapply(trials.learn$isInstructed,
-                                                  function (i) {
-                                                      if (i) ' Instructed'
-                                                      else ' Not Instructed'
-                                                  }))
-
+    writeLines(sprintf('Total number of subjects: %d', length(unique(memData$subject))))
     
-    learning_curve(trials.learn)
-    quit()
-    for (feature in unique(trials.learn$featureLearned)) {
-        learning_curve(trials.learn, feature)
-        for (value in unique(subset(trials.learn, featureLearned==feature)$valueLearned))
-            learning_curve(trials.learn, feature, value)
+    ## exclude subjects with or low learning accuracy
+    learnData <- subset(read.csv(filename, header=T), task=='learn' & isPracticed==1)
+    endAcc <- aggregate(wasCorrect~subject, learnData, function (trials) mean(tail(trials, 20)))
+    excluded = endAcc$subject[endAcc$wasCorrect < 0.85]
+    memData <- memData[!(memData$subject %in% excluded),]
+    learnData <- learnData[!(learnData$subject %in% excluded),]
+    writeLines(sprintf('After exclusion: %d', length(unique(memData$subject))))
+    
+    learnData$isInstructed <- as.factor(sapply(learnData$isInstructed,
+                                               function (i) {
+                                                   if (i) ' Instructed'
+                                                   else ' Not Instructed'
+                                               }))
+    
+    
+    learning_curve(learnData)
+
+    for (feature in unique(learnData$featureLearned)) {
+        learning_curve(learnData, feature)
+        for (value in unique(subset(learnData, featureLearned==feature)$valueLearned))
+            learning_curve(learnData, feature, value)
     }
     
 }

@@ -1,6 +1,10 @@
 # temporary files
 **/*.*~
 **/#*.*#
+**/.DS_Store
+**/.RData
+**/.Rhistory
+**/*.rds
 
 # images & data files
 analysis/**/*.pdf
@@ -14,3 +18,4 @@ analysis/mturk/data
 **/*.blg
 **/*.log
 **/*.out
+papers/PBR-2019/old
