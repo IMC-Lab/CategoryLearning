@@ -58,6 +58,36 @@ memData %>% select(isPracticed, isInstructed, subject) %>%
 
 
 
+mRT <- brm(bf(RT ~ isPracticed*isInstructed*isTarget*isFoil*isOld +
+                  (1+isOld*isTarget*isFoil || subject),
+              beta ~ isPracticed*isInstructed*isTarget*isFoil*isOld +
+                  (1+isOld*isTarget*isFoil || subject),
+              sigma ~ (1 || subject)),
+           prior=c(set_prior('normal (0, 2.5)'),
+                   set_prior('normal (0, 1)', dpar='beta')),
+           family=exgaussian(link="identity"), inits="0", sample_prior=TRUE,
+           chains=5, cores=5, iter=4000, warmup=1000, thin=3,
+           control=list(adapt_delta=0.9),
+           file='brms_RT_exgaussian', data=memData)
+posteriorRT <- describe_posterior(mRT, ci=0.95, rope_ci=0.95)
+print(posteriorRT)
+posteriorRT %>%
+    mutate(Parameter=str_replace(str_replace(str_replace(str_replace(str_replace(
+               str_remove_all(Parameter, '\\d|b_'),
+               'isInstructed', 'I'),
+               'isPracticed', 'P'),
+               'isTarget', 'L'),
+               'isFoil', 'NL'),
+               'isOld', 'O'),
+           Median=sprintf('%1.2f', Median),
+           HDI=sprintf('[%1.2f, %1.2f]', CI_low, CI_high),
+           pd=sprintf('%1.2f', pd),
+           ROPE=sprintf('[%1.2f, %1.2f]', ROPE_low, ROPE_high),
+           ROPE_Percentage=sprintf('%1.2f', ROPE_Percentage)) %>%
+    select(Parameter, Median, HDI, pd, ROPE, ROPE_Percentage) %>%
+    write.csv('E6_RT_posterior.csv')
+
+
 #####################################################################################
 #####################################################################################
 
@@ -72,7 +102,24 @@ mHits <- brm(wasCorrect ~ isPracticed*isInstructed*isTarget*isFoil +
              family="bernoulli", prior=c(set_prior('normal (0, 4)')),
              sample_prior=TRUE,
              chains=5, iter=2500, warmup=1000, cores=5, file='brms_hits', data=hits)
-describe_posterior(mHits, ci=0.95, rope_ci=0.95, rope_range=c(-0.15, 0.15))
+posteriorHits <- describe_posterior(mHits, ci=0.95, rope_ci=0.95,
+                                    rope_range=c(-0.15, 0.15))
+print(posteriorHits)
+posteriorHits %>%
+    mutate(Parameter=str_replace(str_replace(str_replace(str_replace(
+               str_remove_all(Parameter, '\\d|b|_'),
+               'isInstructed', 'I'),
+               'isPracticed', 'P'),
+               'isTarget', 'L'),
+               'isFoil', 'NL'),
+           Median=sprintf('%1.2f', Median),
+           HDI=sprintf('[%1.2f, %1.2f]', CI_low, CI_high),
+           pd=sprintf('%1.2f', pd),
+           ROPE=sprintf('[%1.2f, %1.2f]', ROPE_low, ROPE_high),
+           ROPE_Percentage=sprintf('%1.2f', ROPE_Percentage)) %>%
+    select(Parameter, Median, HDI, pd, ROPE, ROPE_Percentage) %>%
+    write.csv('E6_hits_posterior.csv')
+
 eHits <- hits %>%
     data_grid(isPracticed, isInstructed, isTarget, isFoil) %>%
     add_fitted_draws(mHits, re_formula=NA) %>%
@@ -109,7 +156,24 @@ mFAs <- brm(wasCorrect ~ isPracticed*isInstructed*isTarget*isFoil +
             family="bernoulli", prior=c(set_prior('normal (0, 4)')),
             sample_prior=TRUE,
             chains=5, iter=2500, warmup=1000, cores=5, file='brms_FAs', data=FAs)
-describe_posterior(mFAs, ci=0.95, rope_ci=0.95, rope_range=c(-0.15, 0.15))
+posteriorFAs <- describe_posterior(mFAs, ci=0.95, rope_ci=0.95,
+                                   rope_range=c(-0.15, 0.15))
+print(posteriorFAs)
+posteriorFAs %>%
+    mutate(Parameter=str_replace(str_replace(str_replace(str_replace(
+               str_remove_all(Parameter, '\\d|b|_'),
+               'isInstructed', 'I'),
+               'isPracticed', 'P'),
+               'isTarget', 'L'),
+               'isFoil', 'NL'),
+           Median=sprintf('%1.2f', Median),
+           HDI=sprintf('[%1.2f, %1.2f]', CI_low, CI_high),
+           pd=sprintf('%1.2f', pd),
+           ROPE=sprintf('[%1.2f, %1.2f]', ROPE_low, ROPE_high),
+           ROPE_Percentage=sprintf('%1.2f', ROPE_Percentage)) %>%
+    select(Parameter, Median, HDI, pd, ROPE, ROPE_Percentage) %>%
+    write.csv('E6_FAs_posterior.csv')
+
 eFAs <- FAs %>%
     data_grid(isPracticed, isInstructed, isTarget, isFoil) %>%
     add_fitted_draws(mFAs, re_formula=NA) %>%
@@ -146,7 +210,24 @@ mSDT <- brm(response ~ isPracticed*isInstructed*isTarget*isFoil*isOld
             family=bernoulli(link='probit'), file='brms_sdt',
             prior=set_prior('normal (0, 2)'), sample_prior=TRUE,
             chains=5, iter=2500, warmup=1000, cores=5, data=memData)
-describe_posterior(mSDT, ci=0.95, rope_ci=0.95, rope_range=c(-0.075, 0.075))
+posteriorSDT <- describe_posterior(mSDT, ci=0.95, rope_ci=0.95,
+                                   rope_range=c(-0.075, 0.075))
+print(posteriorSDT)
+posteriorSDT %>%
+    mutate(Parameter=str_replace(str_replace(str_replace(str_replace(str_replace(
+               str_remove_all(Parameter, '\\d|b_'),
+               'isInstructed', 'I'),
+               'isPracticed', 'P'),
+               'isTarget', 'L'),
+               'isFoil', 'NL'),
+               'isOld', 'O'),
+           Median=sprintf('%1.2f', Median),
+           HDI=sprintf('[%1.2f, %1.2f]', CI_low, CI_high),
+           pd=sprintf('%1.2f', pd),
+           ROPE=sprintf('[%1.2f, %1.2f]', ROPE_low, ROPE_high),
+           ROPE_Percentage=sprintf('%1.2f', ROPE_Percentage)) %>%
+    select(Parameter, Median, HDI, pd, ROPE, ROPE_Percentage) %>%
+    write.csv('E6_SDT_posterior.csv')
 
 sdt.fit <- memData %>% data_grid(isPracticed, isInstructed,
                                  isTarget, isFoil, isOld) %>%
@@ -211,7 +292,23 @@ mRT <- brm(bf(RT ~ isPracticed*isInstructed*isTarget*isFoil*isOld +
            chains=5, cores=5, iter=4000, warmup=1000, thin=3,
            control=list(adapt_delta=0.9),
            file='brms_RT_exgaussian', data=memData)
-describe_posterior(mRT, ci=0.95, rope_ci=0.95)
+posteriorRT <- describe_posterior(mRT, ci=0.95, rope_ci=0.95)
+print(posteriorRT)
+posteriorRT %>%
+    mutate(Parameter=str_replace(str_replace(str_replace(str_replace(str_replace(
+               str_remove_all(Parameter, '\\d|b_'),
+               'isInstructed', 'I'),
+               'isPracticed', 'P'),
+               'isTarget', 'L'),
+               'isFoil', 'NL'),
+               'isOld', 'O'),
+           Median=sprintf('%1.2f', Median),
+           HDI=sprintf('[%1.2f, %1.2f]', CI_low, CI_high),
+           pd=sprintf('%1.2f', pd),
+           ROPE=sprintf('[%1.2f, %1.2f]', ROPE_low, ROPE_high),
+           ROPE_Percentage=sprintf('%1.2f', ROPE_Percentage)) %>%
+    select(Parameter, Median, HDI, pd, ROPE, ROPE_Percentage) %>%
+    write.csv('E6_RT_posterior.csv')
 
 eRT <- memData %>%
     data_grid(isPracticed, isInstructed, isTarget, isFoil, isOld) %>%
@@ -285,8 +382,8 @@ dev.off()
 
 ##  Save posterior summaries
 eRT <- eRT %>% mutate(RT=sprintf('%1.2f [%1.2f, %1.2f]',
-                                 .value, .lower, .upper)) %>%
-    select(-c(.lower, .upper)) %>%
+                                 .value, .value.lower, .value.upper)) %>%
+    select(-c(.value.lower, .value.upper)) %>%
     write.csv('posteriors_RT.csv')
 eHits <- eHits %>% mutate(Hits=sprintf('%0.2f [%0.2f, %0.2f]',
                                        .value, .lower, .upper)) %>%
