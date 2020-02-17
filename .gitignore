@@ -5,6 +5,7 @@
 **/.RData
 **/.Rhistory
 **/*.rds
+**/.#*
 
 # images & data files
 analysis/**/*.pdf
