@@ -1,7 +1,7 @@
 var waitTime = 30000;
 var feedbackDelay = 0;
 var feedbackDuration = 1000;
-var studyDuration = 3000;
+var studyDuration = 4000;
 var studyITI = 1000;
 var testITI = 1000;
 
@@ -182,7 +182,7 @@ function GetObject(values, featureLearned, valueLearned,
 
   let obj = {};
   for (let feature in values) {
-    obj[feature] = values[feature][Math.floor(Math.random()*3)];
+    obj[feature] = values[feature][Math.floor(Math.random()*values[feature].length)];
   }
 
   obj[featureLearned] = valueLearned;
@@ -349,12 +349,11 @@ function PressedNoLearning(curTrial, itemsForLearning, startTrialTime) {
 
 function ResponseLearning(correct, curTrial, itemsForLearning, startTrialTime) {
   let curTrialItem = itemsForLearning[curTrial];
-  $('#' + curTrialItem.id).hide();
   curTrialItem['wasCorrect'] = correct;
   curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
 	$(document).unbind('keyup');
-
   setTimeout(function() {
+    $('#' + curTrialItem.id).hide();
     if (correct) {
       $('#correct').show();
     } else {

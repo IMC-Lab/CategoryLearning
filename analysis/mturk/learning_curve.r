@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/local/bin/Rscript
 library(ggplot2)
 library(plyr)
 
@@ -29,11 +29,18 @@ learning_curve <- function(trials, feature=NULL, value=NULL) {
 
     
     
-    png(paste(fname, '.png', sep=''), height=1000, width=1000)
+    png(paste(fname, '.png', sep=''), height=500, width=1000)
     print(ggplot(ddply(trials, c("trialNum", "isInstructed"), summarise, N=length(wasCorrect),
                        rate=mean(wasCorrect), sd=sd(wasCorrect), se=(sd/sqrt(N)))) +
           aes(x=trialNum, y=rate, color=isInstructed,group=isInstructed,fill=isInstructed) +
-          stat_smooth(method="loess", span=0.1, se=TRUE, alpha=0.3))
+          stat_smooth(method="loess", span=0.1, se=TRUE, alpha=0.3) + theme_classic() +
+          xlab('Trial') + ylab('Categorization Accuracy') +
+          theme(axis.text=element_text(size=20),
+                axis.title.x=element_text(size=36, margin=margin(t=0.5, unit='cm')),
+                axis.title.y=element_text(size=36, margin=margin(r=0.5, unit='cm')),
+                legend.title=element_blank(),
+                legend.text=element_text(size=20),
+                plot.margin=margin(t=1, b=1, unit='cm')))
     dev.off()
 }
 
@@ -43,27 +50,32 @@ for (i in 1:length(args)) {
     writeLines(args[i])
     
     # import the data
-    trials.test <- subset(read.csv(filename, header=T), task=='test', select=c('subject', 'RT'))
-    trials.learn <- subset(read.csv(filename, header=T), task=='learn' & isPracticed,
-                           select=c('subject', 'isInstructed', 'featureLearned', 'valueLearned',
-                                    'wasCorrect', 'RT'))
-
-    # exclude subjects based on 3 sd's from the RT
-    exclude.test = (trials.test$RT > (mean(trials.test$RT) + 3*sd(trials.test$RT))) |
-        (trials.test$RT < (mean(trials.test$RT)-3*sd(trials.test$RT)))
-    exclude.learn = (trials.learn$RT > (mean(trials.learn$RT)+3*sd(trials.learn$RT))) |
-        (trials.learn$RT < (mean(trials.learn$RT)-3*sd(trials.learn$RT)))
-    excludedSubjects = unique(c(trials.test$subject[exclude.test],
-                                trials.learn$subject[exclude.learn]))
-    trials.learn <- trials.learn[!(trials.learn$subject %in% excludedSubjects),]
-    trials.learn$isInstructed <- as.factor(trials.learn$isInstructed)
-
+    memData <- subset(read.csv(filename, header=T), task=='test')
+    memData$RT <- memData$RT / 1000
     
-    learning_curve(trials.learn)
-    for (feature in unique(trials.learn$featureLearned)) {
-        learning_curve(trials.learn, feature)
-        for (value in unique(subset(trials.learn, featureLearned==feature)$valueLearned))
-            learning_curve(trials.learn, feature, value)
+    writeLines(sprintf('Total number of subjects: %d', length(unique(memData$subject))))
+    
+    ## exclude subjects with or low learning accuracy
+    learnData <- subset(read.csv(filename, header=T), task=='learn' & isPracticed==1)
+    endAcc <- aggregate(wasCorrect~subject, learnData, function (trials) mean(tail(trials, 20)))
+    excluded = endAcc$subject[endAcc$wasCorrect < 0.85]
+    memData <- memData[!(memData$subject %in% excluded),]
+    learnData <- learnData[!(learnData$subject %in% excluded),]
+    writeLines(sprintf('After exclusion: %d', length(unique(memData$subject))))
+    
+    learnData$isInstructed <- as.factor(sapply(learnData$isInstructed,
+                                               function (i) {
+                                                   if (i) ' Instructed'
+                                                   else ' Not Instructed'
+                                               }))
+    
+    
+    learning_curve(learnData)
+
+    for (feature in unique(learnData$featureLearned)) {
+        learning_curve(learnData, feature)
+        for (value in unique(subset(learnData, featureLearned==feature)$valueLearned))
+            learning_curve(learnData, feature, value)
     }
     
 }

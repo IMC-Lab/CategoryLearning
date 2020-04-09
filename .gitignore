@@ -1,14 +1,22 @@
 # temporary files
-*.*~
-*/#*.*#
+**/*.*~
+**/#*.*#
+**/.DS_Store
+**/.RData
+**/.Rhistory
+**/*.rds
+**/.#*
 
 # images & data files
-analysis/mturk/*.pdf
-analysis/mturk/*.png
-analysis/mturk/*.jpg
-*.txt
-*.csv
+analysis/**/*.pdf
+analysis/**/*.png
+analysis/**/*.jpg
+**/*.txt
+**/*.csv
 analysis/mturk/data
-experiments/mturk/exp5/data
-experiments/mturk/exp6/data
-experiments/mturk/feedback_timing/data
+**/*.aux
+**/*.bbl
+**/*.blg
+**/*.log
+**/*.out
+papers/PBR-2019/old

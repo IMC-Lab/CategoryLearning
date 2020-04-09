@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="27"
+   height="45"
+   viewBox="0 0 7.1437507 11.90625"
+   version="1.1"
+   id="svg8"
+   inkscape:export-filename="/home/kevin/IMC/CategoryLearning/stimuli/turtles/Components/head_triangle.png"
+   inkscape:export-xdpi="214"
+   inkscape:export-ydpi="214"
+   sodipodi:docname="head_triangle.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="13.513596"
+     inkscape:cx="8.8326575"
+     inkscape:cy="23.183971"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1025"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     fit-margin-top="2.5"
+     fit-margin-left="1"
+     fit-margin-right="1"
+     fit-margin-bottom="2.5"
+     showguides="false">
+    <inkscape:grid
+       type="xygrid"
+       id="grid822"
+       spacingx="0.0026458334"
+       spacingy="0.0026458334"
+       originx="-8.5352039"
+       originy="-35.34019"
+       snapvisiblegridlinesonly="false"
+       enabled="false" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-61.596768,-217.66952)">
+    <path
+       sodipodi:type="star"
+       style="opacity:1;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:4.23333359;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path843"
+       sodipodi:sides="3"
+       sodipodi:cx="53.143024"
+       sodipodi:cy="222.14021"
+       sodipodi:r1="4.2333336"
+       sodipodi:r2="2.1166668"
+       sodipodi:arg1="1.5707963"
+       sodipodi:arg2="2.6179939"
+       inkscape:flatsided="true"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m 53.143025,226.37355 -3.666175,-6.35 7.332349,0 z"
+       inkscape:transform-center-y="-0.88134981"
+       transform="matrix(-0.45104781,-2.4769754e-4,4.5771686e-4,-0.83319979,89.038896,410.48563)"
+       inkscape:transform-center-x="0.00096680578" />
+  </g>
+</svg>
