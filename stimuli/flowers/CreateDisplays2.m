@@ -17,7 +17,7 @@ sepalNums = 1:3;
 petalNums = [4 6 8];
 petalColorsF = {'blue', 'pink', 'yellow', 'green'};
 centerShapesF = {'square', 'tri', 'circle', 'star'};
-centerColorsF = {'purple', 'orange','lightblue','brightgreen'};
+centerColorsF = {'purple', 'orange','brightgreen','lightblue'};
 
 petalColorList = [0 90 180 270];
 centerColorList = [45 135 225 315];
