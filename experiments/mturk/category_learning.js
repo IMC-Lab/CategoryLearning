@@ -85,7 +85,7 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
                                nLearningTest, pLearnedLearningTest, pFoilLearningTest,
                                nStudy, pLearnedStudy, pFoilStudy,
                                nTest, pLearnedTest, pFoilTest, nTestBlocks, dataDir='data', progressDir=null,
-                               learningFn=null, learningTestFn, studyFn=null, testFn=null, saveFn=null,
+                               learningFn=null, learningTestFn=null, studyFn=null, testFn=null, saveFn=null,
                                nextAssignmentFn=null) {
    // Calculate the number of study/test stimuli in each block
    let studyBlockLength = Math.ceil(nStudy / nTestBlocks);
@@ -99,8 +99,6 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
   $('#numTest').text(testBlockLength);
   $('#submitButton').hide();
   $('#startLearning').hide();
-
-  console.log('Learning Fn: ' + learningFn);
 
   let assignment = await fetchJSON(assignmentFilename);
 
@@ -144,33 +142,43 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
   /* Set up button presses to their linked function */
   let stimuliType = experimentName.split("_")[0];
 
-  document.getElementById('startLearning').onclick
-    = (learningFn)? function() { learningFn(itemsForLearning); }
-                  : function() { StartLearning(itemsForLearning); };
-  document.getElementById('startLearningTest').onclick
-    = (learningTestFn)? function() { learningTestFn(itemsForLearning); }
-                      : function() { StartLearningTest(itemsForLearningTest); };
-  document.getElementById('startStudy').onclick
-    = (studyFn)? function() { studyFn(stimuliType, itemsForStudy, 0, studyBlockLength); }
-               : function() { StartStudy(stimuliType, itemsForStudy, 0, studyBlockLength); };
-  document.getElementById('startTest').onclick
-    = (testFn)? function () { testFn(stimuliType, itemsForTest, 0, testBlockLength); }
-              : function () { StartTest(stimuliType, itemsForTest, 0, testBlockLength); };
-  document.getElementById('timSubmit').onclick
-    = (saveFn)? async function() {
-                  saveFn(experimentName, dataDir, progressDir, featureLearned,
-                         valueLearned, featureFoil, valueFoil,
-                         itemsForLearning, itemsForLearningTest, itemsForStudy, itemsForTest);
-                }
-              : async function() {
-                  await SaveData(experimentName, dataDir, progressDir, featureLearned,
-                                 valueLearned, featureFoil, valueFoil,
-                                 itemsForLearning, itemsForLearningTest, itemsForStudy, itemsForTest);
-                  // try to close the window after the data is saved.
-                  if (window.opener) {
-                     close();
+  if (document.getElementById('startLearning')) {
+    document.getElementById('startLearning').onclick
+      = (learningFn)? function() { learningFn(itemsForLearning); }
+                    : function() { StartLearning(itemsForLearning); };
+  }
+  if (document.getElementById('startLearningTest')) {
+    document.getElementById('startLearningTest').onclick
+      = (learningTestFn)? function() { learningTestFn(itemsForLearning); }
+                        : function() { StartLearningTest(itemsForLearningTest); };
+  }
+  if (document.getElementById('startStudy')) {
+    document.getElementById('startStudy').onclick
+      = (studyFn)? function() { studyFn(stimuliType, itemsForStudy, 0, studyBlockLength); }
+                 : function() { StartStudy(stimuliType, itemsForStudy, 0, studyBlockLength); };
+  }
+  if (document.getElementById('startTest')) {
+    document.getElementById('startTest').onclick
+      = (testFn)? function () { testFn(stimuliType, itemsForTest, 0, testBlockLength); }
+                : function () { StartTest(stimuliType, itemsForTest, 0, testBlockLength); };
+  }
+  if (document.getElementById('timSubmit')) {
+    document.getElementById('timSubmit').onclick
+      = (saveFn)? async function() {
+                    saveFn(experimentName, dataDir, progressDir, featureLearned,
+                           valueLearned, featureFoil, valueFoil,
+                           itemsForLearning, itemsForLearningTest, itemsForStudy, itemsForTest);
                   }
-                };
+                : async function() {
+                    await SaveData(experimentName, dataDir, progressDir, featureLearned,
+                                   valueLearned, featureFoil, valueFoil,
+                                   itemsForLearning, itemsForLearningTest, itemsForStudy, itemsForTest);
+                    // try to close the window after the data is saved.
+                    if (window.opener) {
+                       close();
+                    }
+                  };
+  }
 
   return Object.assign(assignment,
          {'featureLearned':featureLearned,

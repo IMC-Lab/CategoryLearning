@@ -6,6 +6,7 @@
 **/.Rhistory
 **/*.rds
 **/.#*
+**/._*
 
 # images & data files
 analysis/**/*.pdf
@@ -20,3 +21,4 @@ analysis/mturk/data
 **/*.log
 **/*.out
 papers/PBR-2019/old
+experiments/**/data
