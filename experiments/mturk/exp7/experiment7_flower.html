@@ -103,6 +103,9 @@ bevlonias, 30 of neither.
 #experimentBox {
   display: none;
 }
+#learnTestInstruc {
+  display: none;
+}
 #studyInstruc {
   display: none;
 }
@@ -120,10 +123,19 @@ bevlonias, 30 of neither.
 </style>
 
 <div class="instrucBox" id="categoryInstruc1" style="padding:5px; text-align:left">
-<p>This HIT will involve 3 short tasks, all involving pictures of flowers. It should take approximately 12-15 minutes to do all 3 tasks.</p>
-<p>During the first task, you will see one flower at a time and have to determine whether or not it is an <b>avlonia</b>. Avlonias are a particular species of flower. They are different from all other flowers in one simple way -- and your job is to find out what that is. For example, it could be that avlonias all have 4 petals, but no other flowers do. Or avlonias could be the only flowers that have a pink center; or a round petal shape; or a heart in their center.</p>
-<p><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/flowers/images/stim_6_green_square_purple_2.png" width=245><img src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/flowers/images/stim_4_yellow_circle_orange_1.png" width=245></p>
-<p>As you can see from these examples, the flowers in this experiment will differ in a number of ways: (1) the number of petals, (2) the color of the petals, (3) the shape of the petals, (4) the shape of their center, (5) the color of their center, (6) the shape of the hole inside their center, and (7) the number of sepals (the black ovals between the petals). One of these features will determine what is and is not an avlonia.</p>
+<p>This HIT will involve 3 short tasks, all involving pictures of flowers.
+  It should take approximately 12-15 minutes to do all 3 tasks.</p>
+<p>During the first task, you will see one flower at a time and have to determine whether or not it is an <b>avlonia</b>.
+  Avlonias are a particular species of flower.
+  They are different from all other flowers in one simple way -- and your job is to find out what that is.
+  For example, it could be that avlonias all have 4 petals, but no other flowers do.
+  Or avlonias could be the only flowers that have a pink center; or a round petal shape; or a heart in their center.</p>
+<p><img src="https://dibs-web01.vm.duke.edu/flower/CategoryLearning/stimuli/flowers/images/stim_6_green_square_purple_2.png" width=245>
+  <img src="https://dibs-web01.vm.duke.edu/flower/CategoryLearning/stimuli/flowers/images/stim_4_yellow_circle_orange_1.png" width=245></p>
+<p>As you can see from these examples, the flowers in this experiment will differ in a number of ways:
+  (1) the number of petals, (2) the color of the petals, (3) the shape of their center,
+   (4) the color of their center, and (5) the number of sepals (the black ovals between the petals).
+  One of these features will determine what is and is not an avlonia.</p>
 
 <!-- Instruction paragraph for practiced condition -->
 <p>
@@ -137,12 +149,33 @@ bevlonias, 30 of neither.
 
 <p><a href="#" class="buttonStart" id="startLearning">I'm Ready to Start Part 1</a>
   <span class="buttonStart" id="loadingLearning">Loading images... Please wait.</span></p><br>
-<p><small>By answering the following questions, you are participating in a study being performed by psychologists in the Duke Department of Psychology and Neuroscience. If you have questions about this research, please contact Felipe De Brigard at felipe.debrigard@duke.edu. Your participation in this research is voluntary. You may decline to answer any or all of the following questions. You may decline further participation, at any time, without adverse consequences. Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.</small></p>
+<p><small>By answering the following questions, you are participating in a study
+  being performed by psychologists in the Duke Department of Psychology and Neuroscience.
+  If you have questions about this research, please contact Felipe De Brigard at felipe.debrigard@duke.edu.
+  Your participation in this research is voluntary. You may decline to answer any or all of the following questions.
+   You may decline further participation, at any time, without adverse consequences.
+   Your anonymity is assured; the researchers who have requested your participation will not
+   receive any personal information about you.</small></p>
+</div>
+
+<div class="instrucBox" id="learnTestInstruc" style="padding:5px; text-align:left">
+<p>Great job!</p>
+<p>During the second task, you will be shown a single flower, and then be asked if it is or is not an avlonia. You'll be shown
+   <span id="numLearningTest">0</span> flowers, one at a time. This time, you will not be told whether or not the flower was avlonia.
+    Do your best to categorize these flowers as well as you can.</p>
+<p><a class="buttonStart" href="#" id="startLearningTest">Start next task</a>
+  <span class="buttonStart" id="loadingLearningTest">Loading images... Please wait.</span></p>
 </div>
 
 <div class="instrucBox" id="studyInstruc" style="padding:5px; text-align:left">
 <p>Great job!</p>
-<p>During the second task, you will have to remember flowers. You'll be shown <span id="numStudy">0</span> flowers, one at a time, for just a few seconds each. Do your best to remember these flowers as well as you can. If you remember a large number of them successfully, you'll likely get bonus pay.
+<p>During the next task, you will have to remember flowers.
+  You'll be shown <span id="numStudy">0</span> flowers, one at a time, for just a few seconds each.
+  Do your best to remember these flowers as well as you can.
+  If you remember a large number of them successfully, you'll likely get bonus pay.</p>
+<p>To help you remember the flowers, we will split up the flowers into
+  <span id="numStudyBlocks">0</span> groups of <span id="numStudyBlock">0</span>.
+  After seeing each group, you will be asked to recognize the flowers from that group only.</p>
 <p>Some of the flowers you have to remember might be avlonias and some might not.</p>
 <p><a class="buttonStart" href="#" id="startStudy">Start memory task</a>
   <span class="buttonStart" id="loadingStudy">Loading images... Please wait.</span></p>
@@ -150,7 +183,11 @@ bevlonias, 30 of neither.
 
 <div class="instrucBox" id="testInstruc" style="padding:5px; text-align:left">
 <p>Great job!</p>
-<p>During the third and final task, you will have to say which flowers you saw in the previous part and which you didn't. You'll be shown <span id="numTest">0</span> flowers, one at a time. Some you will have seen before, and some you won't have seen. For each flower, you have to say whether you saw it before. If you did see it, press the 'y' key. If you didn't, press the 'n' key. Please do your best!</p>
+<p>During this task, you will have to say which flowers you saw in the previous part and which you didn't.
+  You'll be shown <span id="numTest">0</span> flowers, one at a time.
+  Some you will have seen before, and some you won't have seen.
+   For each flower, you have to say whether you saw it in the last group of flowers you studied.
+   If you did see it, press the 'y' key. If you didn't, press the 'n' key. Please do your best!</p>
 <p><a class="buttonStart" href="#" id="startTest">Start memory test</a>
   <span class="buttonStart" id="loadingTest">Loading images... Please wait.</span></p>
 </div>
@@ -159,6 +196,7 @@ bevlonias, 30 of neither.
 <div id="instrucBox"><span id="instrucTextCur">Do you think this is an avlonia? <b>(y/n)</b></span><span id="trialCnt">Trial 1 of 100</span></div>
 <div id="experimentBox">
 <div id="imagesForLearning"></div>
+<div id="imagesForLearningTest"></div>
 <div id="imagesForStudy"></div>
 <div id="imagesForTest"></div>
 <div class="textInBox" id="question">Was this an avlonia?<br><br>y / n</div>
@@ -173,8 +211,8 @@ bevlonias, 30 of neither.
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-<script src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/TimTurkTools.js"></script>
-<script src="https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/category_learning.js"></script>
+<script src="https://dibs-web01.vm.duke.edu/flower/CategoryLearning/experiments/mturk/TimTurkTools.js"></script>
+<script src="https://dibs-web01.vm.duke.edu/flower/CategoryLearning/experiments/mturk/category_learning.js"></script>
 <script>
 /* Define the values for each feature */
 let values = {'numPetal':['4', '6'],
@@ -183,28 +221,32 @@ let values = {'numPetal':['4', '6'],
               'centerColor':['orange', 'purple'],
               'numSepal':['1', '2']};
 
-let assignmentFilename = 'exp6/experiment6_flower_assignment.json';
-let dataDir = 'exp6/data';
+let assignmentFilename = 'exp7/experiment7_flower_assignment.json';
+let dataDir = 'exp7/data';
 
 /* Get filename for an object */
 function GetFlowerFilename(obj) {
-  return ("https://web-mir.ccn.duke.edu/flower/CategoryLearning/stimuli/flowers/images/stim_"
+  return ("https://dibs-web01.vm.duke.edu/flower/CategoryLearning/stimuli/flowers/images/stim_"
     + obj.numPetal + "_" + obj.petalColor + "_"
     + obj.centerShape + "_" + obj.centerColor
     + "_" + obj.numSepal + ".png");
 }
 
 /* Parameters for stimuli */
-let nLearning = 72;
+let nLearning = 1;
 let pLearnedLearning = 1/3.0;
 let pFoilLearning = 1/3.0;
 
-let nStudy = 18;
+let nLearningTest = 1;
+let pLearnedLearningTest = 1/3.0;
+let pFoilLearningTest = 1/3.0;
+
+let nStudy = 9;
 let pLearnedStudy = 1/3.0;
 let pFoilStudy = 1/3.0;
 
 let nTest = 18;
-let testBlocks = 3;
+let nTestBlocks = 3;
 let pLearnedTest = 1/3.0;  // p for lures, not old items
 let pFoilTest = 1/3.0;
 
@@ -273,7 +315,7 @@ function NextTrialPassiveLearning(curTrial, itemsForLearning) {
      if (curTrial<itemsForLearning.length-1) {
        NextTrialPassiveLearning(curTrial+1, itemsForLearning);
      } else {
-       ShowStudyStart();
+       ShowLearningTestStart();
      }
    }, 1000);
  }, 3000);
@@ -297,7 +339,8 @@ function categoryDescription(feature, value) {
 }
 
 async function SaveExpData(experimentName, dataDir, progressDir, featureLearned, valueLearned,
-                        featureFoil, valueFoil, itemsForLearning, itemsForStudy, itemsForTest) {
+                        featureFoil, valueFoil, itemsForLearning,
+                        itemsForLearningTest, itemsForStudy, itemsForTest) {
   $('#done').hide();
   $('#saving').show();
 
@@ -316,6 +359,9 @@ async function SaveExpData(experimentName, dataDir, progressDir, featureLearned,
 
   for (let i=0; i<itemsForLearning.length; i++) {
     Save(itemsForLearning[i].id, itemsForLearning[i]);
+  }
+  for (let i=0; i<itemsForLearningTest.length; i++) {
+    Save(itemsForLearningTest[i].id, itemsForLearning[i]);
   }
   for (let i=0; i<itemsForStudy.length; i++) {
     Save(itemsForStudy[i].id, itemsForStudy[i]);
@@ -348,6 +394,7 @@ async function SaveExpData(experimentName, dataDir, progressDir, featureLearned,
     "valueLearned": valueLearned,
     "valueFoil": valueFoil,
     "itemsForLearning": itemsForLearning,
+    "itemsForLearningTest": itemsForLearningTest,
     "itemsForStudy": itemsForStudy,
     "itemsForTest": itemsForTest
   };
@@ -373,7 +420,7 @@ $(function () {
         $('#judge').text('view');
       }
 
-      //console.log(condition);
+      console.log(condition);
       if (IsOnTurk() && IsTurkPreview()) {
         $('#numLearning').text(nLearning);
         $('#numStudy').text(nStudy);
@@ -382,11 +429,12 @@ $(function () {
         return;
       }
 
-      StartExperiment('flower_E6', assignmentFilename, GetFlowerFilename, values,
+      StartExperiment('flower_E7', assignmentFilename, GetFlowerFilename, values,
                       nLearning, pLearnedLearning, pFoilLearning,
+                      nLearningTest, pLearnedLearningTest, pFoilLearningTest,
                       nStudy, pLearnedStudy, pFoilStudy,
-                      nTest, pLearnedTest, pFoilTest, dataDir, null,
-                      learningFn, null, null, SaveExpData, nextAssignment)
+                      nTest, pLearnedTest, pFoilTest, nTestBlocks, dataDir, null,
+                      learningFn, null, null, null, SaveExpData, nextAssignment)
                       .then(function (expData) {
                         if (instructed) {
                           $('#avloniaDescription').text(categoryDescription(expData['featureLearned'], expData['valueLearned']));

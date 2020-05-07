@@ -1,4 +1,4 @@
-var waitTime = 30000;
+var waitTime = 0; //30000;
 var feedbackDelay = 0;
 var feedbackDuration = 1000;
 var studyDuration = 4000;
@@ -16,7 +16,7 @@ function retry(promise, n, wait) {
 
 
 function fetchJSON(filename) {
-  return $.post('https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/get_json.php',
+  return $.post('https://dibs-web01.vm.duke.edu/flower/CategoryLearning/experiments/mturk/get_json.php',
                 {filename: filename})
           .then(function (data) { return JSON.parse(data); })
           .fail(function (jsonData, textStatus, error) {
@@ -26,9 +26,9 @@ function fetchJSON(filename) {
 }
 
 function writeJSON(filename, data) {
-  return $.post('https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/save_json.php',
+  return $.post('https://dibs-web01.vm.duke.edu/flower/CategoryLearning/experiments/mturk/save_json.php',
                   // remove the web address for filename to save it locally
-                {'filename': filename.replace('https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/', ''),
+                {'filename': filename.replace('https://dibs-web01.vm.duke.edu/flower/CategoryLearning/experiments/mturk/', ''),
                  'data':JSON.stringify(data)})
             .fail(function (d, textStatus, error) {
               throw "POST json failed, status: " + textStatus + ", error: " + error;
@@ -82,15 +82,25 @@ function nextAssignmentDefault(oldAssignment, values) {
  */
 async function StartExperiment(experimentName, assignmentFilename, GetFilename, values,
                                nLearning, pLearnedLearning, pFoilLearning,
+                               nLearningTest, pLearnedLearningTest, pFoilLearningTest,
                                nStudy, pLearnedStudy, pFoilStudy,
-                               nTest, pLearnedTest, pFoilTest, dataDir='data', progressDir=null,
-                               learningFn=null, studyFn=null, testFn=null, saveFn=null,
+                               nTest, pLearnedTest, pFoilTest, nTestBlocks, dataDir='data', progressDir=null,
+                               learningFn=null, learningTestFn, studyFn=null, testFn=null, saveFn=null,
                                nextAssignmentFn=null) {
+   // Calculate the number of study/test stimuli in each block
+   let studyBlockLength = Math.ceil(nStudy / nTestBlocks);
+   let testBlockLength = Math.ceil(nTest / nTestBlocks);
+
   $('#numLearning').text(nLearning);
+  $('#numLearningTest').text(nLearningTest);
   $('#numStudy').text(nStudy);
-  $('#numTest').text(nTest);
+  $('#numStudyBlock').text(studyBlockLength);
+  $('#numStudyBlocks').text(nTestBlocks);
+  $('#numTest').text(testBlockLength);
   $('#submitButton').hide();
   $('#startLearning').hide();
+
+  console.log('Learning Fn: ' + learningFn);
 
   let assignment = await fetchJSON(assignmentFilename);
 
@@ -117,36 +127,45 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
   let itemsForLearning = CreateLearningList(nLearning, pLearnedLearning, pFoilLearning,
                                             values, featureLearned, valueLearned,
                                             featureFoil, valueFoil, GetFilename);
-  let itemsForStudy = CreateStudyList(nStudy, itemsForLearning, pLearnedStudy, pFoilStudy,
+  let itemsForLearningTest = CreateLearningTestList(nLearningTest, itemsForLearning,
+                                            pLearnedLearningTest, pFoilLearningTest,
+                                            values, featureLearned, valueLearned,
+                                            featureFoil, valueFoil, GetFilename);
+  let itemsForStudy = CreateStudyList(nStudy, itemsForLearning, itemsForLearningTest,
+                                      pLearnedStudy, pFoilStudy,
                                       values, featureLearned, valueLearned,
                                       featureFoil, valueFoil, GetFilename);
-  let itemsForTest = CreateTestList(nTest, itemsForLearning, itemsForStudy,
+  let itemsForTest = CreateTestList(nTest, itemsForLearning, itemsForLearningTest,
+                                    itemsForStudy, studyBlockLength, testBlockLength,
                                     pLearnedTest, pFoilTest, values,
                                     featureLearned, valueLearned,
                                     featureFoil, valueFoil, GetFilename);
 
   /* Set up button presses to their linked function */
   let stimuliType = experimentName.split("_")[0];
+
   document.getElementById('startLearning').onclick
     = (learningFn)? function() { learningFn(itemsForLearning); }
                   : function() { StartLearning(itemsForLearning); };
+  document.getElementById('startLearningTest').onclick
+    = (learningTestFn)? function() { learningTestFn(itemsForLearning); }
+                      : function() { StartLearningTest(itemsForLearningTest); };
   document.getElementById('startStudy').onclick
-    = (studyFn)? function() { studyFn(stimuliType, itemsForStudy); }
-               : function() { StartStudy(stimuliType, itemsForStudy); };
+    = (studyFn)? function() { studyFn(stimuliType, itemsForStudy, 0, studyBlockLength); }
+               : function() { StartStudy(stimuliType, itemsForStudy, 0, studyBlockLength); };
   document.getElementById('startTest').onclick
-    = (testFn)? function () { testFn(stimuliType, itemsForTest); }
-              : function () { StartTest(stimuliType, itemsForTest); };
+    = (testFn)? function () { testFn(stimuliType, itemsForTest, 0, testBlockLength); }
+              : function () { StartTest(stimuliType, itemsForTest, 0, testBlockLength); };
   document.getElementById('timSubmit').onclick
     = (saveFn)? async function() {
                   saveFn(experimentName, dataDir, progressDir, featureLearned,
                          valueLearned, featureFoil, valueFoil,
-                         itemsForLearning, itemsForStudy, itemsForTest);
+                         itemsForLearning, itemsForLearningTest, itemsForStudy, itemsForTest);
                 }
               : async function() {
                   await SaveData(experimentName, dataDir, progressDir, featureLearned,
                                  valueLearned, featureFoil, valueFoil,
-                                 itemsForLearning, itemsForStudy, itemsForTest);
-
+                                 itemsForLearning, itemsForLearningTest, itemsForStudy, itemsForTest);
                   // try to close the window after the data is saved.
                   if (window.opener) {
                      close();
@@ -159,6 +178,7 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
           'featureFoil':featureFoil,
           'valueFoil':valueFoil,
           'itemsForLearning':itemsForLearning,
+          'itemsForLearningTest':itemsForLearningTest,
           'itemsForStudy':itemsForStudy,
           'itemsForTest':itemsForTest});
 }
@@ -275,29 +295,53 @@ function CreateLearningList(n, pLearned, pFoil, values, featureLearned,
   return Shuffle(objects);
 }
 
+/* Create the set of objects to show in the learning test phase */
+function CreateLearningTestList(n, itemsForLearning, pLearned, pFoil, values, featureLearned,
+                                valueLearned, featureFoil, valueFoil, GetFilename) {
+  let [objects, imageHTML] = GetObjects(n, values, featureLearned, valueLearned,
+                                        featureFoil, valueFoil, GetFilename, 'learnTest',
+                                        pLearned, pFoil, [...itemsForLearning]);
+  $('#imagesForLearningTest').html(imageHTML);
+  return Shuffle(objects);
+}
+
 /* Create the set of objects to show in the study phase */
-function CreateStudyList(n, itemsForLearning, pLearned, pFoil, values, featureLearned,
+function CreateStudyList(n, itemsForLearning, itemsForLearningTest,
+                         pLearned, pFoil, values, featureLearned,
                          valueLearned, featureFoil, valueFoil, GetFilename) {
   let [objects, imageHTML] = GetObjects(n, values, featureLearned, valueLearned,
                                         featureFoil, valueFoil, GetFilename, 'study',
-                                        pLearned, pFoil, [...itemsForLearning]);
+                                        pLearned, pFoil, [...itemsForLearning, itemsForLearningTest]);
   $('#imagesForStudy').html(imageHTML);
   return Shuffle(objects);
 }
 
 /* Create the set of objects to show in the test phase */
-function CreateTestList(nTest, itemsForLearning, itemsForStudy, pLearned, pFoil,
+function CreateTestList(nTest, itemsForLearning, itemsForLearningTest, itemsForStudy,
+                        studyBlockLength, testBlockLength, pLearned, pFoil,
                         values, featureLearned, valueLearned, featureFoil,
                         valueFoil, GetFilename) {
   let nLures = nTest - itemsForStudy.length;
+  let nBlocks = Math.ceil(nTest / testBlockLength);
+  let lureBlockLength = testBlockLength - studyBlockLength;
   let [objects, imageHTML] = GetObjects(nLures, values, featureLearned, valueLearned,
                                         featureFoil, valueFoil, GetFilename, 'test',
-                                        pLearned, pFoil, [...itemsForLearning, ...itemsForStudy]);
+                                        pLearned, pFoil, [...itemsForLearning, ...itemsForLearningTest, ...itemsForStudy]);
+  Shuffle(objects);
+
   // set isOld to false
   for (let i=0; i<nLures; i++) {
     objects[i].isOld = false;
   }
 
+  // arrange the lures into blocks
+  var lures = [];
+  for (let i=0; i<nBlocks; i++) {
+    lures.push(objects.slice(i*lureBlockLength, (i+1)*lureBlockLength));
+  }
+
+  // Gather all of the old stimuli
+  objects = [];
   for (let i=0; i<itemsForStudy.length; i++) {
     let curItemObj = itemsForStudy[i];
     let curItem = {'object': curItemObj.object,
@@ -310,13 +354,25 @@ function CreateTestList(nTest, itemsForLearning, itemsForStudy, pLearned, pFoil,
     imageHTML += '<img src="' + curItem.filename + '" id="' + curItem.id + '" class="categorizeImage">';
   }
 
+  // arrange the old stimuli into blocks
+  var old = [];
+  for (let i=0; i<nBlocks; i++) {
+    old.push(objects.slice(i*studyBlockLength, (i+1)*studyBlockLength));
+  }
+
+  // Merge all of the lures and old stimuli by block
+  objects = [];
+  for (let i=0; i<lures.length; i++) {
+    objects = objects.concat(Shuffle([...old[i], ...lures[i]]));
+  }
+
   $('#imagesForTest').html(imageHTML);
-  return Shuffle(objects);
+  return objects;
 }
 
 
 /* LEARNING TASK ------------------------------------------------- */
-function StartLearning(itemsForLearning) {
+function StartLearning(stimuli) {
   if (IsOnTurk() && IsTurkPreview()) {
     alert('Please accept the HIT before beginning!');
     return;
@@ -324,31 +380,25 @@ function StartLearning(itemsForLearning) {
   $('#categoryInstruc1').hide();
   $('#instrucBox').show();
   $('#experimentBox').show();
-  NextTrialLearning(0, itemsForLearning);
+  NextTrialLearning(0, stimuli);
 }
 
-function NextTrialLearning(curTrial, itemsForLearning) {
-  $('#trialCnt').text("Trial " + (curTrial+1) + " of " + itemsForLearning.length);
-  $('#' + itemsForLearning[curTrial].id).show();
+function NextTrialLearning(curTrial, stimuli) {
+  $('#trialCnt').text("Trial " + (curTrial+1) + " of " + stimuli.length);
+  $('#' + stimuli[curTrial].id).show();
   let startTrialTime = (new Date()).getTime();
   setTimeout(function() {
-    $(document).bind('keyup', 'y', function(){PressedYesLearning(curTrial, itemsForLearning, startTrialTime);});
-    $(document).bind('keyup', 'n', function(){PressedNoLearning(curTrial, itemsForLearning, startTrialTime);});
+    $(document).bind('keyup', 'y', function() {
+      ResponseLearning(stimuli[curTrial].isTarget, curTrial, stimuli, startTrialTime);
+    });
+    $(document).bind('keyup', 'n', function() {
+      ResponseLearning(!stimuli[curTrial].isTarget, curTrial, stimuli, startTrialTime);
+    });
    }, 200);
 }
 
-function PressedYesLearning(curTrial, itemsForLearning, startTrialTime) {
-  ResponseLearning(itemsForLearning[curTrial].isTarget, curTrial,
-                   itemsForLearning, startTrialTime);
-}
-
-function PressedNoLearning(curTrial, itemsForLearning, startTrialTime) {
-  ResponseLearning(!itemsForLearning[curTrial].isTarget, curTrial,
-                   itemsForLearning, startTrialTime);
-}
-
-function ResponseLearning(correct, curTrial, itemsForLearning, startTrialTime) {
-  let curTrialItem = itemsForLearning[curTrial];
+function ResponseLearning(correct, curTrial, stimuli, startTrialTime) {
+  let curTrialItem = stimuli[curTrial];
   curTrialItem['wasCorrect'] = correct;
   curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
 	$(document).unbind('keyup');
@@ -364,13 +414,64 @@ function ResponseLearning(correct, curTrial, itemsForLearning, startTrialTime) {
      $('#correct').hide();
      $('#wrong').hide();
 
-     if (curTrial<itemsForLearning.length-1) {
-       NextTrialLearning(curTrial+1, itemsForLearning);
+     if (curTrial<stimuli.length-1) {
+       NextTrialLearning(curTrial+1, stimuli);
      } else {
-       ShowStudyStart();
+       ShowLearningTestStart();
      }
    }, feedbackDuration);
  }, feedbackDelay);
+}
+
+/* LEARNING TEST TASK ------------------------------------------------- */
+function ShowLearningTestStart() {
+  $('#instrucBox').hide();
+  $('#experimentBox').hide();
+  $('#startLearningTest').hide();
+  $('#learnTestInstruc').show();
+  setTimeout(function () {
+    $('#loadingLearningTest').hide();
+    $('#startLearningTest').show();
+  }, waitTime);
+}
+
+function StartLearningTest(stimuli) {
+  $('#instrucBox').show();
+  $('#experimentBox').show();
+  //$('.categorizeImage').hide();
+  $('#learnTestInstruc').hide();
+
+  $('#instrucBox').show();
+  $('#experimentBox').show();
+  NextTrialLearningTest(0, stimuli);
+}
+
+function NextTrialLearningTest(curTrial, stimuli) {
+  $('#trialCnt').text("Trial " + (curTrial+1) + " of " + stimuli.length);
+  $('#' + stimuli[curTrial].id).show();
+  let startTrialTime = (new Date()).getTime();
+  setTimeout(function() {
+    $(document).bind('keyup', 'y', function() {
+      ResponseLearningTest(stimuli[curTrial].isTarget, curTrial, stimuli, startTrialTime);
+    });
+    $(document).bind('keyup', 'n', function() {
+      ResponseLearningTest(!stimuli[curTrial].isTarget, curTrial, stimuli, startTrialTime);
+    });
+   }, 200);
+}
+
+function ResponseLearningTest(correct, curTrial, stimuli, startTrialTime) {
+  let curTrialItem = stimuli[curTrial];
+  curTrialItem['wasCorrect'] = correct;
+  curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
+	$(document).unbind('keyup');
+  $('#' + curTrialItem.id).hide();
+
+  if (curTrial<stimuli.length-1) {
+    NextTrialLearningTest(curTrial+1, stimuli);
+  } else {
+    ShowStudyStart();
+  }
 }
 
 /* STUDY TASK ------------------------------------------------- */
@@ -386,35 +487,41 @@ function ShowStudyStart() {
   $('#instrucTextCur').html("&nbsp; &nbsp;");
 }
 
-function StartStudy(stimuliType, itemsForStudy) {
-  $('#instrucTextCur').text("Remember these " + itemsForStudy.length + " "
-                            + stimuliType.toLowerCase() + "s as best you can!");
+function StartStudy(stimuliType, stimuli, blockNumber, blockLength) {
+  $('#instrucTextCur').text("Remember these " + blockLength.length + " "
+                            + stimuliType.toLowerCase() + "s!");
   $('#instrucBox').show();
   $('#experimentBox').show();
   $('.categorizeImage').hide();
   $('#studyInstruc').hide();
+
+  // Reset the study link to go the next block next time around
+  document.getElementById('startStudy').onclick
+    = function() { StartStudy(stimuliType, stimuli, blockNumber+1, blockLength); };
+
   stimuliType = stimuliType.charAt(0).toUpperCase() + stimuliType.toLowerCase().slice(1);
-  NextTrialStudy(0, stimuliType, itemsForStudy);
+  NextTrialStudy(0, stimuliType, stimuli, blockNumber, blockLength);
 }
 
-function NextTrialStudy(curTrial, stimuliType, itemsForStudy) {
-  let curID = '#' + itemsForStudy[curTrial].id;
-  $('#trialCnt').text(stimuliType + " " + (curTrial+1) + " of " + itemsForStudy.length);
+function NextTrialStudy(curTrial, stimuliType, stimuli, blockNumber, blockLength) {
+  let curID = '#' + stimuli[curTrial + blockNumber * blockLength].id;
+  $('#trialCnt').text(stimuliType + " " + (curTrial+1) + " of " + blockLength +
+    ', Block ' + (blockNumber+1) + ' of ' + Math.ceil(stimuli.length / blockLength));
   $(curID).show();
   setTimeout(function() {
     $(curID).hide();
     setTimeout(function() {
-      if (curTrial < itemsForStudy.length-1) {
-        NextTrialStudy(curTrial+1, stimuliType, itemsForStudy);
+      if (curTrial < blockLength-1) {
+        NextTrialStudy(curTrial+1, stimuliType, stimuli, blockNumber, blockLength);
       } else {
-        StartMemoryTestTask();
+        StartMemoryTest();
       }
     }, studyITI);
   }, studyDuration);
 }
 
 /* MEMORY TEST TASK ------------------------------------------------- */
-function StartMemoryTestTask() {
+function StartMemoryTest() {
   $('#instrucBox').hide();
   $('#experimentBox').hide();
   $('#testInstruc').show();
@@ -426,48 +533,52 @@ function StartMemoryTestTask() {
   }, waitTime);
 }
 
-function StartTest(stimuliType, itemsForTest) {
+function StartTest(stimuliType, stimuli, blockNumber, blockLength) {
   $('#testInstruc').hide();
   $('#instrucTextCur').html("Did you see this " + stimuliType + " earlier? <b>(y/n)</b>");
   $('#instrucBox').show();
   $('#experimentBox').show();
   $('.categorizeImage').hide();
-  NextTrialTest(0, itemsForTest);
+
+  // Reset the study link to go the next block next time around
+  document.getElementById('startTest').onclick
+    = function() { StartTest(stimuliType, stimuli, blockNumber+1, blockLength); };
+
+  NextTrialTest(0, stimuli, blockNumber, blockLength);
 }
 
-function NextTrialTest(curTrial, itemsForTest) {
+function NextTrialTest(curTrial, stimuli, blockNumber, blockLength) {
+  let curTrialItem = stimuli[curTrial + blockNumber * blockLength];
   $('.categorizeImage').hide();
-  $('#trialCnt').text("Trial " + (curTrial+1) + " of " + itemsForTest.length);
-  $('#' + itemsForTest[curTrial].id).show();
+  $('#trialCnt').text("Trial " + (curTrial+1) + " of " + blockLength +
+    ', Block ' + (blockNumber+1) + ' of ' + Math.ceil(stimuli.length / blockLength));
+  $('#' + curTrialItem.id).show();
+
   let startTrialTime = (new Date()).getTime();
   setTimeout(function() {
-    $(document).bind('keyup', 'y', function(){PressedYesTest(curTrial, itemsForTest, startTrialTime);});
-    $(document).bind('keyup', 'n', function(){PressedNoTest(curTrial, itemsForTest, startTrialTime);});
+    $(document).bind('keyup', 'y', function() {
+      ResponseTest(curTrialItem.isOld, curTrial, stimuli, blockNumber, blockLength, startTrialTime);
+    });
+    $(document).bind('keyup', 'n', function() {
+      ResponseTest(!curTrialItem.isOld, curTrial, stimuli, blockNumber, blockLength, startTrialTime);
+    });
    }, 300);
 }
 
-function PressedYesTest(curTrial, itemsForTest, startTrialTime) {
-  ResponseTest(itemsForTest[curTrial].isOld,
-               curTrial, itemsForTest, startTrialTime);
-}
-
-function PressedNoTest(curTrial, itemsForTest, startTrialTime) {
-  ResponseTest(!itemsForTest[curTrial].isOld,
-               curTrial, itemsForTest, startTrialTime);
-}
-
-function ResponseTest(correct, curTrial, itemsForTest, startTrialTime) {
-  let curTrialItem = itemsForTest[curTrial];
+function ResponseTest(correct, curTrial, stimuli, blockNumber, blockLength, startTrialTime) {
+  let curTrialItem = stimuli[curTrial + blockNumber * blockLength];
   curTrialItem['wasCorrect'] = correct;
   curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
 	$(document).unbind('keyup');
   $('#' + curTrialItem.id).hide();
 
   setTimeout(function() {
-    if (curTrial<itemsForTest.length-1) {
-      NextTrialTest(curTrial+1, itemsForTest);
+    if (curTrial < blockLength - 1) {
+      NextTrialTest(curTrial+1, stimuli, blockNumber, blockLength);
+    } else if (blockNumber < Math.ceil(stimuli.length / blockLength) - 1) {
+      ShowStudyStart();
     } else {
-      ShowDone(itemsForTest);
+      ShowDone(stimuli);
     }
   }, testITI);
 }
@@ -533,7 +644,8 @@ function GetID(event) {
 }
 
 async function SaveData(experimentName, dataDir, progressDir, featureLearned, valueLearned,
-                        featureFoil, valueFoil, itemsForLearning, itemsForStudy, itemsForTest) {
+                        featureFoil, valueFoil, itemsForLearning,
+                        itemsForLearningTest, itemsForStudy, itemsForTest) {
   $('#done').hide();
   $('#saving').show();
 
@@ -549,7 +661,6 @@ async function SaveData(experimentName, dataDir, progressDir, featureLearned, va
     progress = {'curExperiment':1, 'numExperiments':1};
   }
 
-
   Save("experimentNumber", progress['curExperiment']);
   Save("correctRate", correctRate);
   Save("earnedBonus", earnedBonus);
@@ -560,6 +671,9 @@ async function SaveData(experimentName, dataDir, progressDir, featureLearned, va
 
   for (let i=0; i<itemsForLearning.length; i++) {
     Save(itemsForLearning[i].id, itemsForLearning[i]);
+  }
+  for (let i=0; i<itemsForLearningTest.length; i++) {
+    Save(itemsForLearningTest[i].id, itemsForLearningTest[i]);
   }
   for (let i=0; i<itemsForStudy.length; i++) {
     Save(itemsForStudy[i].id, itemsForStudy[i]);
@@ -591,6 +705,7 @@ async function SaveData(experimentName, dataDir, progressDir, featureLearned, va
     "valueLearned": valueLearned,
     "valueFoil": valueFoil,
     "itemsForLearning": itemsForLearning,
+    "itemsForLearningTest": itemsForLearningTest,
     "itemsForStudy": itemsForStudy,
     "itemsForTest": itemsForTest
   };
@@ -612,7 +727,7 @@ function SendToServer(id, curData, experimentName, dataDir) {
     'curData': JSON.stringify(curData)
   };
 
-  return $.post("https://web-mir.ccn.duke.edu/flower/CategoryLearning/experiments/mturk/save.php",
+  return $.post("https://dibs-web01.vm.duke.edu/flower/CategoryLearning/experiments/mturk/save.php",
                 dataToServer,
                 function(data) {
                   if (IsOnTurk()) {
