@@ -141,11 +141,10 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
 
   /* Set up button presses to their linked function */
   let stimuliType = experimentName.split("_")[0];
-
   if (document.getElementById('startLearning')) {
     document.getElementById('startLearning').onclick
-      = (learningFn)? function() { learningFn(itemsForLearning); }
-                    : function() { StartLearning(itemsForLearning); };
+      = (learningFn)? function() { learningFn(itemsForLearning, nLearningTest > 0); }
+                    : function() { StartLearning(itemsForLearning, nLearningTest > 0); };
   }
   if (document.getElementById('startLearningTest')) {
     document.getElementById('startLearningTest').onclick
@@ -380,7 +379,7 @@ function CreateTestList(nTest, itemsForLearning, itemsForLearningTest, itemsForS
 
 
 /* LEARNING TASK ------------------------------------------------- */
-function StartLearning(stimuli) {
+function StartLearning(stimuli, learningTest) {
   if (IsOnTurk() && IsTurkPreview()) {
     alert('Please accept the HIT before beginning!');
     return;
@@ -388,24 +387,24 @@ function StartLearning(stimuli) {
   $('#categoryInstruc1').hide();
   $('#instrucBox').show();
   $('#experimentBox').show();
-  NextTrialLearning(0, stimuli);
+  NextTrialLearning(0, stimuli, learningTest);
 }
 
-function NextTrialLearning(curTrial, stimuli) {
+function NextTrialLearning(curTrial, stimuli, learningTest) {
   $('#trialCnt').text("Trial " + (curTrial+1) + " of " + stimuli.length);
   $('#' + stimuli[curTrial].id).show();
   let startTrialTime = (new Date()).getTime();
   setTimeout(function() {
     $(document).bind('keyup', 'y', function() {
-      ResponseLearning(stimuli[curTrial].isTarget, curTrial, stimuli, startTrialTime);
+      ResponseLearning(stimuli[curTrial].isTarget, curTrial, stimuli, learningTest, startTrialTime);
     });
     $(document).bind('keyup', 'n', function() {
-      ResponseLearning(!stimuli[curTrial].isTarget, curTrial, stimuli, startTrialTime);
+      ResponseLearning(!stimuli[curTrial].isTarget, curTrial, stimuli, learningTest, startTrialTime);
     });
    }, 200);
 }
 
-function ResponseLearning(correct, curTrial, stimuli, startTrialTime) {
+function ResponseLearning(correct, curTrial, stimuli, learningTest, startTrialTime) {
   let curTrialItem = stimuli[curTrial];
   curTrialItem['wasCorrect'] = correct;
   curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
@@ -424,8 +423,10 @@ function ResponseLearning(correct, curTrial, stimuli, startTrialTime) {
 
      if (curTrial<stimuli.length-1) {
        NextTrialLearning(curTrial+1, stimuli);
-     } else {
+     } else if (learningTest) {
        ShowLearningTestStart();
+     } else {
+       ShowStudyStart();
      }
    }, feedbackDuration);
  }, feedbackDelay);
