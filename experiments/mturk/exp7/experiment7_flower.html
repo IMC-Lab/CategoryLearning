@@ -129,12 +129,13 @@ bevlonias, 30 of neither.
   Avlonias are a particular species of flower.
   They are different from all other flowers in one simple way -- and your job is to find out what that is.
   For example, it could be that avlonias all have 4 petals, but no other flowers do.
-  Or avlonias could be the only flowers that have a pink center; or a round petal shape; or a heart in their center.</p>
-<p><img src="https://dibs-web01.vm.duke.edu/flower/CategoryLearning/stimuli/flowers/images/stim_6_green_square_purple_2.png" width=245>
-  <img src="https://dibs-web01.vm.duke.edu/flower/CategoryLearning/stimuli/flowers/images/stim_4_yellow_circle_orange_1.png" width=245></p>
+  Or avlonias could be the only flowers that have a pink center; or a round petal shape.</p>
+<p><img src="https://dibs-web01.vm.duke.edu/flower/CategoryLearning/stimuli/flowers/Images7/stim_4_blue_concave_circle_pink_1_heart.png" width=245>
+  <img src="https://dibs-web01.vm.duke.edu/flower/CategoryLearning/stimuli/flowers/Images7/stim_6_green_round_tri_turquoise_2_star.png" width=245></p>
 <p>As you can see from these examples, the flowers in this experiment will differ in a number of ways:
-  (1) the number of petals, (2) the color of the petals, (3) the shape of their center,
-   (4) the color of their center, and (5) the number of sepals (the black ovals between the petals).
+  (1) the number of petals, (2) the color of the petals, (3) the shape of the petals,
+  (4) the shape of their center, (5) the color of their center, (6) the shape of the hole inside their center, and
+  (7) the number of sepals (the black ovals between the petals).
   One of these features will determine what is and is not an avlonia.</p>
 
 <!-- Instruction paragraph for practiced condition -->
@@ -203,9 +204,20 @@ bevlonias, 30 of neither.
 <div class="textInBox" id="correct">Correct</div>
 <div class="textInBox" id="wrong">Incorrect</div>
 
-<div class="textInBox" id="done" style="top:60px">Done! You got <span id="numRight">0</span> out of <span id="numTotal">0</span> correct.<br><br>Any comments for us?<br><br>
-<textarea name="comments" id="comments" style="width: 300px; height: 200px"></textarea><br><br>
-<a href="#" id="timSubmit">Submit</a>
+<div class="textInBox" id="done" style="top: 30px; font-size: 12pt;">
+  Done! You got <span id="numRight">0</span> out of <span id="numTotal">0</span> correct.<br>
+  <div id="captchaBox">
+    <p>Before you go, please help us ensure that we can use your data in our research by answering this quick captcha.</p>
+    <p>In the text below, which word is <b>underlined</b>?</p>
+    <img src="https://dibs-web01.vm.duke.edu/flower/CategoryLearning/stimuli/captcha.png" width="300"><br><br>
+    <textarea name="captcha" id="captcha" style="width: 300px; height: 200px;"></textarea><br><br>
+    <a href="#" id="captchaSubmit">Next</a>
+  </div>
+  <div id="commentBox" style="display: none">
+    <p><br>Any comments for us?</p><br>
+    <textarea name="comments" id="comments" style="width: 300px; height: 200px;"></textarea><br><br>
+    <a href="#" id="timSubmit">Submit</a>
+  </div>
 </div>
 <div class="textInBox" id="saving">Saving . . .</div>
 </div>
@@ -218,37 +230,39 @@ bevlonias, 30 of neither.
 let values = {'numPetal':['4', '6'],
               'petalColor':['blue', 'green'],
               'centerShape':['circle', 'tri'],
-              'centerColor':['orange', 'purple'],
-              'numSepal':['1', '2']};
+              'centerColor':['pink', 'turquoise'],
+              'numSepal':['1', '2'],
+              'holeShape':['heart', 'star'],
+              'petalShape':['concave', 'round']};
 
 let assignmentFilename = 'exp7/experiment7_flower_assignment.json';
 let dataDir = 'exp7/data';
 
 /* Get filename for an object */
 function GetFlowerFilename(obj) {
-  return ("https://dibs-web01.vm.duke.edu/flower/CategoryLearning/stimuli/flowers/images/stim_"
-    + obj.numPetal + "_" + obj.petalColor + "_"
-    + obj.centerShape + "_" + obj.centerColor
-    + "_" + obj.numSepal + ".png");
+  return ("https://dibs-web01.vm.duke.edu/flower/CategoryLearning/stimuli/flowers/Images7/stim_"
+    + obj.numPetal + "_" + obj.petalColor + "_" + obj.petalShape + "_"
+    + obj.centerShape + "_" + obj.centerColor + "_"
+    + obj.numSepal + "_" + obj.holeShape + ".png");
 }
 
 /* Parameters for stimuli */
-let nLearning = 1;
-let pLearnedLearning = 1/3.0;
-let pFoilLearning = 1/3.0;
+let nLearning = 60;
+let pLearnedLearning = 1/2;
+let pFoilLearning = 1/2;
 
-let nLearningTest = 1;
-let pLearnedLearningTest = 1/3.0;
-let pFoilLearningTest = 1/3.0;
+let nLearningTest = 10;
+let pLearnedLearningTest = 1/2;
+let pFoilLearningTest = 1/2;
 
-let nStudy = 9;
-let pLearnedStudy = 1/3.0;
-let pFoilStudy = 1/3.0;
+let nStudy = 18;
+let pLearnedStudy = 1/2;
+let pFoilStudy = 1/2;
 
-let nTest = 18;
+let nTest = 54;
 let nTestBlocks = 3;
-let pLearnedTest = 1/3.0;  // p for lures, not old items
-let pFoilTest = 1/3.0;
+let pLearnedTest = 1/2;  // p for lures, not old items
+let pFoilTest = 1/2;
 
 /* Parameters for learning conditions */
 let conditions = ['practiced', 'instructed', 'instructed+practiced', 'neither'];
@@ -326,12 +340,16 @@ function categoryDescription(feature, value) {
                       'petalColor':'petals',
                       'centerShape':'center',
                       'centerColor':'center',
-                      'numSepal':'sepals'};
-  let valueDescr = {'4':'four', '6':'six', '8':'eight',
-                    'blue':'blue', 'green':'green', 'yellow':'yellow',
-                    'circle':'circular', 'tri':'triangular', 'square':'square',
-                    'brightgreen':'green', 'orange':'orange', 'purple':'purple',
-                    '1':'one', '2':'two', '3':'three'};
+                      'numSepal':'sepals',
+                      'holeShape':'hole in their center',
+                      'petalShape':'petals'};
+  let valueDescr = {'4':'four', '6':'six',
+                    'blue':'blue', 'green':'green',
+                    'circle':'circular', 'tri':'triangular',
+                    'pink':'pink', 'turquoise':'turquoise',
+                    '1':'one', '2':'two',
+                    'star':'a star-shaped', 'heart':'a heart-shaped',
+                    'round':'perfectly round', 'concave':'pointed edges on their'};
 
   return ((featureDescr[feature] === 'center')? 'a ' : '')
           + valueDescr[value] + ' '
@@ -384,6 +402,7 @@ async function SaveExpData(experimentName, dataDir, progressDir, featureLearned,
     "windowHeight": $(window).height(),
     "screenWidth": screen.width,
     "screenHeight": screen.height,
+    "captcha": $('#captcha').val(),
     "comments": $('#comments').val(),
     "isPracticed": practiced,
     "isInstructed": instructed,
@@ -434,7 +453,7 @@ $(function () {
                       nLearningTest, pLearnedLearningTest, pFoilLearningTest,
                       nStudy, pLearnedStudy, pFoilStudy,
                       nTest, pLearnedTest, pFoilTest, nTestBlocks, dataDir, null,
-                      learningFn, null, null, null, SaveExpData, nextAssignment)
+                      learningFn, null, null, null, SaveExpData, nextAssignment, confidence=true)
                       .then(function (expData) {
                         if (instructed) {
                           $('#avloniaDescription').text(categoryDescription(expData['featureLearned'], expData['valueLearned']));

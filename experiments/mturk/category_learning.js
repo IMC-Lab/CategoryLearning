@@ -86,7 +86,7 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
                                nStudy, pLearnedStudy, pFoilStudy,
                                nTest, pLearnedTest, pFoilTest, nTestBlocks, dataDir='data', progressDir=null,
                                learningFn=null, learningTestFn=null, studyFn=null, testFn=null, saveFn=null,
-                               nextAssignmentFn=null) {
+                               nextAssignmentFn=null, confidence=false) {
    // Calculate the number of study/test stimuli in each block
    let studyBlockLength = Math.ceil(nStudy / nTestBlocks);
    let testBlockLength = Math.ceil(nTest / nTestBlocks);
@@ -138,7 +138,7 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
                                     pLearnedTest, pFoilTest, values,
                                     featureLearned, valueLearned,
                                     featureFoil, valueFoil, GetFilename);
-
+  
   /* Set up button presses to their linked function */
   let stimuliType = experimentName.split("_")[0];
   if (document.getElementById('startLearning')) {
@@ -158,8 +158,8 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
   }
   if (document.getElementById('startTest')) {
     document.getElementById('startTest').onclick
-      = (testFn)? function () { testFn(stimuliType, itemsForTest, 0, testBlockLength); }
-                : function () { StartTest(stimuliType, itemsForTest, 0, testBlockLength); };
+      = (testFn)? function () { testFn(stimuliType, itemsForTest, 0, testBlockLength, confidence); }
+                : function () { StartTest(stimuliType, itemsForTest, 0, testBlockLength, confidence); };
   }
   if (document.getElementById('timSubmit')) {
     document.getElementById('timSubmit').onclick
@@ -179,6 +179,13 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
                   };
   }
 
+  if (document.getElementById('captchaSubmit')) {
+    document.getElementById('captchaSubmit').onclick = async function() {
+      $('#captchaBox').hide();
+      $('#commentBox').show();
+    }
+  }
+
   return Object.assign(assignment,
          {'featureLearned':featureLearned,
           'valueLearned':valueLearned,
@@ -190,10 +197,37 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
           'itemsForTest':itemsForTest});
 }
 
+// Test for shallow object equality, since JSON.stringify doesn't seem to work
+function ObjectEquals(obj1, obj2) {
+  for (let k of Object.keys(obj1)) {
+    if (obj1[k] != obj2[k]) {
+      return false;
+    }
+  }
+
+  for (let k of Object.keys(obj2)) {
+    if (obj1[k] != obj2[k]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/* Check to see if obj is in array */
+function ContainsObject(array, object) {
+  for (let i=0; i < array.length; i++) {
+    if (ObjectEquals(array[i].object, object)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /* Get an object that is either a member of the
    learned category or not; and a member of the foil
-   category or not. Make sure the new object does
-   not equal any of the objects in avoidObjectsList
+   category or not.
    values- the mapping from features to values
    featureLearned- the learned feature
    valueLearned- the value of the learned feature
@@ -201,12 +235,7 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
    valueFoil- the value of the unlearned feature
    */
 function GetObject(values, featureLearned, valueLearned,
-                   featureFoil, valueFoil, avoidObjectsList) {
-  let avoidObjects = new Array();
-  for (let i=0; i<avoidObjectsList.length; i++) {
-    avoidObjects.push.apply(avoidObjects, avoidObjectsList[i]);
-  }
-
+                   featureFoil, valueFoil) {
   let obj = {};
   for (let feature in values) {
     obj[feature] = values[feature][Math.floor(Math.random()*values[feature].length)];
@@ -214,19 +243,7 @@ function GetObject(values, featureLearned, valueLearned,
 
   obj[featureLearned] = valueLearned;
   obj[featureFoil] = valueFoil;
-
-  /* Check to see if it matches anything we are supposed to avoid */
-  let overlaps = false;
-  for (let i=0; i<avoidObjects.length; i++) {
-    if (JSON.stringify(avoidObjects[i].object)===JSON.stringify(obj)) {
-      overlaps = true;
-      break;
-    }
-  }
-
-  /* If it does match an object we want to avoid, recurse to generate a new object: */
-  return (overlaps)? GetObject(values, featureLearned, valueLearned,
-                               featureFoil, valueFoil, avoidObjectsList) : obj;
+  return obj;
 }
 
 /*
@@ -261,8 +278,14 @@ function GetObjects(count, values, featureLearned, valueLearned, featureFoil,
         n = pNotLearned * pNotFoil * count;
 
       for (let k=0; k<n; k++) {
+        // repeatedly set obj until it's not a duplicate
         let obj = GetObject(values, featureLearned, values[featureLearned][i],
-                            featureFoil, values[featureFoil][j], [...avoidObjectsList, ...items]);
+                            featureFoil, values[featureFoil][j]);
+        while (ContainsObject([...avoidObjectsList, ...items, ...remainderItems], obj)) {
+          obj = GetObject(values, featureLearned, values[featureLearned][i],
+                          featureFoil, values[featureFoil][j]);
+        }
+
         let curItem = {'object': obj,
                        'filename': GetFilename(obj),
                        'isTarget': isTarget,
@@ -318,7 +341,7 @@ function CreateStudyList(n, itemsForLearning, itemsForLearningTest,
                          valueLearned, featureFoil, valueFoil, GetFilename) {
   let [objects, imageHTML] = GetObjects(n, values, featureLearned, valueLearned,
                                         featureFoil, valueFoil, GetFilename, 'study',
-                                        pLearned, pFoil, [...itemsForLearning, itemsForLearningTest]);
+                                        pLearned, pFoil, [...itemsForLearning, ...itemsForLearningTest]);
   $('#imagesForStudy').html(imageHTML);
   return Shuffle(objects);
 }
@@ -435,6 +458,7 @@ function ResponseLearning(correct, curTrial, stimuli, learningTest, startTrialTi
 /* LEARNING TEST TASK ------------------------------------------------- */
 function ShowLearningTestStart() {
   $('#instrucBox').hide();
+  $('#instrucTextCur').html('Do you think this is an avlonia? <b>(y/n)</b>');
   $('#experimentBox').hide();
   $('#startLearningTest').hide();
   $('#learnTestInstruc').show();
@@ -497,7 +521,7 @@ function ShowStudyStart() {
 }
 
 function StartStudy(stimuliType, stimuli, blockNumber, blockLength) {
-  $('#instrucTextCur').text("Remember these " + blockLength.length + " "
+  $('#instrucTextCur').text("Remember these " + blockLength + " "
                             + stimuliType.toLowerCase() + "s!");
   $('#instrucBox').show();
   $('#experimentBox').show();
@@ -542,7 +566,7 @@ function StartMemoryTest() {
   }, waitTime);
 }
 
-function StartTest(stimuliType, stimuli, blockNumber, blockLength) {
+function StartTest(stimuliType, stimuli, blockNumber, blockLength, confidence) {
   $('#testInstruc').hide();
   $('#instrucTextCur').html("Did you see this " + stimuliType + " earlier? <b>(y/n)</b>");
   $('#instrucBox').show();
@@ -551,14 +575,15 @@ function StartTest(stimuliType, stimuli, blockNumber, blockLength) {
 
   // Reset the study link to go the next block next time around
   document.getElementById('startTest').onclick
-    = function() { StartTest(stimuliType, stimuli, blockNumber+1, blockLength); };
+    = function() { StartTest(stimuliType, stimuli, blockNumber+1, blockLength, confidence); };
 
-  NextTrialTest(0, stimuli, blockNumber, blockLength);
+  NextTrialTest(0, stimuliType, stimuli, blockNumber, blockLength, confidence);
 }
 
-function NextTrialTest(curTrial, stimuli, blockNumber, blockLength) {
+function NextTrialTest(curTrial, stimuliType, stimuli, blockNumber, blockLength, confidence) {
   let curTrialItem = stimuli[curTrial + blockNumber * blockLength];
   $('.categorizeImage').hide();
+  $('#instrucTextCur').html("Did you see this " + stimuliType + " earlier? <b>(y/n)</b>");
   $('#trialCnt').text("Trial " + (curTrial+1) + " of " + blockLength +
     ', Block ' + (blockNumber+1) + ' of ' + Math.ceil(stimuli.length / blockLength));
   $('#' + curTrialItem.id).show();
@@ -566,24 +591,30 @@ function NextTrialTest(curTrial, stimuli, blockNumber, blockLength) {
   let startTrialTime = (new Date()).getTime();
   setTimeout(function() {
     $(document).bind('keyup', 'y', function() {
-      ResponseTest(curTrialItem.isOld, curTrial, stimuli, blockNumber, blockLength, startTrialTime);
+      ResponseTest(curTrialItem.isOld, curTrial, stimuliType, stimuli, blockNumber, blockLength, startTrialTime, confidence);
     });
     $(document).bind('keyup', 'n', function() {
-      ResponseTest(!curTrialItem.isOld, curTrial, stimuli, blockNumber, blockLength, startTrialTime);
+      ResponseTest(!curTrialItem.isOld, curTrial, stimuliType, stimuli, blockNumber, blockLength, startTrialTime, confidence);
     });
    }, 300);
 }
 
-function ResponseTest(correct, curTrial, stimuli, blockNumber, blockLength, startTrialTime) {
+function ResponseTest(correct, curTrial, stimuliType, stimuli, blockNumber, blockLength, startTrialTime, confidence) {
   let curTrialItem = stimuli[curTrial + blockNumber * blockLength];
   curTrialItem['wasCorrect'] = correct;
   curTrialItem['RT'] = (new Date()).getTime() - startTrialTime;
 	$(document).unbind('keyup');
-  $('#' + curTrialItem.id).hide();
 
+  // if recording confidence ratings, break to there
+  if (confidence) {
+    NextConfidenceTrialTest(curTrial, stimuliType, stimuli, blockNumber, blockLength);
+    return;
+  }
+
+  $('#' + curTrialItem.id).hide();
   setTimeout(function() {
     if (curTrial < blockLength - 1) {
-      NextTrialTest(curTrial+1, stimuli, blockNumber, blockLength);
+      NextTrialTest(curTrial+1, stimuliType, stimuli, blockNumber, blockLength, confidence);
     } else if (blockNumber < Math.ceil(stimuli.length / blockLength) - 1) {
       ShowStudyStart();
     } else {
@@ -592,6 +623,36 @@ function ResponseTest(correct, curTrial, stimuli, blockNumber, blockLength, star
   }, testITI);
 }
 
+function NextConfidenceTrialTest(curTrial, stimuliType, stimuli, blockNumber, blockLength) {
+  $('#instrucTextCur').html("How confident are you? <b>(1-7)</b>");
+
+  let startTrialTime = (new Date()).getTime();
+  setTimeout(function() {
+    for (let i=1; i<=7; i++) {
+      $(document).bind('keyup', i.toString(), function() {
+        ConfidenceResponseTest(i, curTrial, stimuliType, stimuli, blockNumber, blockLength, startTrialTime);
+      });
+    }
+   }, 300);
+}
+
+function ConfidenceResponseTest(confidenceRating, curTrial, stimuliType, stimuli, blockNumber, blockLength, startTrialTime) {
+  let curTrialItem = stimuli[curTrial + blockNumber * blockLength];
+  curTrialItem['confidence'] = confidenceRating;
+  curTrialItem['confidenceRT'] = (new Date()).getTime() - startTrialTime;
+  $(document).unbind('keyup');
+
+  $('#' + curTrialItem.id).hide();
+  setTimeout(function() {
+    if (curTrial < blockLength - 1) {
+      NextTrialTest(curTrial+1, stimuliType, stimuli, blockNumber, blockLength, true);
+    } else if (blockNumber < Math.ceil(stimuli.length / blockLength) - 1) {
+      ShowStudyStart();
+    } else {
+      ShowDone(stimuli);
+    }
+  }, testITI);
+}
 
 
 /* DONE ------------------------------------------------- */
@@ -706,6 +767,7 @@ async function SaveData(experimentName, dataDir, progressDir, featureLearned, va
     "screenWidth": screen.width,
     "screenHeight": screen.height,
     "comments": $('#comments').val(),
+    "captcha": $('#captcha').val(),
     "experimentNumber": progress['curExperiment'],
     "correctRate": correctRate,
     "earnedBonus": earnedBonus,
