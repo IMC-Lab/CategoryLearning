@@ -96,7 +96,10 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
   $('#numStudy').text(nStudy);
   $('#numStudyBlock').text(studyBlockLength);
   $('#numStudyBlocks').text(nTestBlocks);
+  $('#totalStudyBlocks').text(nTestBlocks);
+  $('#numStudyTest').text(studyBlockLength);
   $('#numTest').text(testBlockLength);
+  $('#totalTestBlocks').text(nTestBlocks);
   $('#submitButton').hide();
   $('#startLearning').hide();
 
@@ -138,7 +141,7 @@ async function StartExperiment(experimentName, assignmentFilename, GetFilename, 
                                     pLearnedTest, pFoilTest, values,
                                     featureLearned, valueLearned,
                                     featureFoil, valueFoil, GetFilename);
-  
+
   /* Set up button presses to their linked function */
   let stimuliType = experimentName.split("_")[0];
   if (document.getElementById('startLearning')) {
@@ -445,7 +448,7 @@ function ResponseLearning(correct, curTrial, stimuli, learningTest, startTrialTi
      $('#wrong').hide();
 
      if (curTrial<stimuli.length-1) {
-       NextTrialLearning(curTrial+1, stimuli);
+       NextTrialLearning(curTrial+1, stimuli, learningTest);
      } else if (learningTest) {
        ShowLearningTestStart();
      } else {
@@ -531,6 +534,9 @@ function StartStudy(stimuliType, stimuli, blockNumber, blockLength) {
   // Reset the study link to go the next block next time around
   document.getElementById('startStudy').onclick
     = function() { StartStudy(stimuliType, stimuli, blockNumber+1, blockLength); };
+  $('#studyCompletion').text("You've completed block " + (blockNumber+1) + " of " + Math.ceil(stimuli.length / blockLength) + ".");
+  $('#testCompletion').text("You've studied block " + (blockNumber+1) + " of " + Math.ceil(stimuli.length / blockLength) + ".");
+  $('#curStudyBlock').text(blockNumber+2);
 
   stimuliType = stimuliType.charAt(0).toUpperCase() + stimuliType.toLowerCase().slice(1);
   NextTrialStudy(0, stimuliType, stimuli, blockNumber, blockLength);
@@ -576,6 +582,7 @@ function StartTest(stimuliType, stimuli, blockNumber, blockLength, confidence) {
   // Reset the study link to go the next block next time around
   document.getElementById('startTest').onclick
     = function() { StartTest(stimuliType, stimuli, blockNumber+1, blockLength, confidence); };
+  $('#curTestBlock').text(blockNumber+2);
 
   NextTrialTest(0, stimuliType, stimuli, blockNumber, blockLength, confidence);
 }

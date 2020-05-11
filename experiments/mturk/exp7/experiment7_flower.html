@@ -123,8 +123,8 @@ bevlonias, 30 of neither.
 </style>
 
 <div class="instrucBox" id="categoryInstruc1" style="padding:5px; text-align:left">
-<p>This HIT will involve 3 short tasks, all involving pictures of flowers.
-  It should take approximately 12-15 minutes to do all 3 tasks.</p>
+<p>This HIT will involve 4 short tasks, all involving pictures of flowers.
+  It should take approximately 12-15 minutes to do all 4 tasks.</p>
 <p>During the first task, you will see one flower at a time and have to determine whether or not it is an <b>avlonia</b>.
   Avlonias are a particular species of flower.
   They are different from all other flowers in one simple way -- and your job is to find out what that is.
@@ -161,15 +161,17 @@ bevlonias, 30 of neither.
 
 <div class="instrucBox" id="learnTestInstruc" style="padding:5px; text-align:left">
 <p>Great job!</p>
-<p>During the second task, you will be shown a single flower, and then be asked if it is or is not an avlonia. You'll be shown
-   <span id="numLearningTest">0</span> flowers, one at a time. This time, you will not be told whether or not the flower was avlonia.
-    Do your best to categorize these flowers as well as you can.</p>
+<p>Now we want to know how well you learned what makes a flower an avolnia.
+  In this task you will be shown a single flower, and then be asked if it is or is not an avlonia. You'll be shown
+  <span id="numLearningTest">0</span> flowers, one at a time.
+  This time, you will not be told whether or not the flower was avlonia after all.
+  Do your best to categorize these flowers as well as you can!</p>
 <p><a class="buttonStart" href="#" id="startLearningTest">Start next task</a>
   <span class="buttonStart" id="loadingLearningTest">Loading images... Please wait.</span></p>
 </div>
 
 <div class="instrucBox" id="studyInstruc" style="padding:5px; text-align:left">
-<p>Great job!</p>
+<p>Great job! <b><span id="studyCompletion"></span></b></p>
 <p>During the next task, you will have to remember flowers.
   You'll be shown <span id="numStudy">0</span> flowers, one at a time, for just a few seconds each.
   Do your best to remember these flowers as well as you can.
@@ -178,18 +180,23 @@ bevlonias, 30 of neither.
   <span id="numStudyBlocks">0</span> groups of <span id="numStudyBlock">0</span>.
   After seeing each group, you will be asked to recognize the flowers from that group only.</p>
 <p>Some of the flowers you have to remember might be avlonias and some might not.</p>
-<p><a class="buttonStart" href="#" id="startStudy">Start memory task</a>
+<p><a class="buttonStart" href="#" id="startStudy">
+  Start memory block <span id="curStudyBlock">1</span> of <span id="totalStudyBlocks"></span></a>
   <span class="buttonStart" id="loadingStudy">Loading images... Please wait.</span></p>
 </div>
 
 <div class="instrucBox" id="testInstruc" style="padding:5px; text-align:left">
-<p>Great job!</p>
-<p>During this task, you will have to say which flowers you saw in the previous part and which you didn't.
+<p>Great job! <b><span id="testCompletion"></span></b></p>
+<p>During this task, you will have to say which flowers you saw in the last block and which you didn't.
   You'll be shown <span id="numTest">0</span> flowers, one at a time.
-  Some you will have seen before, and some you won't have seen.
-   For each flower, you have to say whether you saw it in the last group of flowers you studied.
-   If you did see it, press the 'y' key. If you didn't, press the 'n' key. Please do your best!</p>
-<p><a class="buttonStart" href="#" id="startTest">Start memory test</a>
+  Some you will have seen in the last block, and some you won't have seen.
+   For each flower, you have to say whether you saw it in the last group of <span id="numStudyTest"></span> flowers that you studied.
+   If you did see it, press the 'y' key. If you didn't, press the 'n' key. </p>
+<p>After telling us whether you've seen the flower in the last group of flowers that you studied,
+  you'll be asked to rate how confident you are in your answer. Please press a number key from 1 to 7,
+  where 1 indicates that you were not at all confident, and 7 indicates that you were totally confident.</p>
+<p>Please do your best!</p>
+<p><a class="buttonStart" href="#" id="startTest">Start memory test <span id="curTestBlock">1</span> of <span id="totalTestBlocks"></span></a>
   <span class="buttonStart" id="loadingTest">Loading images... Please wait.</span></p>
 </div>
 
